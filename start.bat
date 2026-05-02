@@ -1,5 +1,5 @@
 @echo off
-echo 正在启动大学生答题数据可视化分析系统...
+echo 正在启动学智画像：教育大数据赋能高校学情可视分析系统...
 venv\Scripts\activate
 python run.py
 pause

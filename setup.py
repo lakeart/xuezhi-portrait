@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='quiz-analysis-system',
     version='2.0.0',
-    description='大学生答题数据可视化分析系统',
+    description='学智画像：教育大数据赋能高校学情可视分析系统',
     author='Your Team',
     author_email='your-email@example.com',
     packages=find_packages(),

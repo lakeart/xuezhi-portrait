@@ -150,7 +150,7 @@ def check_database():
 def main():
     """主函数"""
     print("=" * 70)
-    print("大学生答题数据可视化分析系统 - 系统检查")
+    print("学智画像：教育大数据赋能高校学情可视分析系统 - 系统检查")
     print("=" * 70)
     
     results = []
