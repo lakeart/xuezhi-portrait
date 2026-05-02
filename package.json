@@ -1,0 +1,17 @@
+{
+  "name": "1",
+  "version": "1.0.0",
+  "description": "![版本](https://img.shields.io/badge/版本-2.0.0-blue)\r ![Python](https://img.shields.io/badge/Python-3.8+-green)\r ![Flask](https://img.shields.io/badge/Flask-2.3.3-lightblue)\r ![PyTorch](https://img.shields.io/badge/PyTorch-2.2.0+-red)",
+  "main": "generate_report.js",
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

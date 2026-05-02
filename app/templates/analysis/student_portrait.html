@@ -1,0 +1,3683 @@
+{% extends "base.html" %}
+
+{% block title %}学生群像分析 - 大学生画像可视化系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card fade-in gradient-header">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-circle gradient-teal">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="card-title mb-1" style="width: 1156px; height: 29px; font-size: 24px; line-height: 29px; color: #F0F6FC;">学生群像分析系统</h4>
+                        <p class="text-muted mb-0 small">智能分析学生学习数据，构建多维度学生画像</p>
+                    </div>
+                    <div class="ms-auto">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left me-2"></i>返回仪表盘
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 分析模块选择卡片 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card fade-in" style="animation-delay: 0.2s;">
+            <div class="card-header gradient-purple-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-brain me-2"></i>智能分析模块
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="nav flex-column nav-pills custom-nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <button class="nav-link active module-tab" id="v-pills-cluster-tab" data-bs-toggle="pill" data-bs-target="#v-pills-cluster" type="button" role="tab" aria-controls="v-pills-cluster" aria-selected="true">
+                                <i class="fas fa-project-diagram me-2"></i>学生聚类分析
+                            </button>
+                            <button class="nav-link module-tab" id="v-pills-learning-tab" data-bs-toggle="pill" data-bs-target="#v-pills-learning" type="button" role="tab" aria-controls="v-pills-learning" aria-selected="false">
+                                <i class="fas fa-lightbulb me-2"></i>学习风格识别
+                            </button>
+                            <button class="nav-link module-tab" id="v-pills-prediction-tab" data-bs-toggle="pill" data-bs-target="#v-pills-prediction" type="button" role="tab" aria-controls="v-pills-prediction" aria-selected="false">
+                                <i class="fas fa-chart-line me-2"></i>学习表现预测
+                            </button>
+                            <button class="nav-link module-tab" id="v-pills-topic-tab" data-bs-toggle="pill" data-bs-target="#v-pills-topic" type="button" role="tab" aria-controls="v-pills-topic" aria-selected="false">
+                                <i class="fas fa-network-wired me-2"></i>知识点关联分析
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content" id="v-pills-tabContent">
+                            <!-- 聚类分析模块 -->
+                            <div class="tab-pane fade show active" id="v-pills-cluster" role="tabpanel" aria-labelledby="v-pills-cluster-tab">
+                                <h5 class="mb-3">学生聚类分析 <span class="badge bg-primary">K-means</span></h5>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>通过多维特征对学生群体进行自动分类，识别不同学习特征的学生群体
+                                </div>
+                                
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-header gradient-blue-light">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-cogs me-2"></i>
+                                            <h6 class="mb-0">分析参数设置</h6>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label fw-medium">聚类特征选择<span class="text-danger">*</span> <small class="text-muted">(至少选择一项)</small></label>
+                                                    <div class="feature-selection">
+                                                        <div class="feature-item">
+                                                            <input class="form-check-input feature-checkbox" type="checkbox" value="score" id="feature_score" checked>
+                                                            <label class="form-check-label" for="feature_score">平均分数</label>
+                                                        </div>
+                                                        <div class="feature-item">
+                                                            <input class="form-check-input feature-checkbox" type="checkbox" value="time" id="feature_time" checked>
+                                                            <label class="form-check-label" for="feature_time">答题用时</label>
+                                                        </div>
+                                                        <div class="feature-item">
+                                                            <input class="form-check-input feature-checkbox" type="checkbox" value="submission_count" id="feature_count" checked>
+                                                            <label class="form-check-label" for="feature_count">提交次数</label>
+                                                        </div>
+                                                        <div class="feature-item">
+                                                            <input class="form-check-input feature-checkbox" type="checkbox" value="topic_mastery" id="feature_topic" checked>
+                                                            <label class="form-check-label" for="feature_topic">知识点掌握度</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="cluster_count" class="form-label fw-medium">学生群体数量 (K值)</label>
+                                                    <div class="row g-2">
+                                                        <div class="col-md-8">
+                                                            <select class="form-select custom-select" id="cluster_count">
+                                                                <option value="2">2个群体</option>
+                                                                <option value="3" selected>3个群体</option>
+                                                                <option value="4">4个群体</option>
+                                                                <option value="5">5个群体</option>
+                                                                <option value="6">6个群体</option>
+                                                                <option value="7">7个群体</option>
+                                                                <option value="8">8个群体</option>
+                                                                <option value="custom">自定义...</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <input type="number" class="form-control" id="custom_cluster_count" placeholder="自定义数量" min="2" max="20" style="display: none;">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-4 text-center">
+                                                    <button id="runClusteringBtn" class="btn btn-gradient-blue w-100">
+                                                        <i class="fas fa-play me-2"></i>运行聚类分析
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 分析加载状态 -->
+                                <div id="clusteringLoading" class="text-center py-5" style="display: none;">
+                                    <div class="spinner-container">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">正在分析...</span>
+                                        </div>
+                                    </div>
+                                    <p class="mt-3 text-muted">正在进行聚类分析，请稍候...</p>
+                                    <div class="progress mt-2" style="height: 5px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 聚类分析结果 -->
+                                <div id="clusteringResults" style="display: none;">
+                                    <div class="result-header">
+                                        <h6 class="mb-3"><i class="fas fa-chart-pie me-2"></i>聚类分析结果</h6>
+                                        <hr>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="chart-container shadow-sm" style="position: relative; height: 300px;">
+                                                <canvas id="clusteringChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card-body p-3 bg-light rounded shadow-sm cluster-features-container">
+                                                <h6 class="fw-medium mb-2">群体特征分析</h6>
+                                                <div id="clusterFeatures" class="cluster-features cluster-features-scroll"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-header gradient-blue-light">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-users me-2"></i>
+                                                    <h6 class="mb-0">聚类群体概览</h6>
+                                                </div>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover table-sm mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>群体</th>
+                                                                <th>学生数量</th>
+                                                                <th>平均分数</th>
+                                                                <th>平均用时</th>
+                                                                <th>典型特征</th>
+                                                                <th>教学建议</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="clusterTableBody">
+                                                            <!-- 动态填充数据 -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 群体详情区域（内联展示，不使用模态框） -->
+                                    <div id="clusterDetailContainer" class="mt-4" style="display: none;">
+                                        <div class="card shadow-sm">
+                                            <div class="card-header" id="clusterDetailHeader">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div>
+                                                        <i class="fas fa-search-plus me-2"></i>
+                                                        <h6 class="mb-0 d-inline" id="clusterDetailTitle">群体详情</h6>
+                                                    </div>
+                                                    <button type="button" class="btn-close" id="closeDetailBtn" aria-label="Close"></button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="clusterDetailLoading" class="text-center py-5">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">正在加载...</span>
+                                                    </div>
+                                                    <p class="mt-3 text-muted">加载群体详情数据，请稍候...</p>
+                                                </div>
+                                                
+                                                <div id="clusterDetailContent" class="animate-fade-in" style="display: none;">
+                                                    <div class="row mb-4">
+                                                        <div class="col-md-6">
+                                                            <div class="card h-100">
+                                                                <div class="card-header gradient-blue-light">
+                                                                    <div class="d-flex align-items-center">
+                                                                        <i class="fas fa-chart-pie me-2"></i>
+                                                                        <h6 class="mb-0">群体特征雷达图</h6>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div id="radarChartContainer" style="height: 220px; position: relative;">
+                                                                        <canvas id="clusterRadarChart"></canvas>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="card h-100">
+                                                                <div class="card-header gradient-blue-light">
+                                                                    <div class="d-flex align-items-center">
+                                                                        <i class="fas fa-info-circle me-2"></i>
+                                                                        <h6 class="mb-0">群体分析摘要</h6>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div id="clusterSummary">
+                                                                        <p class="fw-medium">群体人数： <span id="clusterSummarySize" class="text-primary"></span></p>
+                                                                        <p class="fw-medium">平均分数： <span id="clusterSummaryScore" class="text-primary"></span></p>
+                                                                        <p class="fw-medium">平均用时： <span id="clusterSummaryTime" class="text-primary"></span> 秒</p>
+                                                                        <p class="fw-medium">提交次数： <span id="clusterSummarySubmissions" class="text-primary"></span></p>
+                                                                        <p class="fw-medium">知识掌握度： <span id="clusterSummaryMastery" class="text-primary"></span>%</p>
+                                                                        <div class="alert alert-info mt-2 p-2 small">
+                                                                            <i class="fas fa-lightbulb me-2"></i>
+                                                                            <span id="clusterSummaryInsight"></span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="card mb-4">
+                                                        <div class="card-header gradient-blue-light">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fas fa-graduation-cap me-2"></i>
+                                                                <h6 class="mb-0">学习干预策略</h6>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div id="interventionStrategies"></div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="card">
+                                                        <div class="card-header gradient-blue-light">
+                                                            <div class="d-flex align-items-center justify-content-between">
+                                                                <div>
+                                                                    <i class="fas fa-user-graduate me-2"></i>
+                                                                    <h6 class="mb-0 d-inline">群体内学生列表</h6>
+                                                                </div>
+                                                                <div>
+                                                                    <input type="text" id="studentSearchInput" class="form-control form-control-sm" placeholder="搜索学生...">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body p-0">
+                                                            <div class="table-responsive" style="max-height: 300px;">
+                                                                <table class="table table-sm table-hover mb-0">
+                                                                    <thead class="table-light sticky-top">
+                                                                        <tr>
+                                                                            <th>学号</th>
+                                                                            <th>姓名</th>
+                                                                            <th>平均分数</th>
+                                                                            <th>平均用时</th>
+                                                                            <th>提交次数</th>
+                                                                            <th>知识掌握度</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody id="clusterStudentsList">
+                                                                        <!-- 学生列表将在这里动态加载 -->
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex justify-content-end mt-3">
+                                                        <button type="button" class="btn btn-outline-secondary me-2" id="closeDetailBtnBottom">
+                                                            <i class="fas fa-times me-2"></i>关闭详情
+                                                        </button>
+                                                        <button type="button" class="btn btn-primary" id="exportClusterDataBtn">
+                                                            <i class="fas fa-download me-2"></i>导出群体数据
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 学习风格识别模块 -->
+                            <div class="tab-pane fade" id="v-pills-learning" role="tabpanel" aria-labelledby="v-pills-learning-tab">
+                                <h5 class="mb-3">学习风格识别 <span class="badge bg-success">K-means</span></h5>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>基于答题行为特征，识别学生的优势学习风格，提供个性化学习建议
+                                </div>
+                                
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-header gradient-green-light">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-filter me-2"></i>
+                                            <h6 class="mb-0">分析参数设置</h6>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label fw-medium">分析维度 <small class="text-muted">(可多选)</small></label>
+                                                    <div class="learning-style-dimensions">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="visual_verbal" id="dim_visual_verbal" checked>
+                                                            <label class="form-check-label" for="dim_visual_verbal">视觉/语言偏好</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="active_reflective" id="dim_active_reflective" checked>
+                                                            <label class="form-check-label" for="dim_active_reflective">主动/反思型学习</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="sensing_intuitive" id="dim_sensing_intuitive" checked>
+                                                            <label class="form-check-label" for="dim_sensing_intuitive">感知/直觉型认知</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="sequential_global" id="dim_sequential_global" checked>
+                                                            <label class="form-check-label" for="dim_sequential_global">顺序/整体型思维</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-3">
+                                                    <label for="analysis_range" class="form-label fw-medium">数据分析范围</label>
+                                                    <select class="form-select custom-select" id="analysis_range">
+                                                        <option value="all" selected>全部学生数据</option>
+                                                        <option value="recent_month">最近一个月</option>
+                                                        <option value="recent_week">最近一周</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="similarity_threshold" class="form-label fw-medium">相似度阈值 <small class="text-muted">(>=70%)</small></label>
+                                                    <div class="d-flex align-items-center">
+                                                        <input type="range" class="form-range" min="70" max="95" step="5" value="80" id="similarity_threshold">
+                                                        <span class="ms-2 threshold-value">80%</span>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-3 text-center">
+                                                    <button id="runLearningStyleBtn" class="btn btn-gradient-green w-100">
+                                        <i class="fas fa-sync-alt me-2"></i>分析学习风格
+                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 学习风格形成依据说明 -->
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-header gradient-green-light">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                <h6 class="mb-0">学习风格形成依据</h6>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="collapse" data-bs-target="#styleAnalysisInfo" aria-expanded="false" aria-controls="styleAnalysisInfo">
+                                                <i class="fas fa-chevron-down"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" id="styleAnalysisInfo">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6 class="fw-bold mb-2"><i class="fas fa-eye me-2 text-primary"></i>视觉型/语言型判断依据：</h6>
+                                                    <ul class="feature-basis-list">
+                                                        <li>编程题、图表题偏好和高分表现 <span class="badge rounded-pill bg-primary">视觉型指标</span></li>
+                                                        <li>解答题、论述题偏好和高分表现 <span class="badge rounded-pill bg-warning">语言型指标</span></li>
+                                                        <li>学生对不同题型材料的选择偏好</li>
+                                                    </ul>
+                                                    
+                                                    <h6 class="fw-bold mb-2 mt-4"><i class="fas fa-brain me-2 text-success"></i>感知型/直觉型判断依据：</h6>
+                                                    <ul class="feature-basis-list">
+                                                        <li>答题时间长（>3分钟）的倾向 <span class="badge rounded-pill bg-info">感知型指标</span></li>
+                                                        <li>快速答题（<1分钟）的习惯 <span class="badge rounded-pill bg-secondary">直觉型指标</span></li>
+                                                        <li>选择题、判断题的准确率表现</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6 class="fw-bold mb-2"><i class="fas fa-users me-2 text-danger"></i>主动型/反思型判断依据：</h6>
+                                                    <ul class="feature-basis-list">
+                                                        <li>提交时间分布在9点-17点 <span class="badge rounded-pill bg-success">主动型指标</span></li>
+                                                        <li>深夜或清晨提交（6点前或22点后） <span class="badge rounded-pill bg-danger">反思型指标</span></li>
+                                                        <li>编程题和实践型习题表现</li>
+                                                    </ul>
+                                                    
+                                                    <h6 class="fw-bold mb-2 mt-4"><i class="fas fa-project-diagram me-2 text-purple"></i>顺序型/整体型判断依据：</h6>
+                                                    <ul class="feature-basis-list">
+                                                        <li>详细思考和分步解题倾向 <span class="badge rounded-pill bg-purple">顺序型指标</span></li>
+                                                        <li>犯细节错误但把握整体概念 <span class="badge rounded-pill bg-orange">整体型指标</span></li>
+                                                        <li>步骤性错误的频率与模式</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="alert alert-light mt-3 mb-0">
+                                                <i class="fas fa-lightbulb me-2 text-warning"></i>
+                                                <span class="small">系统使用K-means聚类算法分析上述行为数据，将学生聚类为不同学习风格组。每次分析使用学生的最新数据，风格分布会随学习行为变化而动态调整。</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 分析加载状态 -->
+                                <div id="learningStyleLoading" class="text-center py-5" style="display: none;">
+                                    <div class="spinner-container">
+                                        <div class="spinner-border text-success" role="status">
+                                            <span class="visually-hidden">正在分析...</span>
+                                        </div>
+                                    </div>
+                                    <p class="mt-3 text-muted">正在进行学习风格分析，请稍候...</p>
+                                    <div class="progress mt-2" style="height: 5px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div id="learningStyleResults" style="display: none;">
+                                    <div class="result-header">
+                                        <h6 class="mb-3"><i class="fas fa-chart-pie me-2"></i>学习风格分析结果</h6>
+                                        <hr>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <div class="chart-container shadow-sm" style="position: relative; height: 300px;">
+                                                <canvas id="learningStyleChart"></canvas>
+                                            </div>
+                                            <div class="text-center mt-3">
+                                                <button id="toggleStyleViewBtn" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-chart-bar me-1"></i>切换视图
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <div class="card shadow-sm">
+                                                <div class="card-header gradient-green-light">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-lightbulb me-2"></i>
+                                                        <h6 class="mb-0">学习风格分布</h6>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                                                    <ul class="list-group list-group-flush" id="learningStyleList">
+                                                        <!-- 动态填充数据 -->
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-header gradient-green-light">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div>
+                                                    <i class="fas fa-graduation-cap me-2"></i>
+                                                    <h6 class="mb-0">学习风格教学建议</h6>
+                                                    </div>
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" id="showAllSuggestions">
+                                                        <label class="form-check-label small" for="showAllSuggestions">显示全部建议</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="learningStyleSuggestions" class="suggestion-cards">
+                                                    <!-- 动态填充数据 -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-header gradient-green-light">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-users me-2"></i>
+                                                    <h6 class="mb-0">学生风格分组</h6>
+                                                </div>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>风格类型</th>
+                                                                <th>学生数量</th>
+                                                                <th>典型特征</th>
+                                                                <th>适合的学习方式</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="styleGroupsTableBody">
+                                                            <!-- 动态填充数据 -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 学习表现预测模块 -->
+                            <div class="tab-pane fade" id="v-pills-prediction" role="tabpanel" aria-labelledby="v-pills-prediction-tab">
+                                <h5 class="mb-3">学习表现预测 <span class="badge bg-primary">随机森林模型</span></h5>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>基于历史数据预测学生的学习表现趋势，识别潜在的学习问题
+                                </div>
+                                
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-header gradient-blue-light">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            <h6 class="mb-0">预测参数设置</h6>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="prediction_target" class="form-label fw-medium">预测目标</label>
+                                                    <select class="form-select custom-select" id="prediction_target">
+                                                        <option value="score">未来成绩表现</option>
+                                                        <option value="engagement">学习参与度</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="prediction_period" class="form-label fw-medium">预测时间范围</label>
+                                                    <select class="form-select custom-select" id="prediction_period">
+                                                        <option value="2">未来2周</option>
+                                                        <option value="4" selected>未来1个月</option>
+                                                        <option value="12">未来3个月</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mt-4 text-center">
+                                                    <button id="runPredictionBtn" class="btn btn-gradient-blue w-100">
+                                                        <i class="fas fa-chart-line me-2"></i>运行预测分析
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="predictionResults" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="chart-container shadow-sm" style="position: relative; height: 300px;">
+                                                <canvas id="predictionChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-header gradient-blue-light">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-chart-pie me-2"></i>
+                                                    <h6 class="mb-0">预测结果分析</h6>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="predictionAnalysis"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-header gradient-blue-light">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-tasks me-2"></i>
+                                                    <h6 class="mb-0">学生干预建议</h6>
+                                                </div>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>学生群体</th>
+                                                                <th>预测表现</th>
+                                                                <th>干预建议</th>
+                                                                <th>优先级</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="interventionTableBody">
+                                                            <!-- 动态填充数据 -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 特征重要性可视化 -->
+                                    <div class="mt-4">
+                                        <div class="card shadow-sm">
+                                            <div class="card-header gradient-blue-light">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-chart-bar me-2"></i>
+                                                    <h6 class="mb-0">特征重要性（预测因素影响）</h6>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-7">
+                                                        <div class="chart-container" style="position: relative; height: 200px;">
+                                                            <canvas id="featureImportanceChart"></canvas>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-5">
+                                                        <div class="feature-importance-info p-3 bg-light rounded">
+                                                            <h6 class="mb-3">预测模型说明</h6>
+                                                            <p class="small">本预测基于随机森林算法对历史数据进行分析。图表显示了各因素对预测结果的相对影响程度：</p>
+                                                            <ul class="small feature-importance-list">
+                                                                <li><strong>lag_1 - lag_4</strong>：不同时间窗口的历史数据影响</li>
+                                                                <li><strong>trend</strong>：时间趋势因素</li>
+                                                            </ul>
+                                                            <div class="alert alert-info mt-2 p-2 small">
+                                                                <i class="fas fa-info-circle me-1"></i>
+                                                                绿色条形高度表示特征对预测的影响程度，数值越高表示该因素越重要。
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 知识点关联分析模块 -->
+                            <div class="tab-pane fade" id="v-pills-topic" role="tabpanel" aria-labelledby="v-pills-topic-tab">
+                                <h5 class="mb-3">知识点关联分析 <span class="badge" style="background: rgba(210, 153, 34, 0.2); color: #D29922;">关联规则挖掘</span></h5>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>分析知识点之间的关联性，发现潜在的学习路径与知识依赖关系
+                                </div>
+                                
+                                <div class="d-flex justify-content-end mb-4">
+                                    <button id="runTopicAnalysisBtn" class="btn btn-gradient-teal">
+                                        <i class="fas fa-network-wired me-2"></i>分析知识点关联
+                                    </button>
+                                </div>
+                                
+                                <div id="topicResults" style="display: none;">
+                                    <div class="result-header">
+                                        <h6 class="mb-3"><i class="fas fa-network-wired me-2"></i>知识点关联分析结果</h6>
+                                        <hr>
+                                    </div>
+                                    
+                                    <div class="row mb-4">
+                                        <div class="col-md-9">
+                                            <div class="card shadow-sm h-100">
+                                                <div class="card-header gradient-teal-light">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div>
+                                                            <i class="fas fa-project-diagram me-2"></i>
+                                                            <h6 class="mb-0 d-inline">知识点关联网络</h6>
+                                                        </div>
+                                                        <div>
+                                                            <button class="btn btn-sm btn-outline-teal me-1" id="resetNetworkBtn">
+                                                                <i class="fas fa-redo-alt me-1"></i>重置视图
+                                                            </button>
+                                                            <button class="btn btn-sm btn-outline-teal" id="toggleNetworkLabelBtn">
+                                                                <i class="fas fa-tag me-1"></i>显示/隐藏标签
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <div class="chart-container shadow-sm" style="position: relative; height: 450px;">
+                                                <div id="topicNetworkGraph" class="w-100 h-100"></div>
+                                            </div>
+                                        </div>
+                                                <div class="card-footer bg-light">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-6">
+                                                            <div class="small text-muted">
+                                                                提示：用鼠标滚轮缩放网络图，拖动节点调整布局，点击节点查看关联
+                                    </div>
+                                                        </div>
+                                                        <div class="col-md-6 text-end">
+                                                            <div class="d-inline-block me-3">
+                                                                <span class="badge rounded-pill bg-danger me-1"></span>
+                                                                <span class="small">强关联</span>
+                                                            </div>
+                                                            <div class="d-inline-block me-3">
+                                                                <span class="badge rounded-pill bg-warning me-1"></span>
+                                                                <span class="small">中等关联</span>
+                                                            </div>
+                                                            <div class="d-inline-block">
+                                                                <span class="badge rounded-pill bg-info me-1"></span>
+                                                                <span class="small">弱关联</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card shadow-sm h-100">
+                                            <div class="card-header gradient-teal-light">
+                                                <div class="d-flex align-items-center">
+                                                        <i class="fas fa-filter me-2"></i>
+                                                        <h6 class="mb-0">知识点过滤</h6>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="form-group mb-3">
+                                                        <label class="form-label small">最小关联强度</label>
+                                                        <div class="d-flex align-items-center">
+                                                            <input type="range" class="form-range" min="0" max="100" step="10" value="30" id="minLinkStrength">
+                                                            <span class="ms-2 small" id="linkStrengthValue">30%</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="form-label small">布局调整</label>
+                                                        <div class="d-flex align-items-center">
+                                                            <input type="range" class="form-range" min="50" max="300" step="10" value="150" id="repulsionStrength">
+                                                            <span class="ms-2 small" id="repulsionValue">150</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="topic-filter-container mt-4">
+                                                        <label class="form-label small">知识点搜索</label>
+                                                        <div class="input-group input-group-sm mb-3">
+                                                            <input type="text" class="form-control" id="topicSearchInput" placeholder="搜索知识点...">
+                                                            <button class="btn btn-outline-secondary" type="button" id="clearTopicSearchBtn">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div id="topicList" class="topic-list">
+                                                            <!-- 知识点列表将在这里动态加载 -->
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="d-grid gap-2 mt-4">
+                                                        <button class="btn btn-sm btn-outline-teal" id="applyNetworkFiltersBtn">
+                                                            <i class="fas fa-sync-alt me-1"></i>应用过滤条件
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card shadow-sm mb-4">
+                                        <div class="card-header gradient-teal-light">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <i class="fas fa-sitemap me-2"></i>
+                                                    <h6 class="mb-0">知识点关联规则</h6>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="showHighConfidenceOnly">
+                                                    <label class="form-check-label small" for="showHighConfidenceOnly">仅显示高置信度关联</label>
+                                            </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-0">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover table-sm">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>前置知识点</th>
+                                                                <th>后续知识点</th>
+                                                                <th>关联强度</th>
+                                                                <th>置信度</th>
+                                                                <th>学习建议</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="topicRulesTableBody">
+                                                            <!-- 动态填充数据 -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    
+                                    <div class="card shadow-sm">
+                                        <div class="card-header gradient-teal-light">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-graduation-cap me-2"></i>
+                                                <h6 class="mb-0">知识点学习路径建议</h6>
+                                    </div>
+                                </div>
+                                        <div class="card-body">
+                                            <div class="alert alert-info">
+                                                <div class="d-flex align-items-start">
+                                                    <i class="fas fa-lightbulb me-2 mt-1 text-warning"></i>
+                                                    <div>
+                                                        <h6 class="mb-2">最优学习路径建议</h6>
+                                                        <p class="mb-0 small" id="learningPathSuggestion">
+                                                            根据知识点关联分析，系统自动生成的最优学习路径建议将显示在这里。该建议基于知识点间的依赖关系和学习难度，帮助学生更有效地掌握相关知识。
+                                                        </p>
+                            </div>
+                        </div>
+                    </div>
+                                            
+                                            <div id="optimalLearningPath" class="mt-3">
+                                                <!-- 最优学习路径可视化 -->
+                </div>
+            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 底部提示信息区域 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-secondary text-center py-2">
+            <small><i class="fas fa-info-circle me-2"></i>内容仅供参考，实际教学决策请结合专业判断</small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<!-- Chart.js 注释插件 -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.0"></script>
+<!-- ECharts -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 设置全局错误处理，提高代码健壮性
+    window.addEventListener('error', function(event) {
+        console.error('页面JavaScript错误:', event.error || event.message);
+        // 防止错误提示过多
+        if (!window.hasShownErrorToast) {
+            window.hasShownErrorToast = true;
+            alert('页面发生错误，请刷新后重试。详情请查看控制台。');
+            setTimeout(() => { window.hasShownErrorToast = false; }, 5000); // 5秒内不再显示
+        }
+        return false; // 允许默认错误处理继续
+    });
+    
+    // 图表实例对象缓存
+    let chartInstances = {
+        clusteringChart: null,
+        learningStyleChart: null,
+        predictionChart: null,
+        featureImportanceChart: null
+    };
+    
+    // 检查关键UI元素是否存在，不存在则创建基本提示
+    function checkRequiredElement(elementId, parentSelector, message) {
+        const element = document.getElementById(elementId);
+        if (!element) {
+            console.warn(`找不到元素: #${elementId}`);
+            const parent = document.querySelector(parentSelector);
+            if (parent) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger';
+                alertDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${message || '页面元素缺失，请联系管理员。'}`;
+                parent.prepend(alertDiv);
+            }
+            return false;
+        }
+        return true;
+    }
+    
+    // 检查关键界面元素
+    const uiElementsValid = 
+        checkRequiredElement('predictionChart', '#predictionResults', '预测图表容器缺失') &&
+        checkRequiredElement('predictionAnalysis', '#predictionResults', '预测分析容器缺失') &&
+        checkRequiredElement('interventionTableBody', '#predictionResults', '干预表格容器缺失') &&
+        checkRequiredElement('featureImportanceChart', '#predictionResults', '特征重要性图表容器缺失');
+    
+    if (!uiElementsValid) {
+        console.warn('部分UI元素缺失，某些功能可能无法正常工作');
+    }
+    
+    // 模块标签切换处理
+    const moduleTabs = document.querySelectorAll('.module-tab');
+    moduleTabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function() {
+            // 根据当前激活标签更新卡片头部样式
+            const activeTabId = this.id;
+            const cardsHeaders = document.querySelectorAll('.card-header');
+            
+            if (activeTabId === 'v-pills-cluster-tab') {
+                cardsHeaders.forEach(header => {
+                    if (header.classList.contains('gradient-blue-light') || 
+                        header.classList.contains('gradient-green-light') || 
+                        header.classList.contains('gradient-teal-light')) {
+                        header.className = 'card-header gradient-blue-light';
+                    }
+                });
+            } else if (activeTabId === 'v-pills-learning-tab') {
+                cardsHeaders.forEach(header => {
+                    if (header.classList.contains('gradient-blue-light') || 
+                        header.classList.contains('gradient-green-light') || 
+                        header.classList.contains('gradient-teal-light')) {
+                        header.className = 'card-header gradient-green-light';
+                    }
+                });
+            } else if (activeTabId === 'v-pills-prediction-tab') {
+                cardsHeaders.forEach(header => {
+                    if (header.classList.contains('gradient-blue-light') || 
+                        header.classList.contains('gradient-green-light') || 
+                        header.classList.contains('gradient-teal-light')) {
+                        header.className = 'card-header gradient-blue-light';
+                    }
+                });
+            } else if (activeTabId === 'v-pills-topic-tab') {
+                cardsHeaders.forEach(header => {
+                    if (header.classList.contains('gradient-blue-light') || 
+                        header.classList.contains('gradient-green-light') || 
+                        header.classList.contains('gradient-teal-light')) {
+                        header.className = 'card-header gradient-teal-light';
+                    }
+                });
+            }
+        });
+    });
+    
+    // 处理自定义聚类数量
+    const clusterCountSelect = document.getElementById('cluster_count');
+    const customClusterCount = document.getElementById('custom_cluster_count');
+    
+    clusterCountSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+            customClusterCount.style.display = 'block';
+            customClusterCount.focus();
+        } else {
+            customClusterCount.style.display = 'none';
+        }
+    });
+    
+    // 页面卸载前清理图表实例，避免内存泄漏
+    window.addEventListener('beforeunload', function() {
+        // 清理所有图表实例
+        Object.keys(chartInstances).forEach(key => {
+            if (chartInstances[key]) {
+                try {
+                    chartInstances[key].destroy();
+                    chartInstances[key] = null;
+                } catch (e) {
+                    console.error(`清理图表 ${key} 失败:`, e);
+                }
+            }
+        });
+    });
+    
+    // 添加重置图表的辅助函数
+    function resetCharts() {
+        // 清理所有图表实例
+        Object.keys(chartInstances).forEach(key => {
+            if (chartInstances[key]) {
+                try {
+                    chartInstances[key].destroy();
+                    chartInstances[key] = null;
+                } catch (e) {
+                    console.error(`重置图表 ${key} 失败:`, e);
+                }
+            }
+        });
+    }
+    
+    // 特征复选框处理，确保至少有一个特征被选中
+    const featureCheckboxes = document.querySelectorAll('.feature-checkbox');
+    
+    featureCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // 检查当前是否至少有一个特征被选中
+            const checkedFeatures = document.querySelectorAll('.feature-checkbox:checked');
+            
+            // 如果尝试取消选中最后一个特征，阻止操作
+            if (checkedFeatures.length === 0) {
+                this.checked = true; // 保持当前复选框选中状态
+                alert('至少需要选择一个特征进行聚类分析');
+            }
+        });
+    });
+    
+    // 聚类分析
+    const runClusteringBtn = document.getElementById('runClusteringBtn');
+    const clusteringResults = document.getElementById('clusteringResults');
+    const clusteringLoading = document.getElementById('clusteringLoading');
+    
+    runClusteringBtn.addEventListener('click', function() {
+        // 获取选定的特征和K值
+        const selectedFeatures = [];
+        document.querySelectorAll('input[type=checkbox]:checked').forEach(checkbox => {
+            selectedFeatures.push(checkbox.value);
+        });
+        
+        // 检查是否至少选择了一个特征
+        if (selectedFeatures.length === 0) {
+            alert('请至少选择一个聚类特征');
+            return;
+        }
+        
+        const clusterCount = document.getElementById('cluster_count').value;
+        const finalClusterCount = clusterCount === 'custom' 
+            ? document.getElementById('custom_cluster_count').value 
+            : clusterCount;
+        
+        // 验证自定义K值
+        if (clusterCount === 'custom') {
+            const customValue = parseInt(document.getElementById('custom_cluster_count').value);
+            if (isNaN(customValue) || customValue < 2 || customValue > 20) {
+                alert('请输入有效的群体数量（2-20之间）');
+                return;
+            }
+        }
+        
+        // 显示加载状态，隐藏结果区域
+        runClusteringBtn.disabled = true;
+        clusteringResults.style.display = 'none';
+        clusteringLoading.style.display = 'block';
+        
+        // 重置相关图表，避免冲突
+        resetCharts();
+        
+        // 调用API执行聚类
+        fetch('/analysis/api/student_portrait/clustering', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                features: selectedFeatures,
+                n_clusters: finalClusterCount
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || '服务器返回错误');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 恢复按钮状态，隐藏加载动画
+            runClusteringBtn.disabled = false;
+            clusteringLoading.style.display = 'none';
+            
+            // 显示结果区域
+            clusteringResults.style.display = 'block';
+            
+            // 渲染聚类结果
+            renderClusteringChart(data.visualization_data);
+            renderClusterFeatures(data.cluster_profiles);
+            renderClusterTable(data.cluster_details);
+            
+            // 平滑滚动到结果区域
+            clusteringResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })
+        .catch(error => {
+            // 恢复按钮状态，隐藏加载动画
+            runClusteringBtn.disabled = false;
+            clusteringLoading.style.display = 'none';
+            
+            console.error('Error:', error);
+            let errorMessage = error.message || '未知错误';
+            
+            // 针对特定错误类型提供更有帮助的信息
+            if (errorMessage.includes('n_components=2 must be between 0 and min(n_samples, n_features)')) {
+                errorMessage = '所选特征数量不足，PCA降维失败。请选择至少2个特征进行聚类分析。';
+            } else if (errorMessage.includes('empty cluster')) {
+                errorMessage = '聚类过程中出现空群体。请尝试减少聚类数量或选择不同特征组合。';
+            } else if (errorMessage.includes('Canvas is already in use')) {
+                errorMessage = '图表渲染错误。请刷新页面后重试。';
+                // 尝试清理图表实例
+                if (chartInstances.clusteringChart) {
+                    try {
+                        chartInstances.clusteringChart.destroy();
+                        chartInstances.clusteringChart = null;
+                    } catch (e) {
+                        console.error('清理图表失败:', e);
+                    }
+                }
+            }
+            
+            // 显示错误信息
+            alert('分析过程中发生错误: ' + errorMessage);
+            
+            // 清除结果区域
+            clusteringResults.style.display = 'none';
+        });
+    });
+    
+    // 学习风格分析
+    const runLearningStyleBtn = document.getElementById('runLearningStyleBtn');
+    const learningStyleResults = document.getElementById('learningStyleResults');
+    const learningStyleLoading = document.getElementById('learningStyleLoading');
+    
+    // 相似度阈值滑块处理
+    const similarityThreshold = document.getElementById('similarity_threshold');
+    const thresholdValue = document.querySelector('.threshold-value');
+    similarityThreshold.addEventListener('input', function() {
+        thresholdValue.textContent = this.value + '%';
+    });
+    
+    // 添加分析维度复选框的事件监听器，确保至少选择一个维度
+    document.querySelectorAll('.learning-style-dimensions input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // 检查当前是否至少有一个维度被选中
+            const checkedDimensions = document.querySelectorAll('.learning-style-dimensions input:checked');
+            
+            // 如果尝试取消选中最后一个维度，阻止操作
+            if (checkedDimensions.length === 0) {
+                this.checked = true; // 保持当前复选框选中状态
+                alert('至少需要选择一个分析维度');
+            }
+        });
+    });
+    
+    // 切换视图按钮
+    const toggleStyleViewBtn = document.getElementById('toggleStyleViewBtn');
+    let isDonutChart = true;
+    
+    toggleStyleViewBtn.addEventListener('click', function() {
+        isDonutChart = !isDonutChart;
+        
+        // 获取当前图表数据
+        const data = window.currentStyleData;
+        if (!data) return;
+        
+        // 重新渲染图表
+        renderLearningStyleChart(data, isDonutChart);
+        
+        // 更新按钮文本
+        this.innerHTML = isDonutChart 
+            ? '<i class="fas fa-chart-bar me-1"></i>切换视图'
+            : '<i class="fas fa-chart-pie me-1"></i>切换视图';
+    });
+    
+    // 显示全部建议开关
+    const showAllSuggestions = document.getElementById('showAllSuggestions');
+    showAllSuggestions.addEventListener('change', function() {
+        const suggestionCards = document.querySelectorAll('.suggestion-card');
+        suggestionCards.forEach(card => {
+            if (this.checked) {
+                card.style.display = 'block';
+            } else {
+                // 只显示前两个（主要风格）的建议卡片
+                const index = Array.from(suggestionCards).indexOf(card);
+                card.style.display = index < 2 ? 'block' : 'none';
+            }
+        });
+    });
+    
+    runLearningStyleBtn.addEventListener('click', function() {
+        // 获取分析参数
+        const dimensions = [];
+        document.querySelectorAll('.learning-style-dimensions input:checked').forEach(checkbox => {
+            dimensions.push(checkbox.value);
+        });
+        
+        // 检查是否至少选择了一个维度
+        if (dimensions.length === 0) {
+            alert('请至少选择一个分析维度');
+            return;
+        }
+        
+        const analysisRange = document.getElementById('analysis_range').value;
+        const threshold = document.getElementById('similarity_threshold').value;
+        
+        // 显示加载状态
+        runLearningStyleBtn.disabled = true;
+        learningStyleResults.style.display = 'none';
+        learningStyleLoading.style.display = 'block';
+        
+        // 重置相关图表，避免冲突
+        resetCharts();
+        
+        // 清除旧的结果数据，避免可能的数据残留问题
+        if (window.currentStyleData) {
+            window.currentStyleData = null;
+        }
+        
+        // 调用API执行学习风格分析
+        fetch('/analysis/api/student_portrait/learning_style', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                dimensions: dimensions,
+                range: analysisRange,
+                threshold: threshold
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || '服务器返回错误');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 检查返回的数据是否有效
+            if (!data.style_distribution || data.style_distribution.length === 0) {
+                throw new Error('没有足够的数据进行学习风格分析');
+            }
+            
+            // 保存当前数据用于视图切换
+            window.currentStyleData = data.style_distribution;
+            
+            // 恢复按钮状态
+            runLearningStyleBtn.disabled = false;
+            learningStyleLoading.style.display = 'none';
+            
+            // 显示结果区域
+            learningStyleResults.style.display = 'block';
+            
+            // 渲染学习风格结果
+            renderLearningStyleChart(data.style_distribution, isDonutChart);
+            renderLearningStyleList(data.style_details);
+            renderLearningStyleSuggestions(data.teaching_suggestions);
+            renderStyleGroups(data.style_groups);
+            
+            // 平滑滚动到结果区域
+            learningStyleResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })
+        .catch(error => {
+            // 恢复按钮状态
+            runLearningStyleBtn.disabled = false;
+            learningStyleLoading.style.display = 'none';
+            
+            console.error('Error:', error);
+            let errorMessage = error.message || '未知错误';
+            
+            // 显示错误信息
+            alert('学习风格分析错误: ' + errorMessage);
+            
+            // 清除结果区域
+            learningStyleResults.style.display = 'none';
+        });
+    });
+    
+    // 渲染学习风格图表
+    function renderLearningStyleChart(styleData, isDonut = true) {
+        const ctx = document.getElementById('learningStyleChart').getContext('2d');
+        
+        // 如果已存在图表实例，先销毁
+        if (chartInstances.learningStyleChart) {
+            chartInstances.learningStyleChart.destroy();
+        }
+        
+        // 准备数据和颜色
+        const styleColors = {
+            '视觉型': 'rgba(33, 150, 243, 0.7)',
+            '语言型': 'rgba(255, 193, 7, 0.7)',
+            '主动型': 'rgba(76, 175, 80, 0.7)',
+            '反思型': 'rgba(244, 67, 54, 0.7)',
+            '感知型': 'rgba(13, 202, 240, 0.7)',
+            '直觉型': 'rgba(108, 117, 125, 0.7)',
+            '顺序型': 'rgba(111, 66, 193, 0.7)',
+            '整体型': 'rgba(253, 126, 20, 0.7)'
+        };
+        
+        const labels = styleData.map(item => item.style);
+        const data = styleData.map(item => item.percentage);
+        const backgroundColor = styleData.map(item => styleColors[item.style] || 'rgba(0, 0, 0, 0.2)');
+        const borderColor = backgroundColor.map(color => color.replace('0.7', '1'));
+        
+        // 创建图表配置
+        const chartConfig = {
+            type: isDonut ? 'doughnut' : 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: backgroundColor,
+                    borderColor: borderColor,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: isDonut ? 'right' : 'top',
+                        labels: {
+                            usePointStyle: isDonut,
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        
+        // 添加柱状图特有配置
+        if (!isDonut) {
+            chartConfig.options.scales = {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: '百分比 (%)'
+                    }
+                }
+            };
+        }
+        
+        // 创建图表
+        chartInstances.learningStyleChart = new Chart(ctx, chartConfig);
+    }
+    
+    // 渲染学习风格列表
+    function renderLearningStyleList(styleDetails) {
+        const styleList = document.getElementById('learningStyleList');
+        styleList.innerHTML = '';
+        
+        styleDetails.forEach(style => {
+            const listItem = document.createElement('li');
+            listItem.classList.add('list-group-item');
+            
+            // 根据风格类型设置徽章样式和颜色
+            let badgeClass = '';
+            let bgClass = '';
+            
+            if (style.style.includes('视觉')) {
+                badgeClass = 'visual-style';
+                bgClass = 'bg-visual';
+            } else if (style.style.includes('语言')) {
+                badgeClass = 'verbal-style';
+                bgClass = 'bg-verbal';
+            } else if (style.style.includes('主动')) {
+                badgeClass = 'active-style';
+                bgClass = 'bg-active';
+            } else if (style.style.includes('反思')) {
+                badgeClass = 'reflective-style';
+                bgClass = 'bg-reflective';
+            } else if (style.style.includes('感知')) {
+                badgeClass = 'sensing-style';
+                bgClass = 'bg-sensing';
+            } else if (style.style.includes('直觉')) {
+                badgeClass = 'intuitive-style';
+                bgClass = 'bg-intuitive';
+            } else if (style.style.includes('顺序')) {
+                badgeClass = 'sequential-style';
+                bgClass = 'bg-sequential';
+            } else if (style.style.includes('整体')) {
+                badgeClass = 'global-style';
+                bgClass = 'bg-global';
+            }
+            
+            listItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="style-badge ${badgeClass}">${style.style}</span>
+                        <p class="mb-0 mt-1 text-muted small">${style.description}</p>
+                    </div>
+                    <div class="text-end ms-2">
+                        <span class="badge bg-primary rounded-pill">${style.percentage}%</span>
+                        <div class="mt-2" style="width: 80px;">
+                            <div class="progress">
+                                <div class="progress-bar ${bgClass}" 
+                                     style="width: ${style.percentage}%" 
+                                     aria-valuenow="${style.percentage}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            styleList.appendChild(listItem);
+        });
+    }
+    
+    // 渲染学习风格教学建议
+    function renderLearningStyleSuggestions(suggestions) {
+        const suggestionsContainer = document.getElementById('learningStyleSuggestions');
+        suggestionsContainer.innerHTML = '';
+        
+        suggestions.forEach((suggestion, index) => {
+            // 通过获取风格名称来决定卡片样式
+            let styleClass = '';
+            if (suggestion.style.includes('视觉')) styleClass = 'visual-style';
+            else if (suggestion.style.includes('语言')) styleClass = 'verbal-style';
+            else if (suggestion.style.includes('主动')) styleClass = 'active-style';
+            else if (suggestion.style.includes('反思')) styleClass = 'reflective-style';
+            else if (suggestion.style.includes('感知')) styleClass = 'sensing-style';
+            else if (suggestion.style.includes('直觉')) styleClass = 'intuitive-style';
+            else if (suggestion.style.includes('顺序')) styleClass = 'sequential-style';
+            else if (suggestion.style.includes('整体')) styleClass = 'global-style';
+            
+            const cardDiv = document.createElement('div');
+            cardDiv.classList.add('suggestion-card');
+            // 只显示前两个主要风格的建议，除非"显示全部"被勾选
+            cardDiv.style.display = index < 2 ? 'block' : 'none';
+            // 根据风格设置卡片边框颜色
+            cardDiv.style.borderTopColor = window.getComputedStyle(document.querySelector('.' + styleClass)).color;
+            
+            let suggestionHtml = `
+                <div class="card-title d-flex align-items-center">
+                    <span class="style-badge ${styleClass} me-2">${suggestion.style}</span>
+                    <span>学习建议</span>
+                </div>
+                <ul class="suggestion-list">
+            `;
+            
+            suggestion.suggestions.forEach(item => {
+                suggestionHtml += `<li>${item}</li>`;
+            });
+            
+            suggestionHtml += '</ul>';
+            cardDiv.innerHTML = suggestionHtml;
+            
+            suggestionsContainer.appendChild(cardDiv);
+        });
+    }
+    
+    // 渲染学生风格分组表格
+    function renderStyleGroups(styleGroups) {
+        const tableBody = document.getElementById('styleGroupsTableBody');
+        tableBody.innerHTML = '';
+        
+        styleGroups.forEach(group => {
+            const row = document.createElement('tr');
+            
+            // 解析风格组合，创建标签
+            const styleTagsHtml = group.style_combination.map(style => {
+                let tagClass = '';
+                if (style.includes('视觉')) tagClass = 'visual-style';
+                else if (style.includes('语言')) tagClass = 'verbal-style';
+                else if (style.includes('主动')) tagClass = 'active-style';
+                else if (style.includes('反思')) tagClass = 'reflective-style';
+                else if (style.includes('感知')) tagClass = 'sensing-style';
+                else if (style.includes('直觉')) tagClass = 'intuitive-style';
+                else if (style.includes('顺序')) tagClass = 'sequential-style';
+                else if (style.includes('整体')) tagClass = 'global-style';
+                
+                return `<span class="style-tag ${tagClass}">${style}</span>`;
+            }).join('');
+            
+            row.innerHTML = `
+                <td>${styleTagsHtml}</td>
+                <td>${group.student_count}</td>
+                <td>${group.typical_traits}</td>
+                <td>${group.preferred_methods}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary view-students-btn" 
+                            data-style-id="${group.id}">
+                        <i class="fas fa-users me-1"></i>查看学生
+                    </button>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+        
+        // 添加查看学生按钮点击事件
+        document.querySelectorAll('.view-students-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const styleId = this.getAttribute('data-style-id');
+                showStyleStudents(styleId);
+            });
+        });
+    }
+    
+    // 显示特定学习风格的学生列表
+    function showStyleStudents(styleId) {
+        // 创建模态框，如果不存在
+        let styleStudentsModal = document.getElementById('styleStudentsModal');
+        if (!styleStudentsModal) {
+            // 创建模态框
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal fade';
+            modalDiv.id = 'styleStudentsModal';
+            modalDiv.tabIndex = '-1';
+            modalDiv.setAttribute('aria-labelledby', 'styleStudentsModalLabel');
+            modalDiv.setAttribute('aria-hidden', 'true');
+            
+            modalDiv.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="styleStudentsModalLabel">学习风格学生列表</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="styleStudentsLoading" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <p class="mt-3 text-muted">正在加载学生数据，请稍候...</p>
+                            </div>
+                            
+                            <div id="styleStudentsContent" style="display: none;">
+                                <div class="alert alert-info mb-4">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-info-circle fa-2x text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h5 id="styleNameTitle" class="mb-2"></h5>
+                                            <p id="styleDescription" class="mb-0"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" id="styleStudentsSearch" placeholder="搜索学生...">
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>学号</th>
+                                                <th>姓名</th>
+                                                <th>平均分数</th>
+                                                <th>平均用时(秒)</th>
+                                                <th>提交次数</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="styleStudentsTableBody"></tbody>
+                                    </table>
+                                </div>
+                                
+                                <div id="noStyleStudents" class="alert alert-warning text-center" style="display: none;">
+                                    未找到属于此学习风格组的学生
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-success" id="exportStyleStudentsBtn">
+                                <i class="fas fa-file-excel me-1"></i>导出学生数据
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modalDiv);
+            styleStudentsModal = modalDiv;
+            
+            // 添加搜索功能
+            document.getElementById('styleStudentsSearch').addEventListener('input', function() {
+                const searchText = this.value.toLowerCase();
+                document.querySelectorAll('#styleStudentsTableBody tr').forEach(row => {
+                    const studentId = row.cells[0].textContent.toLowerCase();
+                    const studentName = row.cells[1].textContent.toLowerCase();
+                    
+                    if (studentId.includes(searchText) || studentName.includes(searchText)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 添加导出功能
+            document.getElementById('exportStyleStudentsBtn').addEventListener('click', function() {
+                alert('导出功能将在此实现');
+                // 实际项目中可以调用API导出Excel
+            });
+        }
+        
+        // 使用Bootstrap的Modal实例显示模态框
+        const modalElement = document.getElementById('styleStudentsModal');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        
+        // 显示加载状态
+        document.getElementById('styleStudentsLoading').style.display = 'block';
+        document.getElementById('styleStudentsContent').style.display = 'none';
+        document.getElementById('noStyleStudents').style.display = 'none';
+        
+        // 调用API获取学生数据
+        fetch(`/analysis/api/student_portrait/style_students/${styleId}`)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || '服务器返回错误');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 隐藏加载状态
+                document.getElementById('styleStudentsLoading').style.display = 'none';
+                document.getElementById('styleStudentsContent').style.display = 'block';
+                
+                // 更新风格信息
+                document.getElementById('styleNameTitle').textContent = data.style.name;
+                document.getElementById('styleDescription').textContent = data.style.description;
+                
+                // 渲染学生列表
+                const tableBody = document.getElementById('styleStudentsTableBody');
+                tableBody.innerHTML = '';
+                
+                if (data.students.length === 0) {
+                    document.getElementById('noStyleStudents').style.display = 'block';
+                    return;
+                }
+                
+                data.students.forEach((student, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${student.student_id}</td>
+                        <td>${student.name}</td>
+                        <td>${student.avg_score}</td>
+                        <td>${student.avg_time}秒</td>
+                        <td>${student.submission_count}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary view-student-detail-btn" 
+                                    data-student-id="${student.student_id}">
+                                <i class="fas fa-chart-line me-1"></i>查看详情
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                
+                // 添加学生详情查看按钮的事件处理
+                document.querySelectorAll('.view-student-detail-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const studentId = this.getAttribute('data-student-id');
+                        window.open(`/analysis/student_to_details/${studentId}`, '_blank');
+                    });
+                });
+            })
+            .catch(error => {
+                // 隐藏加载状态
+                document.getElementById('styleStudentsLoading').style.display = 'none';
+                
+                console.error('Error:', error);
+                alert('获取学生数据失败: ' + error.message);
+            });
+    }
+    
+    // 学习表现预测
+    const runPredictionBtn = document.getElementById('runPredictionBtn');
+    const predictionResults = document.getElementById('predictionResults');
+    
+    runPredictionBtn.addEventListener('click', function() {
+        const target = document.getElementById('prediction_target').value;
+        const period = document.getElementById('prediction_period').value;
+        
+        // 显示加载状态
+        runPredictionBtn.disabled = true;
+        runPredictionBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>预测分析中...';
+        
+        // 重置相关图表，避免冲突
+        resetCharts();
+        
+        // 调用API执行预测分析
+        fetch('/analysis/api/student_portrait/prediction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                target: target,
+                period: period
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                // 检查响应是否是HTML（可能是重定向到登录页）
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    throw new Error('需要登录才能使用此功能');
+                }
+                return response.json().then(data => {
+                    throw new Error(data.error || '服务器返回错误');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 恢复按钮状态
+            runPredictionBtn.disabled = false;
+            runPredictionBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>运行预测分析';
+            
+            // 显示结果区域
+            predictionResults.style.display = 'block';
+            
+            try {
+                // 检查数据格式是否完整
+                if (!data.prediction_data || !data.prediction_data.labels || !data.prediction_data.series) {
+                    throw new Error('预测数据格式不完整');
+                }
+                
+                // 确保预测起点索引存在且有效
+                const predictionStart = data.prediction_data.prediction_start || 0;
+                
+                // 转换数据格式并确保数组是有效的
+                const predictionData = {
+                    dates: Array.isArray(data.prediction_data.labels) ? data.prediction_data.labels : [],
+                    historical: Array.isArray(data.prediction_data.series) ? 
+                        data.prediction_data.series.map((value, index) => 
+                            index < predictionStart ? value : null
+                        ) : [],
+                    predicted: Array.isArray(data.prediction_data.series) ? 
+                        data.prediction_data.series.map((value, index) => 
+                            index >= predictionStart ? value : null
+                        ) : [],
+                    y_axis_label: data.prediction_data.target_name || '数值'
+                };
+                
+                // 检查转换后的数据是否有效
+                if (predictionData.dates.length === 0) {
+                    console.warn('日期数据为空，使用默认值');
+                    predictionData.dates = Array.from({length: data.prediction_data.series.length}, (_, i) => `第${i+1}周`);
+                }
+                
+                if (predictionData.historical.length === 0 && predictionData.predicted.length === 0) {
+                    throw new Error('历史数据和预测数据均为空');
+                }
+                
+                console.log("处理后的预测数据:", predictionData);
+                
+                // 渲染预测结果
+                renderPredictionChart(predictionData);
+                
+                // 检查并渲染分析文本
+                if (data.analysis) {
+                    renderPredictionAnalysis(data.analysis);
+                } else {
+                    console.warn('分析数据不存在');
+                    document.getElementById('predictionAnalysis').innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            无法生成分析结果，请检查预测数据
+                        </div>
+                    `;
+                }
+                
+                // 检查并渲染干预建议
+                if (Array.isArray(data.interventions)) {
+                    renderInterventionTable(data.interventions);
+                } else {
+                    console.warn('干预建议数据不存在或格式不正确');
+                    document.getElementById('interventionTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    暂无干预建议数据
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                // 检查并渲染特征重要性
+                if (data.feature_importance && 
+                    (Array.isArray(data.feature_importance) || typeof data.feature_importance === 'object')) {
+                    
+                    // 将对象格式转换为数组格式
+                    let featureImportanceArray;
+                    if (Array.isArray(data.feature_importance)) {
+                        featureImportanceArray = data.feature_importance;
+                    } else {
+                        // 将对象格式 {feature1: value1, feature2: value2} 转换为数组格式
+                        featureImportanceArray = Object.entries(data.feature_importance).map(([feature, importance]) => ({
+                            feature,
+                            importance
+                        }));
+                    }
+                    
+                    renderFeatureImportanceChart(featureImportanceArray);
+                } else {
+                    console.warn('特征重要性数据不存在或格式不正确');
+                }
+            } catch (err) {
+                console.error('预测数据处理错误:', err);
+                alert('预测数据处理错误: ' + err.message);
+                predictionResults.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            // 恢复按钮状态
+            runPredictionBtn.disabled = false;
+            runPredictionBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>运行预测分析';
+            
+            console.error('预测分析错误:', error);
+            // 记录详细信息，便于调试
+            console.log('错误详情:', {
+                message: error.message, 
+                stack: error.stack,
+                name: error.name
+            });
+            
+            let errorMessage = error.message || '未知错误';
+            
+            // 针对特定错误类型提供更有帮助的信息
+            if (errorMessage.includes('insufficient data')) {
+                errorMessage = '数据量不足，无法进行可靠预测。请确保有足够的历史数据。';
+            } else if (errorMessage.includes('model training failed')) {
+                errorMessage = '模型训练失败。请尝试选择不同的预测目标或时间范围。';
+            } else if (errorMessage.includes('Canvas is already in use')) {
+                errorMessage = '图表渲染错误。请刷新页面后重试。';
+                // 尝试清理图表实例
+                if (chartInstances.predictionChart) {
+                    try {
+                        chartInstances.predictionChart.destroy();
+                        chartInstances.predictionChart = null;
+                    } catch (e) {
+                        console.error('清理图表失败:', e);
+                    }
+                }
+            } else if (errorMessage.includes('JSON')) {
+                errorMessage = '服务器返回的数据格式有误。可能是后端接口变更或数据库查询问题。';
+            } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
+                errorMessage = '网络连接错误。请检查网络连接并重试。';
+            } else if (errorMessage.includes('Cannot read properties of undefined')) {
+                errorMessage = '数据解析错误。服务器返回的数据结构可能与预期不符。';
+            }
+            
+            // 显示错误信息
+            alert('预测分析错误: ' + errorMessage);
+            
+            // 清除结果区域
+            predictionResults.style.display = 'none';
+        });
+    });
+    
+    // 知识点关联分析
+    const runTopicAnalysisBtn = document.getElementById('runTopicAnalysisBtn');
+    const topicResults = document.getElementById('topicResults');
+    
+    runTopicAnalysisBtn.addEventListener('click', function() {
+        // 显示加载状态
+        runTopicAnalysisBtn.disabled = true;
+        runTopicAnalysisBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>分析中...';
+        
+        // 重置相关图表，避免冲突
+        resetCharts();
+        
+        // 调用API执行知识点关联分析
+        fetch('/analysis/api/student_portrait/topic_association')
+        .then(response => response.json())
+        .then(data => {
+            // 恢复按钮状态
+            runTopicAnalysisBtn.disabled = false;
+            runTopicAnalysisBtn.innerHTML = '<i class="fas fa-network-wired me-2"></i>分析知识点关联';
+            
+            // 显示结果区域
+            topicResults.style.display = 'block';
+            
+            // 保存数据到全局变量，以便后续交互
+            window.topicNetworkData = data.network_data;
+            window.topicRulesData = data.association_rules;
+            
+            // 渲染知识点关联结果
+            renderTopicNetworkGraph(data.network_data);
+            renderTopicRulesTable(data.association_rules);
+            renderTopicList(data.network_data.nodes);
+            generateLearningPathSuggestion(data.association_rules);
+            
+            // 平滑滚动到结果区域
+            topicResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })
+        .catch(error => {
+            // 恢复按钮状态
+            runTopicAnalysisBtn.disabled = false;
+            runTopicAnalysisBtn.innerHTML = '<i class="fas fa-network-wired me-2"></i>分析知识点关联';
+            
+            console.error('Error:', error);
+            alert('分析过程中发生错误，请稍后再试');
+        });
+    });
+    
+    // 知识点关联分析模块 - 交互功能
+    
+    // 最小关联强度滑块
+    const minLinkStrength = document.getElementById('minLinkStrength');
+    const linkStrengthValue = document.getElementById('linkStrengthValue');
+    minLinkStrength.addEventListener('input', function() {
+        linkStrengthValue.textContent = this.value + '%';
+    });
+    
+    // 布局调整滑块
+    const repulsionStrength = document.getElementById('repulsionStrength');
+    const repulsionValue = document.getElementById('repulsionValue');
+    repulsionStrength.addEventListener('input', function() {
+        repulsionValue.textContent = this.value;
+    });
+    
+    // 重置网络图视图
+    document.getElementById('resetNetworkBtn').addEventListener('click', function() {
+        if (window.topicNetworkData) {
+            renderTopicNetworkGraph(window.topicNetworkData);
+        }
+    });
+    
+    // 显示/隐藏标签
+    let showLabels = true; // 默认显示标签
+    document.getElementById('toggleNetworkLabelBtn').addEventListener('click', function() {
+        showLabels = !showLabels;
+        
+        // 获取图表实例并更新标签设置
+        if (window.topicNetworkChart) {
+            const option = window.topicNetworkChart.getOption();
+            // 更新节点标签显示状态
+            option.series[0].label.show = showLabels;
+            window.topicNetworkChart.setOption(option);
+        }
+    });
+    
+    // 应用网络过滤条件
+    document.getElementById('applyNetworkFiltersBtn').addEventListener('click', function() {
+        if (!window.topicNetworkData) return;
+        
+        // 获取过滤条件
+        const minStrength = parseInt(minLinkStrength.value) / 100;
+        const repulsion = parseInt(repulsionStrength.value);
+        
+        // 获取选中的知识点ID列表
+        const selectedTopicIds = [];
+        document.querySelectorAll('.topic-checkbox').forEach(checkbox => {
+            if (checkbox.checked) {
+                const topicId = parseInt(checkbox.id.replace('topic_', ''));
+                selectedTopicIds.push(topicId);
+            }
+        });
+        
+        // 过滤节点 - 只保留选中的知识点
+        const filteredNodes = window.topicNetworkData.nodes.filter(node => 
+            selectedTopicIds.includes(node.id)
+        );
+        
+        // 创建节点ID到新索引的映射
+        const nodeIdToIndex = {};
+        filteredNodes.forEach((node, index) => {
+            nodeIdToIndex[node.id] = index;
+        });
+        
+        // 过滤连接 - 只保留连接强度大于等于阈值且连接的节点都在选中列表中的连接
+        const filteredLinks = window.topicNetworkData.links.filter(link => {
+            const sourceNodeId = window.topicNetworkData.nodes[link.source].id;
+            const targetNodeId = window.topicNetworkData.nodes[link.target].id;
+            return link.value >= minStrength && 
+                   selectedTopicIds.includes(sourceNodeId) && 
+                   selectedTopicIds.includes(targetNodeId);
+        }).map(link => {
+            // 获取原始节点的ID
+            const sourceNodeId = window.topicNetworkData.nodes[link.source].id;
+            const targetNodeId = window.topicNetworkData.nodes[link.target].id;
+            
+            // 返回更新后的链接，使用原始节点ID在映射中查找新索引
+            return {
+                source: nodeIdToIndex[sourceNodeId],
+                target: nodeIdToIndex[targetNodeId],
+                value: link.value
+            };
+        });
+        
+        // 如果没有选中的节点，显示提示并返回
+        if (filteredNodes.length === 0) {
+            alert('请至少选择一个知识点');
+            return;
+        }
+        
+        // 创建一个新的数据对象
+        const filteredData = {
+            nodes: filteredNodes,
+            links: filteredLinks
+        };
+        
+        // 重新渲染网络图，传入过滤后的数据和新的斥力值
+        renderTopicNetworkGraph(filteredData, repulsion);
+    });
+    
+    // 知识点搜索功能
+    const topicSearchInput = document.getElementById('topicSearchInput');
+    topicSearchInput.addEventListener('keyup', function() {
+        const searchText = this.value.toLowerCase();
+        filterTopicList(searchText);
+    });
+    
+    // 清除搜索
+    document.getElementById('clearTopicSearchBtn').addEventListener('click', function() {
+        topicSearchInput.value = '';
+        filterTopicList('');
+    });
+    
+    // 仅显示高置信度关联规则开关
+    document.getElementById('showHighConfidenceOnly').addEventListener('change', function() {
+        if (!window.topicRulesData) return;
+        
+        if (this.checked) {
+            // 过滤高置信度的规则（信度 >= 0.8）
+            const highConfidenceRules = window.topicRulesData.filter(rule => rule.confidence >= 0.8);
+            renderTopicRulesTable(highConfidenceRules);
+        } else {
+            // 显示所有规则
+            renderTopicRulesTable(window.topicRulesData);
+        }
+    });
+    
+    // 渲染知识点列表
+    function renderTopicList(nodes) {
+        const topicList = document.getElementById('topicList');
+        topicList.innerHTML = '';
+        
+        nodes.forEach(node => {
+            const div = document.createElement('div');
+            div.classList.add('topic-item');
+            div.setAttribute('data-topic-id', node.id);
+            
+            // 根据节点值（重要性）设置不同的显示样式
+            let colorClass = 'text-success';
+            if (node.value >= 80) {
+                colorClass = 'text-danger';
+            } else if (node.value >= 60) {
+                colorClass = 'text-warning';
+            } else if (node.value >= 40) {
+                colorClass = 'text-primary';
+            }
+            
+            div.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <input type="checkbox" class="topic-checkbox form-check-input me-2" id="topic_${node.id}" checked>
+                    <label class="form-check-label ${colorClass}" for="topic_${node.id}">${node.name}</label>
+                </div>
+            `;
+            
+            topicList.appendChild(div);
+        });
+        
+        // 为知识点选择框添加事件监听器
+        document.querySelectorAll('.topic-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                const topicId = parseInt(this.id.replace('topic_', ''));
+                console.log(`知识点 ${topicId} 状态变更为: ${isChecked ? '选中' : '未选中'}`);
+                
+                // 可以在这里添加立即更新图表的功能，或者保持现有的"应用过滤条件"按钮
+            });
+        });
+    }
+    
+    // 过滤知识点列表
+    function filterTopicList(searchText) {
+        document.querySelectorAll('.topic-item').forEach(item => {
+            const label = item.querySelector('label');
+            const topicName = label.textContent.toLowerCase();
+            
+            if (topicName.includes(searchText)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    // 生成学习路径建议
+    function generateLearningPathSuggestion(rules) {
+        // 这里实现一个简单的算法，找出置信度最高的几条规则，生成学习路径建议
+        const highConfidenceRules = rules.filter(rule => rule.confidence >= 0.8)
+                                       .sort((a, b) => b.confidence - a.confidence);
+        
+        if (highConfidenceRules.length > 0) {
+            // 取前3条高置信度规则
+            const topRules = highConfidenceRules.slice(0, Math.min(3, highConfidenceRules.length));
+            
+            // 生成建议文本
+            let suggestionText = "基于知识点关联分析，推荐的学习路径是：";
+            
+            topRules.forEach((rule, index) => {
+                suggestionText += `${index + 1}. 先学习 <strong>${rule.antecedent}</strong>，再学习 <strong>${rule.consequent}</strong>（置信度：${(rule.confidence * 100).toFixed(0)}%）`;
+                if (index < topRules.length - 1) {
+                    suggestionText += "；";
+                } else {
+                    suggestionText += "。";
+                }
+            });
+            
+            suggestionText += " 这个路径基于知识点间的依赖关系和最高的置信度值，可以帮助您更高效地掌握相关知识。";
+            
+            document.getElementById('learningPathSuggestion').innerHTML = suggestionText;
+            
+            // 这里可以添加路径可视化的代码
+            // renderOptimalLearningPath(topRules);
+        } else {
+            document.getElementById('learningPathSuggestion').innerHTML = "暂无高置信度的知识点关联规则，无法生成最优学习路径建议。";
+        }
+    }
+    
+    // 渲染知识点关联网络图
+    function renderTopicNetworkGraph(networkData, repulsionValue = 150) {
+        // 使用ECharts渲染知识点关联网络图
+        const graphContainer = document.getElementById('topicNetworkGraph');
+        
+        // 如果已存在图表实例，先销毁
+        if (window.topicNetworkChart) {
+            window.topicNetworkChart.dispose();
+        }
+        
+        // 初始化图表
+        window.topicNetworkChart = echarts.init(graphContainer);
+        
+        // 构建ECharts配置
+        const option = {
+            title: {
+                text: '知识点关联网络',
+                subtext: '节点大小表示知识点重要性，连线粗细表示关联强度',
+                left: 'center',
+                top: 10,
+                textStyle: {
+                    color: '#333',
+                    fontSize: 16
+                },
+                subtextStyle: {
+                    color: '#999',
+                    fontSize: 12
+                }
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: function(params) {
+                    if (params.dataType === 'node') {
+                        return `<div class="p-2">
+                                <div class="fw-bold mb-1">${params.data.name}</div>
+                                <div>重要性: <span class="badge bg-info">${params.data.value}</span></div>
+                                </div>`;
+                    } else {
+                        return `<div class="p-2">
+                                <div class="fw-bold mb-1">关联强度</div>
+                                <div>${params.data.source} → ${params.data.target}</div>
+                                <div>强度: <span class="badge bg-warning">${(params.data.value * 100).toFixed(0)}%</span></div>
+                                </div>`;
+                    }
+                }
+            },
+            legend: {
+                show: false
+            },
+            animationDuration: 1500,
+            animationEasingUpdate: 'quinticInOut',
+            series: [{
+                name: '知识点关联网络',
+                type: 'graph',
+                layout: 'force',
+                data: networkData.nodes.map(node => ({
+                    id: node.id,
+                    name: node.name,
+                    value: node.value,
+                    symbolSize: node.value / 10 + 15, // 节点大小
+                    itemStyle: {
+                        color: getTopicNodeColor(node.value)
+                    },
+                    label: {
+                        show: true,
+                        formatter: '{b}',
+                        fontSize: 12,
+                        position: 'right'
+                    }
+                })),
+                links: networkData.links.map(link => {
+                    // 获取节点的名称用于显示
+                    const sourceName = networkData.nodes[link.source].name;
+                    const targetName = networkData.nodes[link.target].name;
+                    return {
+                        source: link.source,
+                        target: link.target,
+                    value: link.value,
+                        // 存储节点名称用于tooltip显示
+                        sourceName: sourceName,
+                        targetName: targetName,
+                    lineStyle: {
+                        width: link.value * 5, // 线条粗细
+                        opacity: 0.6,
+                        curveness: 0.2,
+                        color: getTopicLinkColor(link.value)
+                    }
+                    };
+                }),
+                roam: true, // 允许缩放和平移
+                force: {
+                    repulsion: repulsionValue,
+                    gravity: 0.1,
+                    edgeLength: [50, 150],
+                    layoutAnimation: true
+                },
+                emphasis: {
+                    focus: 'adjacency',
+                    lineStyle: {
+                        width: 8,
+                        opacity: 0.9
+                    },
+                    label: {
+                        fontSize: 14,
+                        fontWeight: 'bold'
+                    }
+                }
+            }]
+        };
+        
+        // 修改tooltip配置以正确显示关联线的信息
+        option.tooltip.formatter = function(params) {
+            if (params.dataType === 'node') {
+                return `<div class="p-2">
+                        <div class="fw-bold mb-1">${params.data.name}</div>
+                        <div>重要性: <span class="badge bg-info">${params.data.value}</span></div>
+                        </div>`;
+            } else {
+                // 使用存储的节点名称
+                const sourceName = params.data.sourceName;
+                const targetName = params.data.targetName;
+                return `<div class="p-2">
+                        <div class="fw-bold mb-1">关联强度</div>
+                        <div>${sourceName} → ${targetName}</div>
+                        <div>强度: <span class="badge bg-warning">${(params.data.value * 100).toFixed(0)}%</span></div>
+                        </div>`;
+            }
+        };
+        
+        // 设置并渲染图表
+        window.topicNetworkChart.setOption(option);
+        
+        // 窗口大小变化时，调整图表大小
+        window.addEventListener('resize', function() {
+            if (window.topicNetworkChart) {
+                window.topicNetworkChart.resize();
+            }
+        });
+    }
+    
+    // 渲染知识点关联规则表格
+    function renderTopicRulesTable(rulesData) {
+        const tableBody = document.getElementById('topicRulesTableBody');
+        tableBody.innerHTML = '';
+        
+        rulesData.forEach((rule, index) => {
+            const row = document.createElement('tr');
+            row.classList.add('fade-in-row');
+            row.style.animationDelay = `${index * 0.1}s`;
+            
+            // 根据置信度设置颜色
+            let confidenceClass = 'text-success';
+            let confidenceBadgeClass = 'bg-success';
+            if (rule.confidence < 0.7) {
+                confidenceClass = 'text-warning';
+                confidenceBadgeClass = 'bg-warning';
+            } else if (rule.confidence < 0.8) {
+                confidenceClass = 'text-primary';
+                confidenceBadgeClass = 'bg-primary';
+            }
+            
+            row.innerHTML = `
+                <td>
+                    <span class="badge bg-info text-white">${rule.antecedent}</span>
+                </td>
+                <td>
+                    <span class="badge bg-secondary text-white">${rule.consequent}</span>
+                    <i class="fas fa-long-arrow-alt-right ms-1 me-1 text-muted"></i>
+                </td>
+                <td>
+                    <div class="progress" style="height: 8px; width: 100px">
+                        <div class="progress-bar bg-info" 
+                             style="width: ${rule.support * 100}%" 
+                             aria-valuenow="${rule.support * 100}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"></div>
+                    </div>
+                    <small class="d-block mt-1">${(rule.support * 100).toFixed(0)}%</small>
+                </td>
+                <td class="${confidenceClass}">
+                    <div class="progress" style="height: 8px; width: 100px">
+                        <div class="progress-bar ${confidenceBadgeClass}" 
+                             style="width: ${rule.confidence * 100}%" 
+                             aria-valuenow="${rule.confidence * 100}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"></div>
+                    </div>
+                    <strong class="d-block mt-1">${(rule.confidence * 100).toFixed(0)}%</strong>
+                </td>
+                <td>
+                    <p class="mb-0 small suggestion-text">${rule.suggestion}</p>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    // 渲染聚类结果函数实现
+    function renderClusteringChart(data) {
+        const ctx = document.getElementById('clusteringChart').getContext('2d');
+        
+        // 如果已存在图表实例，先销毁
+        if (chartInstances.clusteringChart) {
+            chartInstances.clusteringChart.destroy();
+        }
+        
+        // 创建新的散点图
+        chartInstances.clusteringChart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: data.map((cluster, index) => ({
+                    label: `群体 ${index + 1}`,
+                    data: cluster.points,
+                    backgroundColor: getClusterColor(index),
+                    borderColor: getClusterColor(index),
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 10,
+                        boxPadding: 5
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'PC1 (主成分1)',
+                            font: {
+                                size: 13,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'PC2 (主成分2)',
+                            font: {
+                                size: 13,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function renderClusterFeatures(clusterProfiles) {
+        const featuresContainer = document.getElementById('clusterFeatures');
+        featuresContainer.innerHTML = '';
+        
+        clusterProfiles.forEach((profile, index) => {
+            const profileDiv = document.createElement('div');
+            profileDiv.classList.add('cluster-profile-card', 'mb-2');
+            profileDiv.style.animationDelay = `${index * 0.1}s`;
+            
+            profileDiv.innerHTML = `
+                <div class="profile-header" style="border-left: 4px solid ${getClusterColor(profile.cluster_id - 1)}">
+                    <h6 class="text-primary mb-2">群体 ${profile.cluster_id} <span class="badge rounded-pill bg-secondary">${profile.size}人</span></h6>
+                </div>
+                <div class="profile-body">
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <span class="text-muted small">平均分数:</span> 
+                            <span class="badge" style="background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-color);">${profile.avg_score.toFixed(1)}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small">平均用时:</span> 
+                            <span class="badge" style="background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-color);">${profile.avg_time.toFixed(1)}秒</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-muted d-block mb-1 small">特征标签:</span> 
+                        <div class="feature-tags">
+                            ${profile.key_features.map(f => `<span class="badge rounded-pill bg-info m-1">${f}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-muted small">教学建议:</span>
+                        <p class="small mt-1 suggestion-text">${profile.recommendation}</p>
+                    </div>
+                </div>
+                ${index < clusterProfiles.length - 1 ? '<hr class="my-2">' : ''}
+            `;
+            
+            featuresContainer.appendChild(profileDiv);
+        });
+    }
+    
+    // 渲染聚类表格
+    function renderClusterTable(clusterDetails) {
+        const tableBody = document.getElementById('clusterTableBody');
+        tableBody.innerHTML = '';
+        
+        // 如果没有聚类数据
+        if (!clusterDetails || clusterDetails.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            没有找到聚类数据
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // 获取聚类配置文件数据
+        const clusterProfiles = window.clusterProfiles || [];
+        
+        clusterDetails.forEach((cluster, index) => {
+            // 找到对应的聚类配置文件
+            const profile = clusterProfiles.find(p => p.cluster_id === cluster.cluster_id) || {};
+            
+            const row = document.createElement('tr');
+            row.classList.add('fade-in-row');
+            row.style.animationDelay = `${index * 0.1}s`;
+            
+            // 确定典型特征
+            let typicalFeatures = profile.key_features ? profile.key_features.join(', ') : '数据待分析';
+            
+            row.innerHTML = `
+                <td>
+                    <span class="badge rounded-pill" style="background-color: ${getClusterColor(cluster.cluster_id - 1)}">
+                        群体 ${cluster.cluster_id}
+                    </span>
+                </td>
+                <td>${cluster.student_count || 0}</td>
+                <td>${profile.avg_score ? profile.avg_score.toFixed(1) : '-'}</td>
+                <td>${profile.avg_time ? profile.avg_time.toFixed(1) + '秒' : '-'}</td>
+                <td>${typicalFeatures}</td>
+                <td>
+                    <div class="suggestion-cell">
+                        ${profile.recommendation || '根据详细分析生成建议'}
+                    </div>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary view-cluster-detail" data-cluster-id="${cluster.cluster_id}">
+                        <i class="fas fa-search me-1"></i>查看详情
+                    </button>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+        
+        // 保存当前聚类配置文件数据供其他函数使用
+        window.clusterProfiles = clusterProfiles;
+        
+        // 添加查看详情按钮的点击事件
+        document.querySelectorAll('.view-cluster-detail').forEach(button => {
+            button.addEventListener('click', function() {
+                const clusterId = this.getAttribute('data-cluster-id');
+                showClusterDetail(clusterId);
+            });
+        });
+    }
+    
+    // 辅助函数 - 获取知识点节点颜色（根据节点值设置不同的颜色）
+    function getTopicNodeColor(value) {
+        // 根据节点值（重要性）返回不同的颜色
+        if (value >= 80) {
+            return '#e74c3c'; // 重要性高 - 红色
+        } else if (value >= 60) {
+            return '#f39c12'; // 重要性中高 - 橙色
+        } else if (value >= 40) {
+            return '#3498db'; // 重要性中等 - 蓝色
+        } else {
+            return '#27ae60'; // 重要性低 - 绿色
+        }
+    }
+    
+    // 辅助函数 - 获取知识点连接线颜色（根据连接强度设置不同的颜色）
+    function getTopicLinkColor(value) {
+        // 根据连接强度返回不同的颜色
+        if (value >= 0.8) {
+            return '#e74c3c'; // 关联强 - 红色
+        } else if (value >= 0.6) {
+            return '#f39c12'; // 关联中强 - 橙色
+        } else if (value >= 0.4) {
+            return '#3498db'; // 关联中等 - 蓝色
+        } else {
+            return '#95a5a6'; // 关联弱 - 灰色
+        }
+    }
+    
+    // 显示群体详情 - 新的内联实现
+    function showClusterDetail(clusterId) {
+        // 首先清理旧的详情视图和数据
+        cleanupDetailView();
+        
+        // 显示详情容器和加载状态
+        const detailContainer = document.getElementById('clusterDetailContainer');
+        const detailLoading = document.getElementById('clusterDetailLoading');
+        const detailContent = document.getElementById('clusterDetailContent');
+        
+        detailContainer.style.display = 'block';
+        detailLoading.style.display = 'block';
+        detailContent.style.display = 'none';
+        
+        // 设置标题和样式
+        const headerElement = document.getElementById('clusterDetailHeader');
+        headerElement.className = 'card-header';
+        headerElement.style.borderLeft = `4px solid ${getClusterColor(clusterId - 1)}`;
+        document.getElementById('clusterDetailTitle').textContent = `群体 ${clusterId} 详细分析`;
+        
+        // 平滑滚动到详情区域
+        detailContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // 从服务器获取群体详细数据
+        fetch(`/analysis/api/student_portrait/cluster_detail/${clusterId}`)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || '获取群体详情失败');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 隐藏加载状态，显示内容
+                detailLoading.style.display = 'none';
+                detailContent.style.display = 'block';
+                
+                // 渲染雷达图
+                renderClusterRadarChart(data.feature_values);
+                
+                // 填充群体摘要信息
+                document.getElementById('clusterSummarySize').textContent = data.summary.size;
+                document.getElementById('clusterSummaryScore').textContent = data.summary.avg_score.toFixed(1);
+                document.getElementById('clusterSummaryTime').textContent = data.summary.avg_time.toFixed(1);
+                document.getElementById('clusterSummarySubmissions').textContent = data.summary.avg_submissions.toFixed(1);
+                document.getElementById('clusterSummaryMastery').textContent = data.summary.knowledge_mastery.toFixed(1);
+                document.getElementById('clusterSummaryInsight').textContent = data.summary.insight;
+                
+                // 渲染干预策略
+                renderInterventionStrategies(data.interventions);
+                
+                // 渲染学生列表
+                renderClusterStudentsList(data.students);
+                
+                // 设置导出数据按钮
+                document.getElementById('exportClusterDataBtn').setAttribute('data-cluster-id', clusterId);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // 显示错误信息但保持内容区域可见
+                detailLoading.style.display = 'none';
+                detailContent.style.display = 'block';
+                
+                // 显示错误信息
+                document.getElementById('clusterStudentsList').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-3 text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            获取群体数据失败：${error.message}
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+    
+    // 清理详情视图
+    function cleanupDetailView() {
+        // 清理雷达图实例
+        if (window.clusterRadarChartInstance) {
+            window.clusterRadarChartInstance.destroy();
+            window.clusterRadarChartInstance = null;
+        }
+        
+        // 清空学生搜索框
+        document.getElementById('studentSearchInput').value = '';
+        
+        // 清空学生列表
+        document.getElementById('clusterStudentsList').innerHTML = '';
+        
+        // 清空干预策略
+        document.getElementById('interventionStrategies').innerHTML = '';
+        }
+        
+    // 渲染雷达图
+    function renderClusterRadarChart(featureValues) {
+        // 获取容器和画布
+        const container = document.getElementById('radarChartContainer');
+        
+        // 删除旧的canvas并创建新的，完全避免重用问题
+        const oldCanvas = document.getElementById('clusterRadarChart');
+        if (oldCanvas) {
+            oldCanvas.remove();
+        }
+        
+        // 创建新的canvas元素
+        const canvas = document.createElement('canvas');
+        canvas.id = 'clusterRadarChart';
+        container.appendChild(canvas);
+        
+        // 获取上下文并渲染图表
+        const ctx = canvas.getContext('2d');
+        
+        // 创建雷达图
+        window.clusterRadarChartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: Object.keys(featureValues),
+                datasets: [{
+                    label: '群体特征',
+                    data: Object.values(featureValues),
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    pointBackgroundColor: 'rgb(54, 162, 235)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(54, 162, 235)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                }
+            }
+        });
+    }
+    
+    // 渲染干预策略
+    function renderInterventionStrategies(interventions) {
+        const container = document.getElementById('interventionStrategies');
+        container.innerHTML = '';
+        
+        interventions.forEach(intervention => {
+            const strategyDiv = document.createElement('div');
+            strategyDiv.classList.add('intervention-item', 'mb-3');
+            
+            // 创建优先级徽章
+            let priorityBadgeClass = 'bg-secondary';
+            if (intervention.priority === '高') {
+                priorityBadgeClass = 'bg-warning';
+            } else if (intervention.priority === '中') {
+                priorityBadgeClass = 'bg-info';
+            } else if (intervention.priority === '低') {
+                priorityBadgeClass = 'bg-success';
+            }
+            
+            strategyDiv.innerHTML = `
+                <div class="d-flex align-items-start">
+                    <div class="strategy-icon me-3">
+                        <i class="fas fa-tasks text-primary"></i>
+                    </div>
+                    <div class="strategy-content">
+                        <div class="d-flex align-items-center mb-1">
+                            <h6 class="mb-0">${intervention.title}</h6>
+                            <span class="badge ${priorityBadgeClass} ms-2">优先级：${intervention.priority}</span>
+                        </div>
+                        <p class="mb-0">${intervention.description}</p>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(strategyDiv);
+        });
+    }
+    
+    // 渲染学生列表
+    function renderClusterStudentsList(students) {
+        const tableBody = document.getElementById('clusterStudentsList');
+        tableBody.innerHTML = '';
+        
+        if (students.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        暂无学生数据
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        students.forEach(student => {
+            const row = document.createElement('tr');
+        
+            // 用不同的背景颜色标识知识掌握度
+            let knowledgeMasteryClass = '';
+            const mastery = parseFloat(student.knowledge_mastery);
+            if (mastery >= 80) {
+                knowledgeMasteryClass = 'text-success fw-medium';
+            } else if (mastery >= 60) {
+                knowledgeMasteryClass = 'text-primary';
+            } else if (mastery >= 40) {
+                knowledgeMasteryClass = 'text-warning';
+            } else {
+                knowledgeMasteryClass = 'text-danger';
+            }
+            
+            row.innerHTML = `
+                <td>${student.student_id}</td>
+                <td>${student.name}</td>
+                <td>${student.avg_score}</td>
+                <td>${student.avg_time}秒</td>
+                <td>${student.submission_count}</td>
+                <td class="${knowledgeMasteryClass}">${student.knowledge_mastery}%</td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    // 导出群体数据
+    document.getElementById('exportClusterDataBtn').addEventListener('click', function() {
+        const clusterId = this.getAttribute('data-cluster-id');
+        if (!clusterId) return;
+        
+        // 发起导出请求
+        fetch(`/analysis/api/student_portrait/export_cluster/${clusterId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('导出失败');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // 创建下载链接
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `学生群体${clusterId}_数据分析.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                alert('导出数据失败，请重试');
+            });
+    });
+    
+    // 辅助函数
+    function getClusterColor(index) {
+        const colors = [
+            '#2196F3', // 蓝色
+            '#4CAF50', // 绿色
+            '#FFC107', // 黄色
+            '#F44336', // 红色
+            '#009688'  // 青色
+        ];
+        return colors[index % colors.length];
+    }
+    
+    // 添加学生搜索输入框的事件监听器
+    const studentSearchInput = document.getElementById('studentSearchInput');
+    studentSearchInput.addEventListener('keyup', function() {
+        const searchText = this.value.toLowerCase();
+        document.querySelectorAll('#clusterStudentsList tr').forEach(row => {
+            if (row.cells && row.cells.length >= 2) {
+                const studentId = row.cells[0].textContent.toLowerCase();
+                const studentName = row.cells[1].textContent.toLowerCase();
+                
+                if (studentId.includes(searchText) || studentName.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    });
+    
+    // 添加关闭详情按钮的事件监听器
+    document.getElementById('closeDetailBtn').addEventListener('click', function() {
+        document.getElementById('clusterDetailContainer').style.display = 'none';
+        cleanupDetailView();
+    });
+    
+    document.getElementById('closeDetailBtnBottom').addEventListener('click', function() {
+        document.getElementById('clusterDetailContainer').style.display = 'none';
+        cleanupDetailView();
+    });
+    
+    // 渲染预测图表
+    function renderPredictionChart(data) {
+        const ctx = document.getElementById('predictionChart').getContext('2d');
+        
+        // 如果已存在图表实例，先销毁
+        if (chartInstances.predictionChart) {
+            chartInstances.predictionChart.destroy();
+        }
+        
+        // 检查数据是否存在
+        if (!data || !data.dates || !data.historical || !data.predicted) {
+            console.error('预测图表数据不完整:', data);
+            return;
+        }
+        
+        // 准备历史数据和预测数据
+        const labels = data.dates;
+        const historicalData = data.historical;
+        const predictedData = data.predicted;
+        
+        // 找出历史数据和预测数据的分界点，确保数据存在且为数组
+        const splitIndex = Array.isArray(historicalData) ? 
+            historicalData.filter(value => value !== null).length : 0;
+        
+        // 创建新图表
+        chartInstances.predictionChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '历史数据',
+                        data: historicalData,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5
+                    },
+                    {
+                        label: '预测数据',
+                        data: predictedData,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 10,
+                        boxPadding: 5
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15
+                        }
+                    },
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                xMin: splitIndex - 1,
+                                xMax: splitIndex - 1,
+                                borderColor: 'rgba(169, 169, 169, 0.7)',
+                                borderWidth: 2,
+                                borderDash: [6, 6],
+                                label: {
+                                    display: true,
+                                    content: '预测开始',
+                                    position: 'start',
+                                    backgroundColor: 'rgba(169, 169, 169, 0.7)',
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: '日期',
+                            font: {
+                                size: 13,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: data.y_axis_label || '数值',
+                            font: {
+                                size: 13,
+                                weight: 'bold'
+                            }
+                        },
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 显示图表（淡入效果）
+        document.getElementById('predictionChart').style.opacity = 1;
+    }
+
+    // 渲染预测分析结果
+    function renderPredictionAnalysis(analysisData) {
+        const container = document.getElementById('predictionAnalysis');
+        
+        // 检查数据是否存在
+        if (!analysisData) {
+            console.error('预测分析数据不存在');
+            return;
+        }
+        
+        // 构建HTML内容
+        let html = `
+            <div class="alert ${analysisData.trend_direction === 'up' ? 'alert-success' : 'alert-warning'} mb-4">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-${analysisData.trend_direction === 'up' ? 'chart-line' : 'exclamation-triangle'} fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="alert-heading mb-1">${analysisData.title || '预测分析'}</h5>
+                        <p class="mb-0">${analysisData.summary || '无可用分析摘要'}</p>
+                    </div>
+                </div>
+            </div>
+            <h6 class="mb-3"><i class="fas fa-chart-bar me-2"></i>详细分析</h6>
+            <p>${analysisData.detailed_analysis || '无详细分析内容'}</p>
+        `;
+        
+        // 如果有关键发现，添加到分析结果中
+        if (analysisData.key_findings && analysisData.key_findings.length > 0) {
+            html += `<h6 class="mb-2 mt-4"><i class="fas fa-lightbulb me-2"></i>关键发现</h6>
+            <ul class="key-findings-list">`;
+            
+            analysisData.key_findings.forEach(finding => {
+                html += `<li>${finding}</li>`;
+            });
+            
+            html += `</ul>`;
+        }
+        
+        // 如果有建议，添加到分析结果中
+        if (analysisData.recommendations && analysisData.recommendations.length > 0) {
+            html += `<h6 class="mb-2 mt-4"><i class="fas fa-tasks me-2"></i>建议</h6>
+            <ul class="recommendations-list">`;
+            
+            analysisData.recommendations.forEach(recommendation => {
+                html += `<li>${recommendation}</li>`;
+            });
+            
+            html += `</ul>`;
+        }
+        
+        // 设置HTML内容
+        container.innerHTML = html;
+    }
+
+    // 渲染干预建议表格
+    function renderInterventionTable(interventions) {
+        const tableBody = document.getElementById('interventionTableBody');
+        if (!tableBody) {
+            console.error('找不到干预建议表格元素');
+            return;
+        }
+        
+        tableBody.innerHTML = '';
+        
+        // 检查干预数据是否存在
+        if (!interventions || !Array.isArray(interventions) || interventions.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-3">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            暂无干预建议数据
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        interventions.forEach((intervention, index) => {
+            const row = document.createElement('tr');
+            row.classList.add('fade-in-row');
+            row.style.animationDelay = `${index * 0.1}s`;
+            
+            // 根据优先级设置不同的样式
+            let priorityClass = '';
+            let priorityBadge = '';
+            
+            const priority = intervention.priority ? intervention.priority.toLowerCase() : '';
+            
+            switch (priority) {
+                case 'high':
+                case '高':
+                    priorityClass = 'text-danger';
+                    priorityBadge = 'bg-danger';
+                    break;
+                case 'medium':
+                case '中':
+                    priorityClass = 'text-warning';
+                    priorityBadge = 'bg-warning';
+                    break;
+                case 'low':
+                case '低':
+                    priorityClass = 'text-success';
+                    priorityBadge = 'bg-success';
+                    break;
+                default:
+                    priorityClass = 'text-secondary';
+                    priorityBadge = 'bg-secondary';
+            }
+            
+            row.innerHTML = `
+                <td>
+                    <span class="badge bg-primary">${intervention.group || '未分类'}</span>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-${intervention.trend === 'up' ? 'arrow-up text-success' : 'arrow-down text-danger'} me-2"></i>
+                        <span>${intervention.performance || '未知表现'}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="intervention-content">${intervention.suggestion || '无建议'}</div>
+                </td>
+                <td class="${priorityClass}">
+                    <span class="badge ${priorityBadge}">${intervention.priority || '未分级'}</span>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+    }
+
+    // 渲染特征重要性图表
+    function renderFeatureImportanceChart(featureData) {
+        const ctx = document.getElementById('featureImportanceChart').getContext('2d');
+        
+        // 检查数据是否存在
+        if (!featureData || !Array.isArray(featureData) || featureData.length === 0) {
+            console.error('特征重要性数据不存在或格式不正确');
+            return;
+        }
+        
+        // 如果已存在图表实例，先销毁
+        if (chartInstances.featureImportanceChart) {
+            chartInstances.featureImportanceChart.destroy();
+        }
+        
+        // 准备数据
+        const labels = featureData.map((item, index) => item.feature || `特征${index+1}`);
+        const data = featureData.map(item => item.importance || 0);
+        
+        // 创建新图表
+        chartInstances.featureImportanceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '特征重要性',
+                    data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `重要性: ${context.raw.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: '重要性值',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* 共享样式 */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .gradient-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: none;
+        border-radius: 10px;
+    }
+    
+    .gradient-blue-light {
+        background: linear-gradient(135deg, #e8f4fd 0%, #d1e6fa 100%);
+        color: #0d6efd;
+    }
+    
+    .gradient-green-light {
+        background: linear-gradient(135deg, #e8f8ee 0%, #d1fad8 100%);
+        color: #198754;
+    }
+    
+    .gradient-purple-light {
+        background: linear-gradient(135deg, #f3e8fd 0%, #e5d1fa 100%);
+        color: #1a1a1a;
+    }
+    
+    .gradient-teal-light {
+        background: linear-gradient(135deg, #e8fcfc 0%, #d1f5fa 100%);
+        color: #20c997;
+    }
+    
+    .gradient-blue {
+        background-image: linear-gradient(to right, #4481eb, #04befe);
+        color: white;
+    }
+    
+    .gradient-green {
+        background-image: linear-gradient(to right, #0ba360, #3cba92);
+        color: white;
+    }
+    
+    .gradient-teal {
+        background-image: linear-gradient(to right, #11998e, #38ef7d);
+        color: white;
+    }
+    
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+    
+    .gradient-teal {
+        background-image: linear-gradient(to right, #11998e, #38ef7d);
+    }
+    
+    /* 模块标签样式 */
+    .custom-nav-pills .nav-link {
+        color: #495057;
+        border-radius: 6px;
+        padding: 10px 15px;
+        margin-bottom: 8px;
+        transition: all 0.3s;
+        border-left: 3px solid transparent;
+    }
+    
+    .custom-nav-pills .nav-link.active {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+        border-left: 3px solid #0d6efd;
+        font-weight: bold;
+    }
+    
+    .custom-nav-pills .nav-link:hover:not(.active) {
+        background-color: #f0f0f0;
+        transform: translateX(3px);
+    }
+    
+    /* 聚类特征卡片样式 */
+    .cluster-features-container {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .cluster-features-scroll {
+        padding-right: 5px;
+    }
+    
+    .cluster-profile-card {
+        animation: fadeIn 0.5s ease-in-out;
+        animation-fill-mode: both;
+    }
+    
+    .profile-header {
+        padding: 8px 12px;
+        border-left: 4px solid #0d6efd;
+        background-color: rgba(240, 242, 245, 0.5);
+        border-radius: 4px;
+    }
+    
+    .profile-body {
+        padding: 12px;
+    }
+    
+    .feature-tags {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .suggestion-text {
+        color: #6c757d;
+        line-height: 1.4;
+    }
+    
+    /* 学习风格相关样式 */
+    .style-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-right: 5px;
+    }
+    
+    .visual-style {
+        background-color: rgba(33, 150, 243, 0.15);
+        color: #2196f3;
+    }
+    
+    .verbal-style {
+        background-color: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+    }
+    
+    .active-style {
+        background-color: rgba(76, 175, 80, 0.15);
+        color: #4caf50;
+    }
+    
+    .reflective-style {
+        background-color: rgba(244, 67, 54, 0.15);
+        color: #f44336;
+    }
+    
+    .sensing-style {
+        background-color: rgba(13, 202, 240, 0.15);
+        color: #0dcaf0;
+    }
+    
+    .intuitive-style {
+        background-color: rgba(108, 117, 125, 0.15);
+        color: #6c757d;
+    }
+    
+    .sequential-style {
+        background-color: rgba(111, 66, 193, 0.15);
+        color: #6f42c1;
+    }
+    
+    .global-style {
+        background-color: rgba(253, 126, 20, 0.15);
+        color: #fd7e14;
+    }
+    
+    .bg-visual {
+        background-color: #2196f3 !important;
+    }
+    
+    .bg-verbal {
+        background-color: #ffc107 !important;
+    }
+    
+    .bg-active {
+        background-color: #4caf50 !important;
+    }
+    
+    .bg-reflective {
+        background-color: #f44336 !important;
+    }
+    
+    .bg-sensing {
+        background-color: #0dcaf0 !important;
+    }
+    
+    .bg-intuitive {
+        background-color: #6c757d !important;
+    }
+    
+    .bg-sequential {
+        background-color: #6f42c1 !important;
+    }
+    
+    .bg-global {
+        background-color: #fd7e14 !important;
+    }
+    
+    .suggestion-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+    }
+    
+    .suggestion-card {
+        border: 1px solid #dee2e6;
+        border-top: 3px solid #0d6efd;
+        border-radius: 6px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        background-color: var(--bg-elevated, #1C2333);
+    }
+    
+    .suggestion-list {
+        padding-left: 20px;
+        margin-top: 10px;
+        margin-bottom: 0;
+    }
+    
+    .suggestion-list li {
+        margin-bottom: 6px;
+        line-height: 1.4;
+    }
+    
+    .style-tag {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    /* 知识点网络图样式 */
+    #topicNetworkGraph {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    /* 预测结果样式 */
+    .prediction-point {
+        background-color: rgba(13, 110, 253, 0.2);
+        border: 2px solid #0d6efd;
+        border-radius: 50%;
+    }
+    
+    /* 聚类详情样式 */
+    .student-card {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+    }
+    
+    .student-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .student-stat {
+        display: flex;
+        align-items: center;
+        margin-top: 8px;
+    }
+    
+    .student-stat-icon {
+        min-width: 24px;
+        text-align: center;
+        margin-right: 8px;
+    }
+    
+    .feature-basis-list {
+        list-style-type: none;
+        padding-left: 0;
+        margin-bottom: 0;
+    }
+    
+    .feature-basis-list li {
+        padding: 4px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.85rem;
+    }
+    
+    .feature-basis-list li::before {
+        content: "•";
+        color: #6c757d;
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: 0;
+    }
+    
+    .text-purple {
+        color: #6f42c1 !important;
+    }
+    
+    .text-orange {
+        color: #fd7e14 !important;
+    }
+    
+    .bg-purple {
+        background-color: #6f42c1 !important;
+        }
+    
+    .bg-orange {
+        background-color: #fd7e14 !important;
+    }
+    
+    /* 预测结果样式 */
+    .prediction-point {
+        background-color: rgba(13, 110, 253, 0.2);
+        border: 2px solid #0d6efd;
+        border-radius: 50%;
+    }
+    
+    /* 预测分析区域样式 */
+    #predictionAnalysis {
+        transition: opacity 0.5s ease;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+    
+    #predictionAnalysis p {
+        margin-bottom: 10px;
+        line-height: 1.6;
+    }
+    
+    #predictionAnalysis ul {
+        margin-bottom: 0;
+    }
+    
+    #predictionAnalysis li {
+        margin-bottom: 8px;
+    }
+    
+    /* 预测干预表格样式 */
+    .intervention-content {
+        max-width: 350px;
+        line-height: 1.5;
+    }
+    
+    .fade-in-row {
+        animation: fadeIn 0.5s ease-in-out;
+        animation-fill-mode: both;
+    }
+    
+    /* 预测图表样式 */
+    #predictionChart {
+            opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+    
+    .prediction-marker {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        background-color: rgba(255, 99, 132, 0.05);
+        z-index: 0;
+        pointer-events: none;
+    }
+    
+    /* 知识点关联分析样式 */
+    .topic-list {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 8px;
+        background-color: #f8f9fa;
+    }
+    
+    .topic-item {
+        padding: 6px 8px;
+        border-bottom: 1px solid #eee;
+        transition: all 0.2s;
+    }
+    
+    .topic-item:last-child {
+        border-bottom: none;
+    }
+    
+    .topic-item:hover {
+        background-color: #f1f1f1;
+    }
+    
+    .btn-outline-teal {
+        color: #20c997;
+        border-color: #20c997;
+    }
+    
+    .btn-outline-teal:hover {
+        color: #fff;
+        background-color: #20c997;
+        border-color: #20c997;
+    }
+    
+    .btn-gradient-teal {
+        background-image: linear-gradient(to right, #11998e, #38ef7d);
+        color: white;
+        border: none;
+        transition: all 0.3s;
+    }
+    
+    .btn-gradient-teal:hover {
+        background-image: linear-gradient(to right, #0e877d, #32d46e);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    #topicNetworkGraph {
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    
+    #optimalLearningPath {
+        min-height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* 知识点标签样式 */
+    .topic-tag {
+        display: inline-block;
+        padding: 4px 10px;
+        margin: 4px;
+        border-radius: 16px;
+        font-size: 0.85rem;
+        background-color: #e9ecef;
+        color: #495057;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .topic-tag:hover {
+        background-color: #20c997;
+        color: white;
+    }
+    
+    .topic-tag.active {
+        background-color: #20c997;
+        color: white;
+        font-weight: 500;
+    }
+</style>
+{% endblock %} 

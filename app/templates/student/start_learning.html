@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+
+{% block title %}开始学习 - {{ student.username }}{% endblock %}
+
+{% block styles %}
+<style>
+    .learning-container {
+        min-height: calc(100vh - 72px);
+        background: linear-gradient(135deg, #0D1117 0%, #161B22 100%);
+    }
+    
+    .learning-card {
+        background: rgba(28, 33, 40, 0.95);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .learning-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(67, 100, 247, 0.15);
+        border-color: rgba(67, 100, 247, 0.4);
+    }
+    
+    .topic-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background: rgba(67, 100, 247, 0.1);
+        border: 1px solid rgba(67, 100, 247, 0.3);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .topic-badge:hover {
+        background: rgba(67, 100, 247, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .topic-badge.active {
+        background: rgba(67, 100, 247, 0.3);
+        border-color: rgba(67, 100, 247, 0.6);
+    }
+    
+    .progress-ring {
+        transform: rotate(-90deg);
+    }
+    
+    .progress-ring-circle {
+        transition: stroke-dashoffset 1s ease;
+        stroke-linecap: round;
+    }
+    
+    .start-btn {
+        width: 100%;
+        padding: 1.25rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #4364F7 0%, #6FB1FC 100%);
+        border: none;
+        border-radius: 16px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(67, 100, 247, 0.35);
+    }
+    
+    .start-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(67, 100, 247, 0.45);
+    }
+    
+    .start-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .difficulty-tag {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    
+    .difficulty-easy {
+        background: rgba(46, 160, 67, 0.15);
+        color: #2EA043;
+    }
+    
+    .difficulty-medium {
+        background: rgba(210, 153, 34, 0.15);
+        color: #D29922;
+    }
+    
+    .difficulty-hard {
+        background: rgba(248, 81, 73, 0.15);
+        color: #F85149;
+    }
+    
+    .learning-path-item {
+        position: relative;
+        padding-left: 2rem;
+        padding-bottom: 1.5rem;
+    }
+    
+    .learning-path-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.25rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #4364F7;
+        border: 3px solid rgba(67, 100, 247, 0.2);
+    }
+    
+    .learning-path-item::after {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 1.25rem;
+        width: 2px;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(67, 100, 247, 0.5), rgba(67, 100, 247, 0.1));
+    }
+    
+    .learning-path-item:last-child::after {
+        display: none;
+    }
+    
+    .estimate-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.85rem;
+        color: #8B949E;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="learning-container py-6">
+    <div class="container max-w-4xl mx-auto">
+        <!-- 页面标题 -->
+        <div class="text-center mb-8 fade-in">
+            <h1 class="text-3xl font-bold text-white mb-3">
+                <i class="fas fa-play-circle text-primary me-3"></i>
+                开始学习
+            </h1>
+            <p class="text-gray-400">选择一个知识点，开始您的学习之旅</p>
+        </div>
+
+        <!-- 学习路径概览 -->
+        <div class="learning-card mb-6 fade-in" style="animation-delay: 0.1s;">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                <i class="fas fa-route me-2 text-primary"></i>
+                智能学习路径
+            </h3>
+            <div class="row g-4">
+                {% for item in learning_path %}
+                <div class="col-md-4">
+                    <div class="learning-path-item">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="font-semibold text-white">{{ item.step }}</span>
+                            <span class="difficulty-tag difficulty-{{ item.difficulty }}">{{ item.difficulty_text }}</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">{{ item.description }}</p>
+                        <div class="estimate-time mt-2">
+                            <i class="fas fa-clock"></i>
+                            {{ item.estimate_time }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 知识点选择 -->
+        <div class="learning-card mb-6 fade-in" style="animation-delay: 0.2s;">
+            <div class="d-flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">
+                    <i class="fas fa-book-open me-2 text-primary"></i>
+                    选择学习知识点
+                </h3>
+                <span class="text-sm text-gray-400">已选择 {{ selected_topics.length }} 个</span>
+            </div>
+            
+            <div class="flex flex-wrap gap-3" id="topicBadges">
+                {% for topic in available_topics %}
+                <div 
+                    class="topic-badge {% if topic.selected %}active{% endif %}"
+                    data-topic="{{ topic.name }}"
+                    onclick="toggleTopic('{{ topic.name }}')"
+                >
+                    <span class="text-white font-medium">{{ topic.name }}</span>
+                    <span class="text-gray-400 text-sm">{{ topic.mastery }}%</span>
+                    <i class="fas {% if topic.selected %}fa-check-circle text-success{% else %}fa-circle-o{% endif %}"></i>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 学习设置 -->
+        <div class="learning-card mb-6 fade-in" style="animation-delay: 0.3s;">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                <i class="fas fa-sliders-h me-2 text-primary"></i>
+                学习设置
+            </h3>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label text-gray-300 mb-2">学习时长</label>
+                    <select class="form-select bg-dark border border-gray-700 text-white rounded-lg p-2" id="studyDuration">
+                        <option value="25">25 分钟 (番茄钟)</option>
+                        <option value="45" selected>45 分钟</option>
+                        <option value="60">60 分钟</option>
+                        <option value="90">90 分钟</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-gray-300 mb-2">题目数量</label>
+                    <select class="form-select bg-dark border border-gray-700 text-white rounded-lg p-2" id="questionCount">
+                        <option value="5">5 题</option>
+                        <option value="10" selected>10 题</option>
+                        <option value="15">15 题</option>
+                        <option value="20">20 题</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-gray-300 mb-2">难度偏好</label>
+                    <select class="form-select bg-dark border border-gray-700 text-white rounded-lg p-2" id="difficultyPref">
+                        <option value="mixed" selected>混合难度</option>
+                        <option value="easy">偏简单</option>
+                        <option value="medium">中等难度</option>
+                        <option value="hard">偏困难</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-gray-300 mb-2">学习模式</label>
+                    <select class="form-select bg-dark border border-gray-700 text-white rounded-lg p-2" id="studyMode">
+                        <option value="practice" selected>练习模式</option>
+                        <option value="exam">考试模式</option>
+                        <option value="review">复习模式</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 开始学习按钮 -->
+        <div class="text-center fade-in" style="animation-delay: 0.4s;">
+            <button 
+                class="start-btn" 
+                id="startLearningBtn"
+                onclick="startLearning()"
+            >
+                <i class="fas fa-play-circle me-2"></i>
+                开始学习
+            </button>
+            <p class="text-gray-500 text-sm mt-3">预计学习时长: <span id="estimatedTime">45分钟</span></p>
+        </div>
+
+        <!-- 今日学习进度 -->
+        {% if today_progress %}
+        <div class="learning-card mt-6 fade-in" style="animation-delay: 0.5s;">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                <i class="fas fa-calendar-check me-2 text-success"></i>
+                今日学习进度
+            </h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="flex items-center justify-center" style="height: 150px;">
+                        <svg class="progress-ring" width="120" height="120">
+                            <circle
+                                class="progress-ring-circle"
+                                stroke="#161B22"
+                                stroke-width="12"
+                                fill="transparent"
+                                r="50"
+                                cx="60"
+                                cy="60"
+                            />
+                            <circle
+                                class="progress-ring-circle"
+                                stroke="url(#progressGradient)"
+                                stroke-width="12"
+                                fill="transparent"
+                                r="50"
+                                cx="60"
+                                cy="60"
+                                stroke-dasharray="314"
+                                stroke-dashoffset="{{ 314 - (314 * today_progress.percentage / 100) }}"
+                            />
+                            <defs>
+                                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#4364F7"/>
+                                    <stop offset="100%" style="stop-color:#6FB1FC"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div style="position: absolute; text-align: center;">
+                            <div class="text-2xl font-bold text-white">{{ today_progress.percentage }}%</div>
+                            <div class="text-sm text-gray-400">完成度</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="h-full flex flex-col justify-center">
+                        <div class="mb-2">
+                            <span class="text-gray-400 text-sm">已完成任务</span>
+                            <div class="text-xl font-bold text-white">{{ today_progress.completed }} / {{ today_progress.total }}</div>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-gray-400 text-sm">学习时长</span>
+                            <div class="text-xl font-bold text-white">{{ today_progress.minutes_studied }} 分钟</div>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 text-sm">连续学习</span>
+                            <div class="text-xl font-bold text-success">{{ today_progress.streak }} 天</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<input type="hidden" id="selectedTopicsInput" value='{{ selected_topics | tojson }}'>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let selectedTopics = {{ selected_topics | tojson | safe }} || [];
+    
+    // 切换知识点选择
+    function toggleTopic(topicName) {
+        const index = selectedTopics.indexOf(topicName);
+        const badge = document.querySelector(`[data-topic="${topicName}"]`);
+        
+        if (index > -1) {
+            selectedTopics.splice(index, 1);
+            badge.classList.remove('active');
+            badge.querySelector('i').className = 'fas fa-circle-o';
+        } else {
+            if (selectedTopics.length >= 3) {
+                showToast('最多选择3个知识点', 'warning');
+                return;
+            }
+            selectedTopics.push(topicName);
+            badge.classList.add('active');
+            badge.querySelector('i').className = 'fas fa-check-circle text-success';
+        }
+        
+        updateSelectedCount();
+        updateEstimatedTime();
+    }
+    
+    // 更新选择数量
+    function updateSelectedCount() {
+        const countEl = document.querySelector('.text-gray-400 span');
+        if (countEl) {
+            countEl.textContent = selectedTopics.length;
+        }
+    }
+    
+    // 更新预计时间
+    function updateEstimatedTime() {
+        const duration = document.getElementById('studyDuration').value;
+        const topics = selectedTopics.length || 1;
+        const estimated = duration * topics;
+        const timeEl = document.getElementById('estimatedTime');
+        if (timeEl) {
+            timeEl.textContent = estimated + '分钟';
+        }
+    }
+    
+    // 开始学习
+    function startLearning() {
+        if (selectedTopics.length === 0) {
+            showToast('请至少选择一个知识点', 'warning');
+            return;
+        }
+        
+        const btn = document.getElementById('startLearningBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>准备中...';
+        
+        const data = {
+            topics: selectedTopics,
+            duration: document.getElementById('studyDuration').value,
+            questionCount: document.getElementById('questionCount').value,
+            difficulty: document.getElementById('difficultyPref').value,
+            mode: document.getElementById('studyMode').value
+        };
+        
+        fetch('/student/api/start-learning', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                window.location.href = '/quiz/practice?session_id=' + result.session_id;
+            } else {
+                showToast(result.message || '开始学习失败', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play-circle me-2"></i>开始学习';
+            }
+        })
+        .catch(error => {
+            console.error('开始学习失败:', error);
+            showToast('网络错误，请重试', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-play-circle me-2"></i>开始学习';
+        });
+    }
+    
+    // 监听设置变化
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('studyDuration').addEventListener('change', updateEstimatedTime);
+        updateEstimatedTime();
+    });
+</script>
+{% endblock %}

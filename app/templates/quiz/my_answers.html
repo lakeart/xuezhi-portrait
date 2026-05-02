@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}我的答题记录 - 学智画像{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+.page-header {
+    background: linear-gradient(135deg, #0052D4 0%, #4364F7 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+.stat-card {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: transform 0.2s;
+}
+.stat-card:hover { transform: translateY(-3px); }
+.stat-card .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+.stat-card .stat-label {
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+.topic-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.topic-card .topic-name { font-weight: 600; }
+.accuracy-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border-color);
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+.accuracy-bar .fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+.answer-table { font-size: 0.9rem; }
+.answer-table th {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.answer-table td {
+    vertical-align: middle;
+    border-color: var(--border-color);
+}
+.tag-difficulty {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+.tag-easy { background: rgba(0,201,167,0.15); color: #00C9A7; }
+.tag-medium { background: rgba(255,140,66,0.15); color: #FF8C42; }
+.tag-hard { background: rgba(255,107,107,0.15); color: #FF6B6B; }
+.score-pass { color: #00C9A7; font-weight: 600; }
+.score-fail { color: #FF6B6B; font-weight: 600; }
+.progress-chart-container { height: 200px; }
+.topic-chart-container { height: 250px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 页面头部 -->
+    <div class="page-header">
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+                <i class="fas fa-history"></i>
+            </div>
+            <div>
+                <h4 class="mb-1" style="font-weight:700;">我的答题记录</h4>
+                <p class="mb-0" style="opacity:0.8;">查看所有答题历史与分析</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_submissions }}</div>
+                <div class="stat-label">总答题数</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ "%.1f"|format(stats.avg_score) }}</div>
+                <div class="stat-label">平均得分</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.perfect_count }}</div>
+                <div class="stat-label">满分次数</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ "%.0f"|format(stats.avg_time) }}s</div>
+                <div class="stat-label">平均用时</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 知识点分析 -->
+    <div class="card mb-4" style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;">
+        <div class="card-header" style="background:transparent;border-color:var(--border-color);">
+            <h5 class="mb-0"><i class="fas fa-chart-pie me-2" style="color:var(--secondary-color);"></i>知识点掌握分析</h5>
+        </div>
+        <div class="card-body">
+            {% if topic_data %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="topic-chart-container" id="topicMasteryChart"></div>
+                </div>
+                <div class="col-md-6">
+                    {% for t in topic_data %}
+                    <div class="topic-card">
+                        <div>
+                            <div class="topic-name">{{ t.topic }}</div>
+                            <small class="text-muted">{{ t.count }}次答题 | 均分{{ "%.1f"|format(t.avg_score) }}</small>
+                            <div class="accuracy-bar">
+                                {% set color = "#00C9A7" if t.accuracy >= 70 else "#FF8C42" if t.accuracy >= 40 else "#FF6B6B" %}
+                                <div class="fill" style="width:{{ t.accuracy }}%;background:{{ color }};"></div>
+                            </div>
+                        </div>
+                        <div style="font-size:1.25rem;font-weight:700;color:{{ color }};">{{ t.accuracy }}%</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-inbox" style="font-size:3rem;opacity:0.4;"></i>
+                <p class="mt-3">暂无答题数据</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 答题记录列表 -->
+    <div class="card" style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;">
+        <div class="card-header" style="background:transparent;border-color:var(--border-color);">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="mb-0"><i class="fas fa-list me-2" style="color:#4364F7;"></i>答题记录</h5>
+                <div class="d-flex gap-2">
+                    <select id="filterTopic" class="form-select form-select-sm" style="width:auto;">
+                        <option value="">所有知识点</option>
+                    </select>
+                    <select id="filterDifficulty" class="form-select form-select-sm" style="width:auto;">
+                        <option value="">所有难度</option>
+                        <option value="easy">简单</option>
+                        <option value="medium">中等</option>
+                        <option value="hard">困难</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table answer-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>知识点</th>
+                            <th>题型</th>
+                            <th>难度</th>
+                            <th>得分</th>
+                            <th>用时</th>
+                            <th>答题时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="answersBody">
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-spinner fa-spin me-2"></i>加载中...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav class="mt-3" id="paginationNav">
+                <ul class="pagination pagination-sm justify-content-center mb-0"></ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// ====== 知识点掌握度图表 ======
+{% if topic_data %}
+(function() {
+    const chartDom = document.getElementById('topicMasteryChart');
+    if (!chartDom) return;
+    const chart = echarts.init(chartDom);
+    const topics = {{ topic_data|tojson }};
+    chart.setOption({
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+        xAxis: { type: 'category', data: topics.map(t => t.topic),
+            axisLabel: { color: '#9ca3af', fontSize: 11 }, axisLine: { show: false },
+            axisTick: { show: false } },
+        yAxis: { type: 'value', max: 100,
+            axisLabel: { color: '#9ca3af', fontSize: 11, formatter: '{value}%' },
+            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        series: [{
+            type: 'bar',
+            data: topics.map(t => ({
+                value: t.accuracy,
+                itemStyle: {
+                    color: t.accuracy >= 70 ? '#00C9A7' :
+                           t.accuracy >= 40 ? '#FF8C42' : '#FF6B6B',
+                    borderRadius: [4,4,0,0]
+                }
+            })),
+            barWidth: '40%',
+            label: { show: true, position: 'top', formatter: '{c}%',
+                     color: '#9ca3af', fontSize: 11 }
+        }]
+    });
+    window.addEventListener('resize', () => chart.resize());
+})();
+{% endif %}
+
+// ====== 答题记录列表 ======
+let currentPage = 1;
+const perPage = 10;
+
+function loadAnswers(page, topic, difficulty) {
+    page = page || 1;
+    topic = topic || document.getElementById('filterTopic').value;
+    difficulty = difficulty || document.getElementById('filterDifficulty').value;
+    currentPage = page;
+
+    let url = `/quiz/api/my-answers?page=${page}&per_page=${perPage}`;
+    if (topic) url += `&topic=${encodeURIComponent(topic)}`;
+    if (difficulty) url += `&difficulty=${encodeURIComponent(difficulty)}`;
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.getElementById('answersBody');
+            if (!data.data || data.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="fas fa-inbox me-2"></i>暂无答题记录</td></tr>';
+                document.querySelector('#paginationNav ul').innerHTML = '';
+                return;
+            }
+            tbody.innerHTML = data.data.map(a => {
+                const diffClass = a.difficulty === 'easy' ? 'tag-easy' : a.difficulty === 'hard' ? 'tag-hard' : 'tag-medium';
+                const passClass = a.is_correct ? 'score-pass' : 'score-fail';
+                const passIcon = a.is_correct ? 'fa-check-circle' : 'fa-times-circle';
+                return `<tr>
+                    <td>${a.topic || '-'}</td>
+                    <td>${a.style || '-'}</td>
+                    <td><span class="tag-difficulty ${diffClass}">${a.difficulty || '未知'}</span></td>
+                    <td class="${passClass}"><i class="fas ${passIcon} me-1"></i>${a.score}分</td>
+                    <td>${a.time_consumed || '-'}s</td>
+                    <td><small>${a.submit_time || '-'}</small></td>
+                    <td><a href="/quiz/submission/${a.id}" class="btn btn-sm btn-outline-info">详情</a></td>
+                </tr>`;
+            }).join('');
+
+            // 分页
+            const pag = data.pagination || {};
+            const totalPages = pag.total_pages || 1;
+            const ul = document.querySelector('#paginationNav ul');
+            ul.innerHTML = '';
+            if (totalPages <= 1) return;
+            for (let p = 1; p <= totalPages; p++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${p === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" data-page="${p}">${p}</a>`;
+                li.querySelector('a').addEventListener('click', e => {
+                    e.preventDefault();
+                    loadAnswers(parseInt(e.target.dataset.page));
+                });
+                ul.appendChild(li);
+            }
+        })
+        .catch(() => {
+            document.getElementById('answersBody').innerHTML =
+                '<tr><td colspan="7" class="text-center text-danger py-4"><i class="fas fa-exclamation-circle me-2"></i>加载失败，请刷新重试</td></tr>';
+        });
+}
+
+// 筛选变化时重新加载
+document.getElementById('filterTopic').addEventListener('change', () => loadAnswers(1));
+document.getElementById('filterDifficulty').addEventListener('change', () => loadAnswers(1));
+
+// 初始化：加载筛选选项和数据
+fetch('/quiz/api/my-answers')
+    .then(r => r.json())
+    .then(data => {
+        const opts = data.filter_options || {};
+        if (opts.topics) {
+            const sel = document.getElementById('filterTopic');
+            opts.topics.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                sel.appendChild(opt);
+            });
+        }
+    })
+    .catch(() => {});
+
+loadAnswers(1);
+</script>
+{% endblock %}

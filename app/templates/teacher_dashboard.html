@@ -1,0 +1,648 @@
+{% extends "base.html" %}
+
+{% block title %}教师仪表盘 - 学智画像{% endblock %}
+
+{% block styles %}
+<style>
+    /* 科技风格背景 */
+    .teacher-dashboard-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #1C2128 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* 动态网格背景 */
+    .dashboard-grid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+    }
+
+    /* 渐变光晕 */
+    .dashboard-glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.3;
+        animation: glowPulse 8s ease-in-out infinite;
+    }
+
+    .glow-left {
+        width: 400px;
+        height: 400px;
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        top: -100px;
+        left: -100px;
+    }
+
+    .glow-right {
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(135deg, #A371F7, #6FB1FC);
+        bottom: -50px;
+        right: -50px;
+        animation-delay: -4s;
+    }
+
+    @keyframes glowPulse {
+        0%, 100% { transform: scale(1); opacity: 0.3; }
+        50% { transform: scale(1.1); opacity: 0.4; }
+    }
+
+    /* 主内容区 */
+    .dashboard-content {
+        position: relative;
+        z-index: 10;
+        padding: 2rem;
+    }
+
+    /* 顶部欢迎卡片 */
+    .welcome-card {
+        background: rgba(28, 33, 40, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #0052D4, #4364F7, #6FB1FC, #A371F7);
+        background-size: 300% 100%;
+        animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .welcome-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .welcome-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        box-shadow: 0 0 30px rgba(67, 100, 247, 0.4);
+        animation: avatarGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes avatarGlow {
+        0%, 100% { box-shadow: 0 0 20px rgba(67, 100, 247, 0.4); }
+        50% { box-shadow: 0 0 40px rgba(67, 100, 247, 0.6); }
+    }
+
+    .welcome-info h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #F0F6FC;
+        margin-bottom: 0.3rem;
+    }
+
+    .welcome-info p {
+        color: #8B949E;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .welcome-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.3rem 0.8rem;
+        background: rgba(46, 160, 67, 0.15);
+        border: 1px solid rgba(46, 160, 67, 0.3);
+        border-radius: 20px;
+        color: #2EA043;
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
+    }
+
+    /* 功能卡片网格 */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .feature-card {
+        background: rgba(28, 33, 40, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease backwards;
+    }
+
+    .feature-card:nth-child(1) { animation-delay: 0.1s; }
+    .feature-card:nth-child(2) { animation-delay: 0.2s; }
+    .feature-card:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(67, 100, 247, 0.4);
+        box-shadow: 0 10px 40px rgba(67, 100, 247, 0.2);
+    }
+
+    .feature-card:hover::before {
+        opacity: 1;
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .feature-icon.blue {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.2), rgba(111, 177, 252, 0.2));
+        color: #6FB1FC;
+    }
+
+    .feature-icon.purple {
+        background: linear-gradient(135deg, rgba(163, 113, 247, 0.2), rgba(199, 125, 239, 0.2));
+        color: #A371F7;
+    }
+
+    .feature-icon.green {
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.2), rgba(72, 187, 120, 0.2));
+        color: #2EA043;
+    }
+
+    .feature-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #F0F6FC;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .feature-desc {
+        color: #8B949E;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .feature-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #4364F7;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+    }
+
+    .feature-link:hover {
+        color: #6FB1FC;
+        gap: 0.8rem;
+    }
+
+    /* 分析卡片 */
+    .analysis-section {
+        background: rgba(28, 33, 40, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: 20px;
+        padding: 1.5rem;
+        animation: fadeInUp 0.6s ease backwards;
+        animation-delay: 0.4s;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(67, 100, 247, 0.1);
+    }
+
+    .section-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #F0F6FC;
+        margin: 0;
+    }
+
+    .section-subtitle {
+        font-size: 0.85rem;
+        color: #8B949E;
+        margin: 0;
+    }
+
+    /* 分析卡片网格 */
+    .analysis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .analysis-card {
+        background: rgba(13, 17, 23, 0.5);
+        border: 1px solid rgba(67, 100, 247, 0.1);
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .analysis-card:hover {
+        border-color: rgba(67, 100, 247, 0.3);
+        background: rgba(13, 17, 23, 0.7);
+    }
+
+    .analysis-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .analysis-card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    .analysis-card-icon.brain {
+        background: linear-gradient(135deg, rgba(163, 113, 247, 0.2), rgba(199, 125, 239, 0.2));
+        color: #A371F7;
+    }
+
+    .analysis-card-icon.chart {
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.2), rgba(72, 187, 120, 0.2));
+        color: #2EA043;
+    }
+
+    .analysis-card-icon.heart {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 171, 0, 0.2));
+        color: #D29922;
+    }
+
+    .analysis-card-icon.clock {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.2), rgba(111, 177, 252, 0.2));
+        color: #6FB1FC;
+    }
+
+    .analysis-card-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #F0F6FC;
+        margin: 0;
+    }
+
+    .analysis-card-body {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .analysis-card-icon-sm {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .analysis-card-icon-sm.purple { background: linear-gradient(135deg, #9C27B0, #BA68C8); color: white; }
+    .analysis-card-icon-sm.green { background: linear-gradient(135deg, #4CAF50, #8BC34A); color: white; }
+    .analysis-card-icon-sm.yellow { background: linear-gradient(135deg, #FFC107, #FFEB3B); color: #333; }
+    .analysis-card-icon-sm.blue { background: linear-gradient(135deg, #2196F3, #4FC3F7); color: white; }
+
+    .analysis-card-text {
+        color: #8B949E;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* 快捷操作按钮 */
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .action-btn:hover {
+        background: linear-gradient(135deg, #4364F7, #6FB1FC);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(67, 100, 247, 0.3);
+        color: white;
+    }
+
+    /* 统计数据 */
+    .stats-bar {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.8rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: 8px;
+        font-size: 0.8rem;
+        color: #8B949E;
+    }
+
+    .stat-item i {
+        color: #4364F7;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+        .welcome-content {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .welcome-info {
+            text-align: center;
+        }
+        
+        .dashboard-content {
+            padding: 1rem;
+        }
+        
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="teacher-dashboard-page">
+    <!-- 背景效果 -->
+    <div class="dashboard-grid"></div>
+    <div class="dashboard-glow glow-left"></div>
+    <div class="dashboard-glow glow-right"></div>
+    
+    <!-- 主内容 -->
+    <div class="dashboard-content">
+        <!-- 欢迎卡片 -->
+        <div class="welcome-card">
+            <div class="welcome-content">
+                <div class="welcome-avatar">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="welcome-info">
+                    <h2>
+                        教师控制台
+                        <span class="welcome-badge">
+                            <i class="fas fa-shield-alt"></i> 教师身份
+                        </span>
+                    </h2>
+                    <p>欢迎回来，{{ current_user.username }}！您拥有完整的管理权限</p>
+                </div>
+            </div>
+            <div class="stats-bar">
+                <span class="stat-item">
+                    <i class="fas fa-user-graduate"></i> 学生管理
+                </span>
+                <span class="stat-item">
+                    <i class="fas fa-book"></i> 题库管理
+                </span>
+                <span class="stat-item">
+                    <i class="fas fa-chart-bar"></i> 数据分析
+                </span>
+                <span class="stat-item">
+                    <i class="fas fa-users-cog"></i> 群像分析
+                </span>
+            </div>
+        </div>
+
+        <!-- 功能卡片 -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon blue">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h3 class="feature-title">测验题库</h3>
+                <p class="feature-desc">创建与管理测验题目，设置题目难度、知识点标签，灵活配置测验内容</p>
+                <a href="{{ url_for('quiz.index') }}" class="feature-link">
+                    <i class="fas fa-arrow-right"></i> 管理题目
+                </a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon purple">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="feature-title">数据分析</h3>
+                <p class="feature-desc">分析学生答题数据，查看统计图表，了解班级整体学习情况和趋势</p>
+                <a href="{{ url_for('analysis.index') }}" class="feature-link">
+                    <i class="fas fa-arrow-right"></i> 查看分析
+                </a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon green">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="feature-title">学生管理</h3>
+                <p class="feature-desc">查看学生信息，分析答题数据，设置个性化学习计划，追踪学习进度</p>
+                <a href="{{ url_for('student.student_list') }}" class="feature-link">
+                    <i class="fas fa-arrow-right"></i> 管理学生
+                </a>
+            </div>
+        </div>
+
+        <!-- 学生群像分析 -->
+        <div class="analysis-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <div>
+                    <h3 class="section-title">学生群像分析系统</h3>
+                    <p class="section-subtitle">多维度智能分析，全面了解学生学习状态</p>
+                </div>
+            </div>
+
+            <div class="analysis-grid">
+                <div class="analysis-card">
+                    <div class="analysis-card-header">
+                        <div class="analysis-card-icon brain">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4 class="analysis-card-title">学习风格分析</h4>
+                    </div>
+                    <div class="analysis-card-body">
+                        <div class="analysis-card-icon-sm purple">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <p class="analysis-card-text">识别学生优势学习风格，分析视觉型、听觉型和动手型特征</p>
+                    </div>
+                </div>
+
+                <div class="analysis-card">
+                    <div class="analysis-card-header">
+                        <div class="analysis-card-icon chart">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4 class="analysis-card-title">能力评估分析</h4>
+                    </div>
+                    <div class="analysis-card-body">
+                        <div class="analysis-card-icon-sm green">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <p class="analysis-card-text">综合评估学生在逻辑思维、创新能力和问题解决等方面表现</p>
+                    </div>
+                </div>
+
+                <div class="analysis-card">
+                    <div class="analysis-card-header">
+                        <div class="analysis-card-icon heart">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4 class="analysis-card-title">情感态度分析</h4>
+                    </div>
+                    <div class="analysis-card-body">
+                        <div class="analysis-card-icon-sm yellow">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <p class="analysis-card-text">分析学习积极性、学习压力和课程满意度等情感因素</p>
+                    </div>
+                </div>
+
+                <div class="analysis-card">
+                    <div class="analysis-card-header">
+                        <div class="analysis-card-icon clock">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h4 class="analysis-card-title">学习行为分析</h4>
+                    </div>
+                    <div class="analysis-card-body">
+                        <div class="analysis-card-icon-sm blue">
+                            <i class="fas fa-book-reader"></i>
+                        </div>
+                        <p class="analysis-card-text">追踪学习时长、完成习题数量和学习规律性等行为数据</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('analysis.student_portrait') }}" class="action-btn">
+                    <i class="fas fa-users"></i> 进入群像分析系统
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 卡片悬停效果增强
+    const cards = document.querySelectorAll('.feature-card, .analysis-card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = '';
+        });
+    });
+});
+</script>
+{% endblock %}

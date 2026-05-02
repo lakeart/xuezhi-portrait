@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知中心 - 学智画像</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4364F7;
+            --secondary: #6FB1FC;
+            --accent: #00D9FF;
+            --bg-dark: #0A0E27;
+            --bg-card: rgba(30, 41, 99, 0.7);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B4B4B4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-top: 100px;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(67, 100, 247, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(111, 177, 252, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .navbar {
+            background: rgba(10, 14, 39, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            color: var(--primary) !important;
+            font-weight: 700;
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent) !important;
+        }
+
+        .main-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-mark-all {
+            background: rgba(67, 100, 247, 0.2);
+            border: 1px solid rgba(67, 100, 247, 0.3);
+            color: var(--primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-mark-all:hover {
+            background: rgba(67, 100, 247, 0.3);
+        }
+
+        /* 统计卡片 */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .stat-card.active {
+            border-color: var(--accent);
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-card.active .stat-value {
+            color: var(--accent);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+
+        /* 筛选区域 */
+        .filter-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.6rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .filter-select {
+            padding: 0.6rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* 通知列表 */
+        .notification-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .notification-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .notification-item:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .notification-item.unread {
+            background: rgba(67, 100, 247, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+
+        .notification-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .icon-achievement { background: rgba(255, 215, 0, 0.2); color: #FFD700; }
+        .icon-wrong { background: rgba(255, 107, 107, 0.2); color: #FF6B6B; }
+        .icon-reminder { background: rgba(67, 100, 247, 0.2); color: var(--primary); }
+        .icon-system { background: rgba(111, 177, 252, 0.2); color: var(--secondary); }
+        .icon-study { background: rgba(72, 187, 120, 0.2); color: #48BB78; }
+        .icon-rank { background: rgba(168, 85, 247, 0.2); color: #A855F7; }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            font-size: 0.95rem;
+        }
+
+        .notification-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .notification-time {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 0.5rem;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .notification-item:hover .notification-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.3rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .mark-read-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.3rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .notification-item:hover .mark-read-btn {
+            opacity: 1;
+        }
+
+        .mark-read-btn:hover {
+            color: var(--primary);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* 分页 */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .page-link {
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(67, 100, 247, 0.3);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .page-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .page-link.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* 操作提示 */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 10000;
+        }
+
+        .toast {
+            background: rgba(10, 14, 39, 0.95);
+            border: 1px solid rgba(67, 100, 247, 0.3);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.home') }}">
+                <i class="fas fa-brain me-2"></i>学智画像
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.home') }}">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('quiz.index') }}">
+                            <i class="fas fa-pen me-1"></i>答题中心
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('extra.notes') }}">
+                            <i class="fas fa-book me-1"></i>笔记
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('extra.notification_center') }}">
+                            <i class="fas fa-bell me-1"></i>通知
+                            {% if stats.unread > 0 %}
+                            <span class="badge bg-danger ms-1">{{ stats.unread }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('extra.profile_settings') }}">
+                            <i class="fas fa-cog me-1"></i>设置
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-bell me-2"></i>通知中心
+            </h1>
+            <div class="d-flex gap-2">
+                {% if stats.unread > 0 %}
+                <button class="btn-mark-all" onclick="markAllRead()">
+                    <i class="fas fa-check-double me-2"></i>全部标为已读
+                </button>
+                {% endif %}
+                <button class="btn-mark-all" onclick="clearAllNotifications()" title="清空所有通知">
+                    <i class="fas fa-trash me-2"></i>清空通知
+                </button>
+            </div>
+        </div>
+
+        <!-- 统计 -->
+        <div class="stats-row">
+            <div class="stat-card {{ 'active' if stats.unread > 0 else '' }}" onclick="filterNotifications('unread')">
+                <div class="stat-value">{{ stats.unread }}</div>
+                <div class="stat-label">未读通知</div>
+            </div>
+            <div class="stat-card" onclick="filterNotifications('all')">
+                <div class="stat-value">{{ stats.total }}</div>
+                <div class="stat-label">全部通知</div>
+            </div>
+            <div class="stat-card" onclick="filterNotifications('achievement')">
+                <div class="stat-value">{{ stats.achievements }}</div>
+                <div class="stat-label">成就通知</div>
+            </div>
+            <div class="stat-card" onclick="filterNotifications('wrong_question')">
+                <div class="stat-value">{{ stats.wrong_questions }}</div>
+                <div class="stat-label">错题通知</div>
+            </div>
+            <div class="stat-card" onclick="filterNotifications('study_reminder')">
+                <div class="stat-value">{{ stats.study_reminders if stats.study_reminders else 0 }}</div>
+                <div class="stat-label">学习提醒</div>
+            </div>
+        </div>
+
+        <!-- 筛选区域 -->
+        <div class="filter-section">
+            <input 
+                type="text" 
+                class="filter-input" 
+                id="searchInput" 
+                placeholder="搜索通知..." 
+                onkeyup="searchNotifications()"
+            >
+            <select class="filter-select" id="typeFilter" onchange="filterByType()">
+                <option value="all">全部类型</option>
+                <option value="achievement">成就解锁</option>
+                <option value="wrong_question">错题提醒</option>
+                <option value="study_reminder">学习提醒</option>
+                <option value="system">系统通知</option>
+                <option value="rank">排名更新</option>
+            </select>
+            <select class="filter-select" id="readFilter" onchange="filterByReadStatus()">
+                <option value="all">全部状态</option>
+                <option value="unread">未读</option>
+                <option value="read">已读</option>
+            </select>
+        </div>
+
+        <!-- 通知列表 -->
+        <div class="notification-list" id="notificationList">
+            {% if notifications %}
+                {% for notif in notifications %}
+                <div class="notification-item {{ 'unread' if not notif.is_read else '' }}" data-id="{{ notif.id }}" data-type="{{ notif.notification_type }}" data-read="{{ notif.is_read }}">
+                    <div class="notification-icon icon-{{ notif.notification_type }}">
+                        {% if notif.notification_type == 'achievement' %}
+                        <i class="fas fa-trophy"></i>
+                        {% elif notif.notification_type == 'wrong_question' %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {% elif notif.notification_type == 'study_reminder' %}
+                        <i class="fas fa-clock"></i>
+                        {% elif notif.notification_type == 'rank' %}
+                        <i class="fas fa-trending-up"></i>
+                        {% else %}
+                        <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">{{ notif.title }}</div>
+                        <div class="notification-text">{{ notif.content }}</div>
+                        <div class="notification-time">
+                            <i class="fas fa-clock me-1"></i>
+                            {{ notif.created_at.strftime('%Y-%m-%d %H:%M') if notif.created_at else '' }}
+                        </div>
+                    </div>
+                    <div class="notification-actions">
+                        {% if not notif.is_read %}
+                        <button class="action-btn" onclick="markRead({{ notif.id }})" title="标为已读">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        {% endif %}
+                        <button class="action-btn" onclick="deleteNotification({{ notif.id }})" title="删除通知">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-bell-slash"></i>
+                </div>
+                <h3>暂无通知</h3>
+                <p class="text-muted mt-2">当你有新的成就、学习提醒或系统消息时会收到通知</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 分页 -->
+        {% if pagination and pagination.pages > 1 %}
+        <div class="pagination-container">
+            <div class="pagination">
+                {% if pagination.has_prev %}
+                <a href="?page={{ pagination.prev_num }}" class="page-link">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% endif %}
+                {% for page in pagination.iter_pages(left_edge=2, right_edge=2) %}
+                {% if page %}
+                <a href="?page={{ page }}" class="page-link {{ 'active' if page == pagination.page else '' }}">
+                    {{ page }}
+                </a>
+                {% else %}
+                <span class="page-link text-muted">...</span>
+                {% endif %}
+                {% endfor %}
+                {% if pagination.has_next %}
+                <a href="?page={{ pagination.next_num }}" class="page-link">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Toast 提示 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                ${message}
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function markRead(id) {
+            fetch(`/extra/notifications/mark-read/${id}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const item = document.querySelector(`.notification-item[data-id="${id}"]`);
+                        if (item) {
+                            item.classList.remove('unread');
+                            item.setAttribute('data-read', 'true');
+                        }
+                        showToast('已标为已读');
+                    }
+                });
+        }
+
+        function markAllRead() {
+            if (confirm('确定要将所有通知标为已读吗？')) {
+                fetch(`/extra/notifications/mark-all-read`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.querySelectorAll('.notification-item').forEach(item => {
+                                item.classList.remove('unread');
+                                item.setAttribute('data-read', 'true');
+                            });
+                            showToast('所有通知已标为已读');
+                            location.reload();
+                        }
+                    });
+            }
+        }
+
+        function deleteNotification(id) {
+            if (confirm('确定要删除这条通知吗？')) {
+                fetch(`/extra/notifications/delete/${id}`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            const item = document.querySelector(`.notification-item[data-id="${id}"]`);
+                            if (item) {
+                                item.remove();
+                            }
+                            showToast('通知已删除');
+                            
+                            // 检查是否还有通知
+                            const remaining = document.querySelectorAll('.notification-item');
+                            if (remaining.length === 0) {
+                                document.getElementById('notificationList').innerHTML = `
+                                    <div class="empty-state">
+                                        <div class="empty-icon">
+                                            <i class="fas fa-bell-slash"></i>
+                                        </div>
+                                        <h3>暂无通知</h3>
+                                        <p class="text-muted mt-2">当你有新的成就、学习提醒或系统消息时会收到通知</p>
+                                    </div>
+                                `;
+                            }
+                        }
+                    });
+            }
+        }
+
+        function clearAllNotifications() {
+            if (confirm('确定要清空所有通知吗？此操作不可恢复！')) {
+                fetch(`/extra/notifications/clear-all`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('notificationList').innerHTML = `
+                                <div class="empty-state">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-bell-slash"></i>
+                                    </div>
+                                    <h3>暂无通知</h3>
+                                    <p class="text-muted mt-2">当你有新的成就、学习提醒或系统消息时会收到通知</p>
+                                </div>
+                            `;
+                            showToast('所有通知已清空');
+                            location.reload();
+                        }
+                    });
+            }
+        }
+
+        function searchNotifications() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const items = document.querySelectorAll('.notification-item');
+            
+            items.forEach(item => {
+                const title = item.querySelector('.notification-title').textContent.toLowerCase();
+                const text = item.querySelector('.notification-text').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || text.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function filterByType() {
+            const type = document.getElementById('typeFilter').value;
+            const items = document.querySelectorAll('.notification-item');
+            
+            items.forEach(item => {
+                if (type === 'all' || item.getAttribute('data-type') === type) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function filterByReadStatus() {
+            const status = document.getElementById('readFilter').value;
+            const items = document.querySelectorAll('.notification-item');
+            
+            items.forEach(item => {
+                const isRead = item.getAttribute('data-read') === 'true';
+                
+                if (status === 'all') {
+                    item.style.display = 'flex';
+                } else if (status === 'unread' && !isRead) {
+                    item.style.display = 'flex';
+                } else if (status === 'read' && isRead) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function filterNotifications(type) {
+            if (type === 'unread') {
+                document.getElementById('readFilter').value = 'unread';
+            } else if (type === 'all') {
+                document.getElementById('typeFilter').value = 'all';
+                document.getElementById('readFilter').value = 'all';
+            } else {
+                document.getElementById('typeFilter').value = type;
+            }
+            filterByType();
+            filterByReadStatus();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,796 @@
+{% extends "base.html" %}
+
+{% block title %}题库管理 - 学智画像{% endblock %}
+
+{% block styles %}
+<style>
+    /* 页面头部 */
+    .page-hero {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .hero-left {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .hero-icon {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #F85149 0%, #FF7B72 100%);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        box-shadow: 0 4px 15px rgba(248, 81, 73, 0.3);
+    }
+
+    .hero-title h4 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .hero-title p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    /* 筛选区域 */
+    .filter-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .filter-header i {
+        color: var(--info-color);
+    }
+
+    .filter-header h5 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .filter-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .filter-input-wrapper {
+        position: relative;
+    }
+
+    .filter-input-wrapper i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        transition: all var(--transition-fast);
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: var(--info-color);
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--info-color);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    /* 表格区域 */
+    .table-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+    }
+
+    .table-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .table-title i {
+        color: var(--info-color);
+    }
+
+    .table-count {
+        padding: 0.25rem 0.75rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: var(--info-color);
+        font-weight: 500;
+    }
+
+    .table-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .pro-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .pro-table thead {
+        background: var(--bg-secondary);
+    }
+
+    .pro-table th {
+        text-align: left;
+        padding: 1rem 1.25rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .pro-table td {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        vertical-align: middle;
+    }
+
+    .pro-table tbody tr {
+        transition: background var(--transition-fast);
+    }
+
+    .pro-table tbody tr:hover {
+        background: rgba(67, 100, 247, 0.04);
+    }
+
+    .question-id {
+        font-family: monospace;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    .question-content {
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .difficulty-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.3rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .difficulty-easy {
+        background: rgba(46, 160, 67, 0.15);
+        color: var(--success-color);
+    }
+
+    .difficulty-medium {
+        background: rgba(210, 153, 34, 0.15);
+        color: var(--warning-color);
+    }
+
+    .difficulty-hard {
+        background: rgba(248, 81, 73, 0.15);
+        color: var(--danger-color);
+    }
+
+    .style-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.6rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: var(--radius-xs);
+        font-size: 0.8rem;
+        color: var(--info-color);
+    }
+
+    .accuracy-bar {
+        width: 100px;
+        height: 8px;
+        background: var(--bg-secondary);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .accuracy-fill {
+        height: 100%;
+        background: var(--gradient-secondary);
+        border-radius: 4px;
+        transition: width var(--transition-slow);
+    }
+
+    .accuracy-text {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-left: 0.5rem;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        font-size: 0.85rem;
+    }
+
+    .action-btn:hover {
+        border-color: var(--info-color);
+        color: var(--info-color);
+        background: rgba(67, 100, 247, 0.1);
+    }
+
+    .action-btn.danger:hover {
+        border-color: var(--danger-color);
+        color: var(--danger-color);
+        background: rgba(248, 81, 73, 0.1);
+    }
+
+    /* 分页 */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .pagination-info {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .pagination {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .page-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        font-size: 0.875rem;
+    }
+
+    .page-btn:hover {
+        border-color: var(--info-color);
+        color: var(--info-color);
+        background: rgba(67, 100, 247, 0.1);
+    }
+
+    .page-btn.active {
+        background: var(--gradient-primary);
+        border-color: transparent;
+        color: white;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* 删除确认模态框 */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all var(--transition-fast);
+    }
+
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-content {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        max-width: 400px;
+        width: 90%;
+        transform: scale(0.9);
+        transition: transform var(--transition-fast);
+    }
+
+    .modal-overlay.active .modal-content {
+        transform: scale(1);
+    }
+
+    .modal-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(248, 81, 73, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 1.5rem;
+        color: var(--danger-color);
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .modal-desc {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .modal-actions button {
+        flex: 1;
+        padding: 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .modal-cancel {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .modal-confirm {
+        background: var(--danger-color);
+        border: none;
+        color: white;
+    }
+
+    /* 响应式 */
+    @media (max-width: 1200px) {
+        .filter-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .page-hero {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+
+        .hero-left {
+            flex-direction: column;
+        }
+
+        .filter-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pro-table {
+            font-size: 0.85rem;
+        }
+
+        .pro-table th,
+        .pro-table td {
+            padding: 0.75rem;
+        }
+
+        .pagination-wrapper {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display: none;"></div>
+
+<!-- 页面头部 -->
+<div class="page-hero fade-in">
+    <div class="hero-left">
+        <div class="hero-icon">
+            <i class="fas fa-question-circle"></i>
+        </div>
+        <div class="hero-title">
+            <h4>{% if current_user.is_teacher() %}题库管理{% else %}测验题库{% endif %}</h4>
+            <p>{% if current_user.is_teacher() %}管理所有测验题目，创建和编辑题目{% else %}查看所有测验题目，开始练习{% endif %}</p>
+        </div>
+    </div>
+    <div class="hero-actions">
+        <a href="{{ url_for('main.dashboard') }}" class="btn-pro btn-pro-secondary btn-pro-sm">
+            <i class="fas fa-arrow-left"></i>
+            返回
+        </a>
+        {% if current_user.is_teacher() %}
+        <a href="{{ url_for('quiz.create') }}" class="btn-pro btn-pro-primary btn-pro-sm">
+            <i class="fas fa-plus"></i>
+            添加题目
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 筛选区域 -->
+<div class="filter-section fade-in" style="animation-delay: 0.1s;">
+    <div class="filter-header">
+        <i class="fas fa-filter"></i>
+        <h5>筛选条件</h5>
+    </div>
+    <div class="filter-row">
+        <div class="filter-group">
+            <label class="filter-label">搜索题目</label>
+            <div class="filter-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" class="filter-input" id="searchInput" placeholder="输入题目关键词..." value="{{ search|default('', true) }}">
+            </div>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">知识点</label>
+            <select class="filter-select" id="topicFilter">
+                <option value="">全部知识点</option>
+                {% for topic_option in topics %}
+                    <option value="{{ topic_option }}" {% if topic_option == selected_topic %}selected{% endif %}>{{ topic_option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">难度等级</label>
+            <select class="filter-select" id="difficultyFilter">
+                <option value="">全部难度</option>
+                <option value="简单" {% if selected_difficulty == '简单' %}selected{% endif %}>简单</option>
+                <option value="中等" {% if selected_difficulty == '中等' %}selected{% endif %}>中等</option>
+                <option value="困难" {% if selected_difficulty == '困难' %}selected{% endif %}>困难</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">题目类型</label>
+            <select class="filter-select" id="styleFilter">
+                <option value="">全部题型</option>
+                <option value="选择题" {% if selected_style == '选择题' %}selected{% endif %}>选择题</option>
+                <option value="填空题" {% if selected_style == '填空题' %}selected{% endif %}>填空题</option>
+                <option value="解答题" {% if selected_style == '解答题' %}selected{% endif %}>解答题</option>
+                <option value="判断题" {% if selected_style == '判断题' %}selected{% endif %}>判断题</option>
+                <option value="编程题" {% if selected_style == '编程题' %}selected{% endif %}>编程题</option>
+            </select>
+        </div>
+    </div>
+    {% if search or selected_topic or selected_difficulty or selected_style %}
+    <div class="filter-actions" style="margin-top: 1rem;">
+        <button id="clearFilterBtn" class="btn-pro btn-pro-secondary btn-pro-sm">
+            <i class="fas fa-times"></i>
+            清除筛选
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 表格区域 -->
+<div class="table-section fade-in" style="animation-delay: 0.2s;">
+    <div class="table-header">
+        <div class="table-title">
+            <i class="fas fa-list"></i>
+            题目列表
+            <span class="table-count">{{ pagination.total }} 条记录</span>
+        </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="pro-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>题目内容</th>
+                    <th>知识点</th>
+                    <th>难度</th>
+                    <th>题型</th>
+                    <th>正确率</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for question in questions %}
+                <tr>
+                    <td><span class="question-id">#{{ question.id }}</span></td>
+                    <td>
+                        <span class="question-content">{{ question.content[:50] }}...</span>
+                    </td>
+                    <td>
+                        <span class="style-badge">{{ question.topic }}</span>
+                    </td>
+                    <td>
+                        {% if question.difficulty == '简单' %}
+                            <span class="difficulty-badge difficulty-easy">
+                                <i class="fas fa-seedling"></i> 简单
+                            </span>
+                        {% elif question.difficulty == '中等' %}
+                            <span class="difficulty-badge difficulty-medium">
+                                <i class="fas fa-fire"></i> 中等
+                            </span>
+                        {% else %}
+                            <span class="difficulty-badge difficulty-hard">
+                                <i class="fas fa-skull"></i> 困难
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="style-badge">{{ question.style }}</span>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: {{ question.correct_rate }}%"></div>
+                            </div>
+                            <span class="accuracy-text">{{ "%.1f"|format(question.correct_rate) }}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <a href="{{ url_for('quiz.view', question_id=question.id) }}" class="action-btn" title="查看">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if current_user.is_teacher() %}
+                            <a href="{{ url_for('quiz.edit', question_id=question.id) }}" class="action-btn" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="action-btn danger" title="删除" onclick="confirmDelete({{ question.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 分页 -->
+    {% if pagination.pages > 1 %}
+    <div class="pagination-wrapper">
+        <div class="pagination-info">
+            显示 {{ pagination.per_page * (pagination.page - 1) + 1 }} - {{ pagination.per_page * pagination.page if pagination.page < pagination.pages else pagination.total }} 条，共 {{ pagination.total }} 条
+        </div>
+        <div class="pagination">
+            {% if pagination.has_prev %}
+                <a href="{{ url_for('quiz.index', page=pagination.prev_num, search=search, topic=selected_topic, difficulty=selected_difficulty, style=selected_style) }}" class="page-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+            
+            {% for page in pagination.iter_pages() %}
+                {% if page %}
+                    <a href="{{ url_for('quiz.index', page=page, search=search, topic=selected_topic, difficulty=selected_difficulty, style=selected_style) }}" 
+                       class="page-btn {% if page == pagination.page %}active{% endif %}">
+                        {{ page }}
+                    </a>
+                {% else %}
+                    <span class="page-btn" style="cursor: default;">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if pagination.has_next %}
+                <a href="{{ url_for('quiz.index', page=pagination.next_num, search=search, topic=selected_topic, difficulty=selected_difficulty, style=selected_style) }}" class="page-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="modal-title">确认删除</h3>
+        <p class="modal-desc">确定要删除这道题目吗？此操作不可恢复。</p>
+        <div class="modal-actions">
+            <button type="button" class="modal-cancel" onclick="closeModal()">取消</button>
+            <form id="deleteForm" method="post" style="flex: 1;">
+                <button type="submit" class="modal-confirm" style="width: 100%;">确认删除</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const topicFilter = document.getElementById('topicFilter');
+    const difficultyFilter = document.getElementById('difficultyFilter');
+    const styleFilter = document.getElementById('styleFilter');
+    
+    function applyFilters() {
+        const search = searchInput.value;
+        const topic = topicFilter.value;
+        const difficulty = difficultyFilter.value;
+        const style = styleFilter.value;
+        
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        if (topic) params.append('topic', topic);
+        if (difficulty) params.append('difficulty', difficulty);
+        if (style) params.append('style', style);
+        params.append('page', 1);
+        
+        window.location.href = `${window.location.pathname}?${params.toString()}`;
+    }
+    
+    searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') applyFilters();
+    });
+    
+    topicFilter.addEventListener('change', applyFilters);
+    difficultyFilter.addEventListener('change', applyFilters);
+    styleFilter.addEventListener('change', applyFilters);
+    
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
+    if (clearFilterBtn) {
+        clearFilterBtn.addEventListener('click', function() {
+            window.location.href = window.location.pathname;
+        });
+    }
+});
+
+function confirmDelete(questionId) {
+    const modal = document.getElementById('deleteModal');
+    const deleteForm = document.getElementById('deleteForm');
+    deleteForm.action = `/quiz/${questionId}/delete`;
+    modal.classList.add('active');
+}
+
+function closeModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('active');
+}
+
+// 点击模态框外部关闭
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,687 @@
+{% extends "base.html" %}
+
+{% block title %}注册 - 学智画像{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        overflow-x: hidden;
+    }
+
+    .register-page {
+        min-height: 100vh;
+        position: relative;
+        background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #1C2128 100%);
+        overflow: hidden;
+    }
+
+    /* 动态网格背景 */
+    .grid-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(50px, 50px); }
+    }
+
+    /* 渐变光晕 */
+    .glow-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.4;
+        animation: float 8s ease-in-out infinite;
+    }
+
+    .glow-orb-1 {
+        width: 400px;
+        height: 400px;
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        top: -100px;
+        right: -100px;
+        animation-delay: 0s;
+    }
+
+    .glow-orb-2 {
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(135deg, #A371F7, #6FB1FC);
+        bottom: -50px;
+        left: -50px;
+        animation-delay: -3s;
+    }
+
+    .glow-orb-3 {
+        width: 200px;
+        height: 200px;
+        background: linear-gradient(135deg, #00C9A7, #4364F7);
+        top: 50%;
+        left: 30%;
+        animation-delay: -5s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(30px, -30px) scale(1.1); }
+    }
+
+    /* 词云区域 */
+    .word-cloud-container {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 50%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .word-cloud {
+        position: relative;
+        width: 600px;
+        height: 500px;
+    }
+
+    .cloud-word {
+        position: absolute;
+        font-weight: 600;
+        color: rgba(67, 100, 247, 0.15);
+        text-shadow: 0 0 20px rgba(67, 100, 247, 0.3);
+        animation: wordFloat 6s ease-in-out infinite;
+        white-space: nowrap;
+    }
+
+    .cloud-word:nth-child(1) { font-size: 3rem; top: 10%; left: 20%; animation-delay: 0s; }
+    .cloud-word:nth-child(2) { font-size: 2.5rem; top: 25%; left: 60%; animation-delay: -1s; color: rgba(111, 177, 252, 0.12); }
+    .cloud-word:nth-child(3) { font-size: 2rem; top: 40%; left: 10%; animation-delay: -2s; }
+    .cloud-word:nth-child(4) { font-size: 2.8rem; top: 55%; left: 50%; animation-delay: -3s; color: rgba(163, 113, 247, 0.12); }
+    .cloud-word:nth-child(5) { font-size: 1.8rem; top: 70%; left: 25%; animation-delay: -4s; }
+    .cloud-word:nth-child(6) { font-size: 2.2rem; top: 15%; left: 40%; animation-delay: -5s; color: rgba(0, 201, 167, 0.1); }
+    .cloud-word:nth-child(7) { font-size: 1.5rem; top: 85%; left: 55%; animation-delay: -1.5s; }
+    .cloud-word:nth-child(8) { font-size: 2rem; top: 35%; left: 75%; animation-delay: -2.5s; color: rgba(67, 100, 247, 0.1); }
+    .cloud-word:nth-child(9) { font-size: 1.6rem; top: 60%; left: 15%; animation-delay: -3.5s; }
+    .cloud-word:nth-child(10) { font-size: 2.4rem; top: 80%; left: 70%; animation-delay: -4.5s; color: rgba(111, 177, 252, 0.08); }
+    .cloud-word:nth-child(11) { font-size: 1.4rem; top: 5%; left: 70%; animation-delay: -2s; }
+    .cloud-word:nth-child(12) { font-size: 1.8rem; top: 45%; left: 85%; animation-delay: -3.5s; }
+
+    @keyframes wordFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(2deg); }
+    }
+
+    /* 浮动粒子 */
+    .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: rgba(67, 100, 247, 0.6);
+        border-radius: 50%;
+        animation: particleFloat 15s linear infinite;
+    }
+
+    @keyframes particleFloat {
+        0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* 科技装饰线 */
+    .tech-lines {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .tech-line {
+        position: absolute;
+        background: linear-gradient(90deg, transparent, rgba(67, 100, 247, 0.3), transparent);
+        height: 1px;
+        animation: lineMove 10s linear infinite;
+    }
+
+    .tech-line:nth-child(1) { top: 20%; width: 40%; left: -40%; animation-delay: 0s; }
+    .tech-line:nth-child(2) { top: 40%; width: 30%; right: -30%; animation-delay: -3s; animation-direction: reverse; }
+    .tech-line:nth-child(3) { top: 60%; width: 35%; left: -35%; animation-delay: -6s; }
+    .tech-line:nth-child(4) { top: 80%; width: 25%; right: -25%; animation-delay: -2s; animation-direction: reverse; }
+
+    @keyframes lineMove {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(200vw); }
+    }
+
+    /* 注册卡片 */
+    .register-card {
+        position: relative;
+        z-index: 10;
+        background: rgba(28, 33, 40, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 24px;
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.5),
+            0 0 100px rgba(67, 100, 247, 0.1);
+        overflow: hidden;
+        animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .register-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #0052D4, #4364F7, #6FB1FC, #A371F7);
+        background-size: 300% 100%;
+        animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    /* 头部区域 */
+    .register-header {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.15) 0%, rgba(163, 113, 247, 0.1) 100%);
+        border-bottom: 1px solid rgba(67, 100, 247, 0.1);
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .register-header h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #F0F6FC;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .register-header h2 i {
+        background: linear-gradient(135deg, #4364F7, #6FB1FC);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .register-header p {
+        color: #8B949E;
+        font-size: 0.95rem;
+    }
+
+    /* 表单区域 */
+    .register-body {
+        padding: 2rem;
+    }
+
+    .form-floating {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-floating > .form-control {
+        background: rgba(13, 17, 23, 0.6);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 12px;
+        color: #F0F6FC;
+        padding: 1.25rem 1rem 0.75rem;
+        height: auto;
+        min-height: 56px;
+        transition: all 0.3s ease;
+    }
+
+    .form-floating > .form-control:focus {
+        border-color: #4364F7;
+        box-shadow: 0 0 0 3px rgba(67, 100, 247, 0.2), 0 0 20px rgba(67, 100, 247, 0.1);
+        background: rgba(13, 17, 23, 0.8);
+    }
+
+    .form-floating > .form-control::placeholder {
+        color: transparent;
+    }
+
+    .form-floating > label {
+        color: #8B949E;
+        padding: 1.1rem 1rem;
+    }
+
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #4364F7;
+    }
+
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 1.2rem;
+        color: #4364F7;
+        z-index: 10;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+    }
+
+    .form-control:focus ~ .input-icon {
+        color: #6FB1FC;
+    }
+
+    .input-with-icon {
+        padding-left: 2.75rem !important;
+    }
+
+    /* 密码强度指示器 */
+    .password-strength {
+        margin-top: 0.5rem;
+    }
+
+    .strength-bar {
+        height: 4px;
+        background: rgba(67, 100, 247, 0.2);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .strength-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+        width: 0%;
+    }
+
+    .strength-fill.weak { width: 25%; background: #F85149; }
+    .strength-fill.fair { width: 50%; background: #D29922; }
+    .strength-fill.good { width: 75%; background: #58A6FF; }
+    .strength-fill.strong { width: 100%; background: #2EA043; }
+
+    .strength-text {
+        font-size: 0.75rem;
+        color: #8B949E;
+        margin-top: 0.25rem;
+    }
+
+    /* 注册按钮 */
+    .btn-register {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%);
+        background-size: 200% 100%;
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-register::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-register:hover {
+        background-position: 100% 0;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(67, 100, 247, 0.4);
+    }
+
+    .btn-register:hover::before {
+        left: 100%;
+    }
+
+    /* 社交登录 */
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0;
+        color: #6E7681;
+        font-size: 0.85rem;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(67, 100, 247, 0.3), transparent);
+    }
+
+    .divider span {
+        padding: 0 1rem;
+    }
+
+    .social-login {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn-social {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        border: 1px solid rgba(67, 100, 247, 0.3);
+        background: rgba(67, 100, 247, 0.1);
+        color: #8B949E;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-social:hover {
+        background: rgba(67, 100, 247, 0.2);
+        border-color: #4364F7;
+        color: #F0F6FC;
+        transform: translateY(-3px);
+    }
+
+    /* 页脚链接 */
+    .register-footer {
+        text-align: center;
+        padding: 1.5rem 2rem 2rem;
+        border-top: 1px solid rgba(67, 100, 247, 0.1);
+    }
+
+    .register-footer p {
+        color: #8B949E;
+        font-size: 0.9rem;
+    }
+
+    .register-footer a {
+        color: #4364F7;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .register-footer a:hover {
+        color: #6FB1FC;
+        text-decoration: underline;
+    }
+
+    /* 特色标签 */
+    .feature-badges {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .feature-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        background: rgba(46, 160, 67, 0.1);
+        border: 1px solid rgba(46, 160, 67, 0.2);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: #2EA043;
+    }
+
+    /* 响应式 */
+    @media (max-width: 992px) {
+        .word-cloud-container {
+            display: none;
+        }
+        
+        .register-card {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .register-header {
+            padding: 1.5rem;
+        }
+        
+        .register-body {
+            padding: 1.5rem;
+        }
+        
+        .register-footer {
+            padding: 1rem 1.5rem 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-page">
+    <!-- 背景效果 -->
+    <div class="grid-bg"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+    
+    <!-- 科技装饰线 -->
+    <div class="tech-lines">
+        <div class="tech-line"></div>
+        <div class="tech-line"></div>
+        <div class="tech-line"></div>
+        <div class="tech-line"></div>
+    </div>
+    
+    <!-- 浮动粒子 -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- 词云区域 -->
+    <div class="word-cloud-container">
+        <div class="word-cloud">
+            <span class="cloud-word">数据分析</span>
+            <span class="cloud-word">人工智能</span>
+            <span class="cloud-word">学习规划</span>
+            <span class="cloud-word">智能问答</span>
+            <span class="cloud-word">知识点</span>
+            <span class="cloud-word">能力测试</span>
+            <span class="cloud-word">机器学习</span>
+            <span class="cloud-word">学习报告</span>
+            <span class="cloud-word">Python</span>
+            <span class="cloud-word">算法思维</span>
+            <span class="cloud-word">可视化</span>
+            <span class="cloud-word">大数据</span>
+        </div>
+    </div>
+    
+    <!-- 注册表单 -->
+    <div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
+        <div class="register-card" style="width: 100%; max-width: 450px;">
+            <div class="register-header">
+                <h2>
+                    <i class="fas fa-rocket"></i>
+                    加入学智画像
+                </h2>
+                <p>开启您的智能学习之旅</p>
+                <div class="feature-badges">
+                    <span class="feature-badge"><i class="fas fa-shield-alt"></i> 免费注册</span>
+                    <span class="feature-badge"><i class="fas fa-bolt"></i> 快速上手</span>
+                    <span class="feature-badge"><i class="fas fa-lock"></i> 数据安全</span>
+                </div>
+            </div>
+            
+            <div class="register-body">
+                <form method="post" action="{{ url_for('auth.register') }}">
+                    {{ form.csrf_token }}
+                    
+                    <div class="input-icon-wrapper mb-3">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" class="form-control input-with-icon" id="username" name="username" placeholder=" " required>
+                        <label for="username">用户名</label>
+                    </div>
+                    
+                    <div class="input-icon-wrapper mb-3">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" class="form-control input-with-icon" id="email" name="email" placeholder=" " required>
+                        <label for="email">邮箱地址</label>
+                    </div>
+                    
+                    <div class="input-icon-wrapper mb-3">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" class="form-control input-with-icon" id="password" name="password" placeholder=" " required minlength="6" oninput="checkPasswordStrength(this.value)">
+                        <label for="password">设置密码</label>
+                    </div>
+                    <div class="password-strength" id="passwordStrength" style="display: none;">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText"></div>
+                    </div>
+                    
+                    <div class="input-icon-wrapper mb-4">
+                        <i class="fas fa-check-double input-icon"></i>
+                        <input type="password" class="form-control input-with-icon" id="confirm_password" name="confirm_password" placeholder=" " required>
+                        <label for="confirm_password">确认密码</label>
+                    </div>
+                    
+                    <button type="submit" class="btn-register">
+                        <i class="fas fa-user-plus"></i>
+                        创建账号
+                    </button>
+                </form>
+                
+                <div class="divider">
+                    <span>或</span>
+                </div>
+                
+                <div class="social-login">
+                    <button class="btn-social" title="使用微信登录">
+                        <i class="fab fa-weixin"></i>
+                    </button>
+                    <button class="btn-social" title="使用QQ登录">
+                        <i class="fab fa-qq"></i>
+                    </button>
+                    <button class="btn-social" title="使用GitHub登录">
+                        <i class="fab fa-github"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="register-footer">
+                <p>已有账号？ <a href="{{ url_for('auth.login') }}">立即登录</a></p>
+                <p class="small mt-2" style="color: #6E7681;">
+                    注册即表示您同意我们的 <a href="#">服务条款</a> 和 <a href="#">隐私政策</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 生成浮动粒子
+    function createParticles() {
+        const container = document.getElementById('particles');
+        if (!container) return;
+        
+        const particleCount = 30;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particle.style.width = (Math.random() * 4 + 2) + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.opacity = Math.random() * 0.5 + 0.3;
+            container.appendChild(particle);
+        }
+    }
+    
+    // 密码强度检测
+    function checkPasswordStrength(password) {
+        const strengthDiv = document.getElementById('passwordStrength');
+        const strengthFill = document.getElementById('strengthFill');
+        const strengthText = document.getElementById('strengthText');
+        
+        if (!strengthDiv) return;
+        
+        if (password.length === 0) {
+            strengthDiv.style.display = 'none';
+            return;
+        }
+        
+        strengthDiv.style.display = 'block';
+        
+        let strength = 0;
+        if (password.length >= 6) strength++;
+        if (password.length >= 10) strength++;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+        if (/\d/.test(password)) strength++;
+        if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
+        
+        strengthFill.className = 'strength-fill';
+        
+        if (strength <= 1) {
+            strengthFill.classList.add('weak');
+            strengthText.textContent = '密码强度：弱 - 建议包含大小写字母、数字和特殊字符';
+        } else if (strength <= 2) {
+            strengthFill.classList.add('fair');
+            strengthText.textContent = '密码强度：一般 - 可以更复杂一些';
+        } else if (strength <= 3) {
+            strengthFill.classList.add('good');
+            strengthText.textContent = '密码强度：良好';
+        } else {
+            strengthFill.classList.add('strong');
+            strengthText.textContent = '密码强度：很强 - 非常安全';
+        }
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        createParticles();
+    });
+</script>
+{% endblock %}

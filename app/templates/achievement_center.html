@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成就中心 - 学习画像系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4364F7;
+            --secondary: #6FB1FC;
+            --accent: #00D9FF;
+            --bg-dark: #0A0E27;
+            --bg-card: rgba(30, 41, 99, 0.7);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B4B4B4;
+            --bronze: #CD7F32;
+            --silver: #C0C0C0;
+            --gold: #FFD700;
+            --diamond: #B9F2FF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(67, 100, 247, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(111, 177, 252, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(10, 14, 39, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary) !important;
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+            margin: 0 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent) !important;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            text-align: center;
+            padding: 3rem 0;
+            position: relative;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), #FFA500, var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* 成就统计 */
+        .achievement-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 用户积分卡片 */
+        .user-points-card {
+            background: linear-gradient(135deg, rgba(67, 100, 247, 0.3), rgba(111, 177, 252, 0.2));
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(67, 100, 247, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .points-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--gold), #FFA500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .points-info {
+            flex: 1;
+        }
+
+        .points-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .points-label {
+            color: var(--text-secondary);
+        }
+
+        .streak-info {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .streak-item {
+            text-align: center;
+        }
+
+        .streak-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .streak-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* 成就类别 */
+        .category-section {
+            margin-bottom: 3rem;
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+        }
+
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .category-icon.learning { background: rgba(67, 100, 247, 0.2); color: var(--primary); }
+        .category-icon.streak { background: rgba(0, 217, 255, 0.2); color: var(--accent); }
+        .category-icon.accuracy { background: rgba(46, 213, 115, 0.2); color: #2ED573; }
+        .category-icon.mastery { background: rgba(255, 193, 7, 0.2); color: #FFC107; }
+        .category-icon.special { background: rgba(255, 107, 107, 0.2); color: #FF6B6B; }
+
+        .category-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        /* 成就卡片网格 */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .achievement-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .achievement-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(67, 100, 247, 0.5), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .achievement-card:hover::before {
+            opacity: 1;
+        }
+
+        .achievement-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 40px rgba(67, 100, 247, 0.2);
+        }
+
+        .achievement-card.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-card.locked .achievement-icon {
+            filter: grayscale(100%);
+        }
+
+        .achievement-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .achievement-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+
+        .achievement-card:hover .achievement-icon {
+            transform: scale(1.1);
+        }
+
+        .icon-bronze { background: linear-gradient(135deg, #CD7F32, #8B5A2B); color: #fff; }
+        .icon-silver { background: linear-gradient(135deg, #C0C0C0, #A8A8A8); color: #fff; }
+        .icon-gold { background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; }
+        .icon-diamond { background: linear-gradient(135deg, #B9F2FF, #00D9FF); color: #fff; }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .achievement-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .achievement-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(67, 100, 247, 0.1);
+        }
+
+        .achievement-points {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .achievement-status {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+        }
+
+        .status-earned {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ED573;
+        }
+
+        .status-locked {
+            background: rgba(67, 100, 247, 0.2);
+            color: var(--primary);
+        }
+
+        /* 排行榜入口 */
+        .rankings-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 2rem auto;
+            width: fit-content;
+        }
+
+        .rankings-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(67, 100, 247, 0.4);
+        }
+
+        /* 动画 */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .achievement-card.earned {
+            animation: pulse 2s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .user-points-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .streak-info {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
+                <i class="fas fa-brain me-2"></i>学习画像系统
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('quiz.index') }}">
+                            <i class="fas fa-pen me-1"></i>答题中心
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('features.wrong_questions') }}">
+                            <i class="fas fa-exclamation-circle me-1"></i>错题本
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('features.achievement_center') }}">
+                            <i class="fas fa-trophy me-1"></i>成就中心
+                        </a>
+                    </li>
+                    {% if current_user.is_teacher() %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('analysis.index') }}">
+                            <i class="fas fa-chart-line me-1"></i>数据分析
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i>退出
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <div class="main-container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-trophy me-2"></i>成就中心
+            </h1>
+            <p class="page-subtitle">每一步努力都值得被铭记</p>
+            
+            <div class="achievement-stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ earned_count }}</div>
+                    <div class="stat-label">已解锁</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_count - earned_count }}</div>
+                    <div class="stat-label">待解锁</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ ((earned_count / total_count * 100) if total_count > 0 else 0)|round|int }}%</div>
+                    <div class="stat-label">完成度</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户积分卡片 -->
+        <div class="user-points-card">
+            <div class="points-icon">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="points-info">
+                <div class="points-value">{{ points_record.total_points if points_record else 0 }}</div>
+                <div class="points-label">我的积分</div>
+            </div>
+            <div class="streak-info">
+                <div class="streak-item">
+                    <div class="streak-value">
+                        <i class="fas fa-fire me-1"></i>{{ points_record.current_streak if points_record else 0 }}
+                    </div>
+                    <div class="streak-label">当前连续</div>
+                </div>
+                <div class="streak-item">
+                    <div class="streak-value">
+                        <i class="fas fa-crown me-1"></i>{{ points_record.longest_streak if points_record else 0 }}
+                    </div>
+                    <div class="streak-label">最长连续</div>
+                </div>
+                <div class="streak-item">
+                    <div class="streak-value">{{ (points_record.correct_questions / points_record.total_questions * 100)|round(1) if points_record and points_record.total_questions > 0 else 0 }}%</div>
+                    <div class="streak-label">准确率</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 成就分类 -->
+        {% for cat_code, category in categories.items() %}
+        {% if category.achievements %}
+        <div class="category-section">
+            <div class="category-title">
+                <div class="category-icon {{ cat_code }}">
+                    {% if cat_code == 'learning' %}<i class="fas fa-graduation-cap"></i>
+                    {% elif cat_code == 'streak' %}<i class="fas fa-calendar-check"></i>
+                    {% elif cat_code == 'accuracy' %}<i class="fas fa-bullseye"></i>
+                    {% elif cat_code == 'mastery' %}<i class="fas fa-book-open"></i>
+                    {% elif cat_code == 'special' %}<i class="fas fa-star"></i>
+                    {% endif %}
+                </div>
+                <h3 class="category-name">{{ category.name }}</h3>
+            </div>
+            
+            <div class="achievements-grid">
+                {% for item in category.achievements %}
+                <div class="achievement-card {{ 'earned' if item.earned else 'locked' }}">
+                    <div class="achievement-header">
+                        <div class="achievement-icon icon-{{ item.achievement.badge_color }}">
+                            <i class="fas {{ item.achievement.icon }}"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">{{ item.achievement.name }}</div>
+                            <div class="achievement-desc">{{ item.achievement.description }}</div>
+                        </div>
+                    </div>
+                    <div class="achievement-footer">
+                        <div class="achievement-points">
+                            <i class="fas fa-coins"></i>
+                            <span>+{{ item.achievement.points }}</span>
+                        </div>
+                        {% if item.earned %}
+                        <span class="achievement-status status-earned">
+                            <i class="fas fa-check me-1"></i>已解锁
+                        </span>
+                        {% else %}
+                        <span class="achievement-status status-locked">
+                            <i class="fas fa-lock me-1"></i>未解锁
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        <!-- 排行榜入口 -->
+        <a href="{{ url_for('features.achievement_rankings') }}" class="rankings-btn">
+            <i class="fas fa-ranking-star"></i>
+            查看成就排行榜
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

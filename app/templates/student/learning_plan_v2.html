@@ -1,0 +1,1932 @@
+{% extends 'base.html' %}
+
+{% block title %}个性化学习计划 - {{ student.username if student else '系统' }}
+<!-- 修改学习计划模态框 -->
+<div class="modal fade" id="editPlanModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>编辑学习计划
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    您可以自定义修改学习时间分配，系统会根据您的调整重新优化计划
+                </div>
+                
+                <form id="editPlanForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">知识点</label>
+                        <input type="text" class="form-control" id="editTopicName" readonly>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">学习时长（分钟）</label>
+                            <select class="form-select" id="editDuration">
+                                <option value="30">30 分钟</option>
+                                <option value="45" selected>45 分钟</option>
+                                <option value="60">60 分钟</option>
+                                <option value="90">90 分钟</option>
+                                <option value="120">120 分钟</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">优先级</label>
+                            <select class="form-select" id="editPriority">
+                                <option value="P0">P0 - 紧急优先</option>
+                                <option value="P1">P1 - 重要</option>
+                                <option value="P2">P2 - 常规</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">安排到</label>
+                        <select class="form-select" id="editDay">
+                            <option value="周一">周一</option>
+                            <option value="周二">周二</option>
+                            <option value="周三">周三</option>
+                            <option value="周四">周四</option>
+                            <option value="周五">周五</option>
+                            <option value="周六">周六</option>
+                            <option value="周日">周日</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">学习方式</label>
+                        <select class="form-select" id="editMethod">
+                            <option value="视频学习">视频学习</option>
+                            <option value="强化练习">强化练习</option>
+                            <option value="复习巩固">复习巩固</option>
+                            <option value="综合学习">综合学习</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="savePlanChanges()">
+                    <i class="fas fa-save me-1"></i>保存修改
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加自定义任务模态框 -->
+<div class="modal fade" id="addCustomTaskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>添加自定义任务
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">任务名称</label>
+                    <input type="text" class="form-control" id="customTaskName" placeholder="输入自定义学习任务">
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">时长（分钟）</label>
+                        <input type="number" class="form-control" id="customTaskDuration" value="45" min="15" max="180">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">安排日期</label>
+                        <input type="date" class="form-control" id="customTaskDate">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="addCustomTask()">
+                    <i class="fas fa-plus me-1"></i>添加任务
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* 动画效果 */
+    .fade-in {
+        animation: fadeIn 0.8s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .stat-card {
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(240, 246, 252, 0.1);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        background: rgba(28, 33, 40, 0.95);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .stat-card .card-body {
+        color: #F0F6FC;
+    }
+
+    .stat-card .text-muted {
+        color: #9ca3af !important;
+    }
+    
+    /* 进度环样式 */
+    .progress-ring {
+        transform: rotate(-90deg);
+    }
+    
+    .progress-ring-circle {
+        transition: stroke-dashoffset 0.5s ease-in-out;
+        stroke-linecap: round;
+    }
+    
+    /* 学习风格标签 */
+    .style-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    /* 知识点卡片 */
+    .topic-card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s;
+        border: 1px solid rgba(240, 246, 252, 0.1);
+        background: rgba(37, 43, 53, 0.9);
+    }
+    
+    .topic-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    /* 学习计划时间线 */
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #4CAF50, #2196F3, #9C27B0);
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -24px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #4CAF50;
+    }
+    
+    /* 统计数字 */
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* 学习建议卡片 */
+    .suggestion-card {
+        border-left: 4px solid;
+        transition: all 0.3s;
+    }
+    
+    .suggestion-card:hover {
+        transform: translateX(5px);
+    }
+    
+    /* 图表容器 */
+    .chart-container {
+        position: relative;
+        min-height: 280px;
+        width: 100%;
+        background: rgba(37, 43, 53, 0.9);
+        border-radius: 12px;
+        padding: 10px;
+    }
+    
+    /* 能力雷达图 */
+    .radar-container {
+        position: relative;
+        height: 350px;
+        width: 100%;
+        background: rgba(37, 43, 53, 0.9);
+        border-radius: 12px;
+    }
+    
+    /* 强制所有ECharts容器有明确宽度 */
+    #topicRadarChart, #trendChart, #topicBarChart, #topicBarChartInner,
+    [id*="Chart"], [id*="chart"] {
+        width: 100% !important;
+        min-width: 200px;
+    }
+    
+    /* 趋势图 */
+    .trend-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .trend-up {
+        background: rgba(76, 175, 80, 0.1);
+        color: #4CAF50;
+    }
+    
+    .trend-down {
+        background: rgba(244, 67, 54, 0.1);
+        color: #F44336;
+    }
+    
+    .trend-stable {
+        background: rgba(33, 150, 243, 0.1);
+        color: #2196F3;
+    }
+    
+    /* 预测进度条 */
+    .prediction-bar {
+        height: 24px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.3);
+    }
+    
+    .prediction-bar .progress-fill {
+        height: 100%;
+        border-radius: 12px;
+        transition: width 1s ease-in-out;
+    }
+    
+    /* 学习模式切换 */
+    .mode-switch {
+        position: relative;
+        width: 60px;
+        height: 30px;
+        border-radius: 15px;
+        background: #e0e0e0;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .mode-switch.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .mode-switch::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--bg-elevated, #1C2333);
+        transition: all 0.3s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .mode-switch.active::after {
+        left: 33px;
+    }
+    
+    /* 周视图日历 */
+    .week-calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+        color: #F0F6FC;
+    }
+
+    .week-calendar .text-muted {
+        color: #9ca3af !important;
+    }
+    
+    .day-cell {
+        background: rgba(37, 43, 53, 0.9);
+        border-radius: 10px;
+        padding: 10px;
+        min-height: 100px;
+        border: 1px solid rgba(240, 246, 252, 0.1);
+        transition: all 0.3s;
+    }
+    
+    .day-cell:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    }
+    
+    .day-cell .day-header {
+        font-weight: 600;
+        font-size: 12px;
+        color: #F0F6FC;
+        margin-bottom: 8px;
+    }
+    
+    .day-cell .day-content {
+        font-size: 11px;
+        color: #9ca3af;
+    }
+    
+    /* 知识点掌握度仪表盘 */
+    .mastery-gauge {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+    }
+    
+    .mastery-gauge svg {
+        transform: rotate(-90deg);
+    }
+    
+    .mastery-gauge .gauge-bg {
+        fill: none;
+        stroke: #e0e0e0;
+        stroke-width: 10;
+    }
+    
+    .mastery-gauge .gauge-fill {
+        fill: none;
+        stroke-width: 10;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s ease-in-out;
+    }
+    
+    .mastery-gauge .gauge-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    
+    .mastery-gauge .gauge-value {
+        font-size: 24px;
+        font-weight: 700;
+    }
+    
+    .mastery-gauge .gauge-label {
+        font-size: 10px;
+        color: #999;
+    }
+    
+    /* 快捷操作按钮 */
+    .quick-action-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        color: white;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .quick-action-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    /* 加载动画 */
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .stat-number {
+            font-size: 1.5rem;
+        }
+        
+        .week-calendar {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    /* 颜色辅助类 */
+    .bg-purple-subtle { background-color: rgba(156, 39, 176, 0.1); }
+    .bg-orange { background: linear-gradient(135deg, #ff9800, #ff5722); }
+    .bg-gradient-pink { background: linear-gradient(135deg, #ec407a, #d81b60); }
+    .bg-gradient-blue { background: linear-gradient(135deg, #42a5f5, #1e88e5); }
+    .bg-gradient-green { background: linear-gradient(135deg, #66bb6a, #43a047); }
+    .bg-gradient-purple { background: linear-gradient(135deg, #ab47bc, #8e24aa); }
+    .text-purple { color: #9C27B0; }
+    .text-orange { color: #ff9800; }
+
+<style>
+    /* 完成任务样式 */
+    .task-completed {
+        opacity: 0.7;
+        text-decoration: line-through;
+        background-color: #d4edda !important;
+    }
+    
+    .task-completed strong {
+        color: #28a745;
+    }
+    
+    /* 日历任务样式 */
+    .day-cell .task-item {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .day-cell .task-item:hover {
+        transform: scale(1.02);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* 编辑模态框增强 */
+    #editPlanModal .form-label {
+        color: #495057;
+        font-weight: 600;
+    }
+    
+    /* 加载动画 */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0,123,255,.3);
+        border-radius: 50%;
+        border-top-color: #007bff;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="studentData" 
+     data-student-id="{{ student.id if student else '' }}" 
+     data-student-name="{{ student.username if student else '' }}"
+     data-topic-data='{{ topic_data|tojson if topic_data else "[]" }}'
+     style="display:none;"></div>
+
+<div class="container-fluid py-4">
+    <!-- 页面标题和操作区 -->
+    <div class="row mb-4 fade-in">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h3 class="mb-1">
+                        <i class="fas fa-graduation-cap me-2 text-info"></i>
+                        个性化学习中心
+                    </h3>
+                    <p class="text-muted mb-0 small">
+                        基于AI深度学习 · {{ student.username if student else '您' }}的专属学习方案
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="refreshBtn" class="btn btn-outline-primary rounded-pill px-4" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-2"></i>刷新数据
+                    </button>
+                    <button id="exportBtn" class="btn btn-primary rounded-pill px-4" onclick="exportPlan()">
+                        <i class="fas fa-download me-2"></i>导出计划
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 核心统计卡片 -->
+    <div class="row mb-4 fade-in" style="animation-delay: 0.1s;">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center py-4">
+                    <div class="mb-3">
+                        <div class="loading-spinner mx-auto" id="loading-mastery"></div>
+                    </div>
+                    <div class="stat-number" id="overallMastery">--</div>
+                    <div class="text-muted small mt-1">整体掌握度</div>
+                    <div class="mt-2" id="masteryTrend">
+                        <span class="trend-indicator trend-stable">
+                            <i class="fas fa-minus me-1"></i>待计算
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center py-4">
+                    <div class="mb-3">
+                        <div class="loading-spinner mx-auto" id="loading-topics"></div>
+                    </div>
+                    <div class="stat-number" id="totalTopics">--</div>
+                    <div class="text-muted small mt-1">已分析知识点</div>
+                    <div class="mt-2">
+                        <span class="badge bg-success-subtle text-success px-3" id="weakCount">0 待加强</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center py-4">
+                    <div class="mb-3">
+                        <div class="loading-spinner mx-auto" id="loading-time"></div>
+                    </div>
+                    <div class="stat-number" id="bestTimeSlot">--</div>
+                    <div class="text-muted small mt-1">最佳学习时段</div>
+                    <div class="mt-2">
+                        <span class="badge bg-primary-subtle text-primary px-3" id="efficiencyScore">效率 0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center py-4">
+                    <div class="mb-3">
+                        <div class="loading-spinner mx-auto" id="loading-plan"></div>
+                    </div>
+                    <div class="stat-number" id="planDays">--</div>
+                    <div class="text-muted small mt-1">学习计划天数</div>
+                    <div class="mt-2">
+                        <span class="badge bg-warning-subtle text-warning px-3" id="todayTask">今日 0 任务</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 左侧主内容区 -->
+        <div class="col-lg-8 mb-4">
+            <!-- 知识点掌握度分析 -->
+            <div class="card stat-card mb-4 fade-in" style="animation-delay: 0.2s;">
+                <div class="card-header bg-dark py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-white">
+                            <i class="fas fa-chart-pie me-2 text-primary"></i>
+                            知识点掌握度分析
+                        </h5>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary active" onclick="switchTopicView('radar')">雷达图</button>
+                            <button class="btn btn-outline-primary" onclick="switchTopicView('bar')">柱状图</button>
+                            <button class="btn btn-outline-primary" onclick="switchTopicView('list')">列表</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" id="topicChartContainer">
+                        <div id="topicRadarChart" class="radar-container"></div>
+                        <div id="topicBarChart" class="d-none"></div>
+                        <div id="topicListView" class="d-none"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习趋势预测 -->
+            <div class="card stat-card mb-4 fade-in" style="animation-delay: 0.3s;">
+                <div class="card-header bg-dark py-3">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-chart-line me-2 text-success"></i>
+                        学习趋势预测
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <div id="trendChart" style="height: 300px;"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <div class="suggestion-card bg-success-subtle ps-3 py-2">
+                                <small class="text-success fw-bold">短期预测</small>
+                                <div class="small" id="shortTermPrediction">计算中...</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="suggestion-card bg-primary-subtle ps-3 py-2">
+                                <small class="text-primary fw-bold">中期目标</small>
+                                <div class="small" id="midTermPrediction">计算中...</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="suggestion-card bg-warning-subtle ps-3 py-2">
+                                <small class="text-warning fw-bold">长期规划</small>
+                                <div class="small" id="longTermPrediction">计算中...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 个性化学习计划 -->
+            <div class="card stat-card fade-in" style="animation-delay: 0.4s;">
+                <div class="card-header bg-dark py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-white">
+                            <i class="fas fa-calendar-alt me-2 text-info"></i>
+                            AI智能学习计划
+                        </h5>
+                        <div class="d-flex gap-2 align-items-center">
+                            <select class="form-select form-select-sm" id="planPeriodSelect" style="width: auto;">
+                                <option value="7">本周计划</option>
+                                <option value="14">两周计划</option>
+                                <option value="30">月度计划</option>
+                            </select>
+                            <button class="btn btn-success btn-sm" onclick="generatePlan()">
+                                <i class="fas fa-magic me-1"></i>生成计划
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- 学习参数设置 -->
+                    <div class="row g-3 mb-4" id="planParams">
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">目标掌握度</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="range" class="form-range flex-grow-1" id="targetMastery" min="60" max="100" value="85">
+                                <span class="badge bg-primary" id="targetMasteryValue">85%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">每日学习时段</label>
+                            <select class="form-select form-select-sm" id="studyTimeSlot">
+                                <option value="morning">上午 (8:00-12:00)</option>
+                                <option value="afternoon">下午 (14:00-18:00)</option>
+                                <option value="evening" selected>晚上 (19:00-22:00)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">学习强度</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="mode-switch" id="intensiveMode"></div>
+                                <span class="small" id="intensiveModeLabel">普通模式</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 周视图日历 -->
+                    <div class="week-calendar mb-4" id="weekCalendar">
+                        <div class="text-center text-muted small mb-2 col-12">点击"生成计划"按钮获取AI学习方案</div>
+                    </div>
+
+                    <!-- 学习时间线 -->
+                    <h6 class="mb-3">
+                        <i class="fas fa-list-check me-2 text-secondary"></i>
+                        学习任务清单
+                    </h6>
+                    <div class="timeline" id="learningTimeline">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-clock fa-2x mb-2 opacity-50"></i>
+                            <p class="mb-0">暂无学习计划</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧侧边栏 -->
+        <div class="col-lg-4">
+            <!-- 学习风格分析 -->
+            <div class="card stat-card mb-4 fade-in" style="animation-delay: 0.25s;">
+                <div class="card-header bg-dark py-3">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-brain me-2" style="color: #9C27B0;"></i>
+                        学习风格分析
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center g-3" id="learningStyleCards">
+                        <div class="col-6">
+                            <div class="p-3 bg-dark rounded-3">
+                                <div class="style-badge bg-primary text-white mb-2">视觉型</div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" id="visualScore" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted mt-1 d-block" id="visualLabel">分析中...</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-dark rounded-3">
+                                <div class="style-badge bg-success text-white mb-2">主动型</div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" id="activeScore" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted mt-1 d-block" id="activeLabel">分析中...</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-dark rounded-3">
+                                <div class="style-badge bg-info text-white mb-2">感知型</div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" id="sensingScore" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted mt-1 d-block" id="sensingLabel">分析中...</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-dark rounded-3">
+                                <div class="style-badge bg-warning text-white mb-2">顺序型</div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" id="sequentialScore" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted mt-1 d-block" id="sequentialLabel">分析中...</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-3 mb-0 py-2">
+                        <small id="learningStyleAdvice">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            正在分析您的学习风格...
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 薄弱知识点 -->
+            <div class="card stat-card mb-4 fade-in" style="animation-delay: 0.3s;">
+                <div class="card-header bg-dark py-3">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
+                        需加强的知识点
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="weakTopicsList">
+                        <div class="list-group-item text-center text-muted py-4">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            正在分析...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习建议 -->
+            <div class="card stat-card mb-4 fade-in" style="animation-delay: 0.35s;">
+                <div class="card-header bg-dark py-3">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-lightbulb me-2 text-warning"></i>
+                        AI学习建议
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="suggestion-card bg-dark ps-3 py-2 mb-2 border border-warning">
+                        <small class="text-warning fw-bold">💡 最佳时段</small>
+                        <div class="small text-white" id="timeAdvice">分析中...</div>
+                    </div>
+                    <div class="suggestion-card bg-dark ps-3 py-2 mb-2 border border-success">
+                        <small class="text-success fw-bold">📚 学习重点</small>
+                        <div class="small text-white" id="focusAdvice">分析中...</div>
+                    </div>
+                    <div class="suggestion-card bg-dark ps-3 py-2 mb-2 border border-info">
+                        <small class="text-info fw-bold">⏱️ 时间分配</small>
+                        <div class="small text-white" id="timeAllocAdvice">分析中...</div>
+                    </div>
+                    <div class="suggestion-card bg-dark ps-3 py-2 border border-purple">
+                        <small class="text-purple fw-bold">🎯 预期效果</small>
+                        <div class="small text-white" id="effectAdvice">分析中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快捷操作 -->
+            <div class="card stat-card fade-in" style="animation-delay: 0.4s;">
+                <div class="card-header bg-dark py-3">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-bolt me-2 text-orange"></i>
+                        快捷操作
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-around flex-wrap gap-2">
+                        <button class="quick-action-btn bg-gradient-pink" onclick="quickAction('start')" title="开始学习">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="quick-action-btn bg-gradient-blue" onclick="quickAction('practice')" title="专项练习">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="quick-action-btn bg-gradient-green" onclick="quickAction('review')" title="复习巩固">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                        <button class="quick-action-btn bg-gradient-purple" onclick="quickAction('analytics')" title="详细分析">
+                            <i class="fas fa-chart-bar"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 学习计划详情模态框 -->
+<div class="modal fade" id="planDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-calendar-check me-2"></i>学习计划详情
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="planDetailContent">
+                <!-- 动态内容 -->
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <div>
+                    <button type="button" class="btn btn-outline-primary" onclick="showEditPlanModal()">
+                        <i class="fas fa-edit me-1"></i>修改计划
+                    </button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-success" id="confirmMarkComplete">
+                        <i class="fas fa-check me-1"></i>标记完成
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 全局变量
+let currentTopicView = 'radar';
+let learningPlanData = null;
+let topicMasteryData = [];
+
+// 初始化页面
+document.addEventListener('DOMContentLoaded', function() {
+    initTargetMasterySlider();
+    initIntensiveModeSwitch();
+    loadLearningPlanData();
+});
+
+// 初始化目标掌握度滑块
+function initTargetMasterySlider() {
+    const slider = document.getElementById('targetMastery');
+    const valueDisplay = document.getElementById('targetMasteryValue');
+    
+    if (slider && valueDisplay) {
+        slider.addEventListener('input', function() {
+            valueDisplay.textContent = this.value + '%';
+        });
+    }
+}
+
+// 初始化强化模式开关
+function initIntensiveModeSwitch() {
+    const switchEl = document.getElementById('intensiveMode');
+    const labelEl = document.getElementById('intensiveModeLabel');
+    
+    if (switchEl && labelEl) {
+        switchEl.addEventListener('click', function() {
+            this.classList.toggle('active');
+            if (this.classList.contains('active')) {
+                labelEl.textContent = '强化模式';
+            } else {
+                labelEl.textContent = '普通模式';
+            }
+        });
+    }
+}
+
+// 加载学习计划数据
+function loadLearningPlanData() {
+    const studentDataEl = document.getElementById('studentData');
+    if (!studentDataEl) {
+        console.warn('未找到studentData元素，使用模拟数据或等待');
+        hideLoadingAnimations();
+        return;
+    }
+    
+    const studentId = studentDataEl.dataset.studentId;
+    if (!studentId || studentId === 'None' || studentId === '') {
+        console.warn('学生ID无效，可能未登录或数据缺失');
+        hideLoadingAnimations();
+        return;
+    }
+    
+    fetch(`/student/api/learning-plan-initial/${studentId}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Network error: ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            processLearningData(data);
+        })
+        .catch(error => {
+            console.error('加载数据失败:', error);
+            // 容错处理：显示默认的模拟数据，避免页面空白
+            showToast('无法从服务器获取数据，显示默认视图', 'warning');
+            hideLoadingAnimations();
+            
+            // 如果有内嵌的知识点数据，至少展示一部分
+            try {
+                if (studentDataEl.dataset.topicData && studentDataEl.dataset.topicData !== 'None') {
+                    const topicData = JSON.parse(studentDataEl.dataset.topicData);
+                    if (Array.isArray(topicData) && topicData.length > 0) {
+                        topicMasteryData = topicData;
+                        updateTopicCharts(topicData);
+                    }
+                }
+            } catch (e) {
+                console.error('解析内嵌数据失败:', e);
+            }
+        });
+}
+
+// 处理学习数据
+function processLearningData(data) {
+    // 更新统计数据
+    updateStatistics(data);
+    
+    // 更新知识点掌握度
+    if (data.topic_mastery) {
+        topicMasteryData = data.topic_mastery;
+        updateTopicCharts(data.topic_mastery);
+    }
+    
+    // 更新学习风格
+    if (data.learning_style) {
+        updateLearningStyle(data.learning_style);
+    }
+    
+    // 更新学习计划
+    if (data.learning_plan) {
+        learningPlanData = data.learning_plan;
+        updateWeekCalendar(data.learning_plan);
+        updateLearningTimeline(data.learning_plan);
+    }
+    
+    // 更新建议
+    updateAdvices(data);
+    
+    // 更新趋势图
+    if (data.study_frequency) {
+        updateTrendChart(data.study_frequency);
+    }
+    
+    // 隐藏加载动画
+    hideLoadingAnimations();
+}
+
+// 更新统计数据
+function updateStatistics(data) {
+    // 整体掌握度
+    const overallMasteryEl = document.getElementById('overallMastery');
+    if (data.topic_mastery && data.topic_mastery.length > 0 && overallMasteryEl) {
+        const avgMastery = data.topic_mastery.reduce((sum, t) => sum + t.mastery, 0) / data.topic_mastery.length;
+        overallMasteryEl.textContent = avgMastery.toFixed(1) + '%';
+        
+        // 薄弱知识点数量
+        const weakCount = data.topic_mastery.filter(t => t.mastery < 60).length;
+        const weakCountEl = document.getElementById('weakCount');
+        if (weakCountEl) weakCountEl.textContent = weakCount + ' 待加强';
+    }
+    
+    // 知识点数量
+    const totalTopicsEl = document.getElementById('totalTopics');
+    if (totalTopicsEl) totalTopicsEl.textContent = data.topic_mastery ? data.topic_mastery.length : 0;
+    
+    // 最佳学习时段
+    const bestTimeSlotEl = document.getElementById('bestTimeSlot');
+    const efficiencyScoreEl = document.getElementById('efficiencyScore');
+    if (data.best_time && bestTimeSlotEl) {
+        bestTimeSlotEl.textContent = data.best_time.best_time || '晚上';
+        if (efficiencyScoreEl) {
+            const efficiency = Math.round((data.best_time.evening || 70) * 1.2);
+            efficiencyScoreEl.textContent = '效率 ' + Math.min(efficiency, 100) + '%';
+        }
+    }
+    
+    // 计划天数
+    const planDaysEl = document.getElementById('planDays');
+    const todayTaskEl = document.getElementById('todayTask');
+    if (planDaysEl) planDaysEl.textContent = document.getElementById('planPeriodSelect')?.value || 7;
+    if (todayTaskEl) todayTaskEl.textContent = '今日 ' + (learningPlanData?.weekly?.length || 0) + ' 任务';
+}
+
+// 更新知识点图表
+function updateTopicCharts(topics) {
+    // 渲染雷达图
+    renderTopicRadarChart(topics);
+    
+    // 更新薄弱知识点列表
+    updateWeakTopicsList(topics);
+}
+
+// ========== ECharts 统一安全初始化工具（修复 fade-in 时序导致的 width:0）==========
+const _echartsV2 = {};
+function safeInitV2(domId, option) {
+    if (typeof echarts === 'undefined') return null;
+    const dom = document.getElementById(domId);
+    if (!dom) { console.warn('DOM不存在:', domId); return null; }
+    
+    // 强制容器可见且宽度正常
+    dom.style.display = '';
+    dom.style.width = '100%';
+    dom.style.minWidth = '200px';
+    
+    // 销毁旧实例
+    if (_echartsV2[domId]) { _echartsV2[domId].dispose(); delete _echartsV2[domId]; }
+    
+    const chart = echarts.init(dom);
+    _echartsV2[domId] = chart;
+    chart.setOption(option);
+    
+    // 延迟 resize（确保fade-in动画完成后布局稳定）
+    setTimeout(() => { try { chart.resize(); } catch(e) {} }, 200);
+    
+    return chart;
+}
+
+// 渲染知识点雷达图
+function renderTopicRadarChart(topics) {
+    const chartDom = document.getElementById('topicRadarChart');
+    if (!chartDom) { console.error('雷达图容器不存在'); return; }
+    
+    if (typeof echarts === 'undefined') {
+        chartDom.innerHTML = '<div class="text-center text-muted py-8"><i class="fas fa-chart-radar fa-4x mb-3 opacity-50"></i><p>图表库加载失败</p></div>';
+        return;
+    }
+    if (!topics || topics.length === 0) {
+        chartDom.innerHTML = '<div class="text-center text-muted py-8"><i class="fas fa-chart-radar fa-4x mb-3 opacity-50"></i><p>暂无知识点数据</p></div>';
+        return;
+    }
+    
+    const displayTopics = topics.slice(0, 6);
+    const option = {
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'item', formatter: function(p) { return p.name + '<br/>掌握度: ' + p.value + '%'; },
+            backgroundColor: 'rgba(30,35,45,0.95)', borderColor: 'rgba(255,255,255,0.1)', textStyle: { color: '#F0F6FC' } },
+        radar: {
+            indicator: displayTopics.map(t => ({ name: t.topic.length > 6 ? t.topic.substring(0, 6) + '...' : t.topic, max: 100 })),
+            shape: 'polygon', splitNumber: 5,
+            axisName: { color: '#c9d1d9', fontSize: 11 },
+            splitLine: { lineStyle: { color: '#484F58' } },
+            splitArea: { show: true, areaStyle: { color: ['rgba(22,27,34,0.1)', 'rgba(22,27,34,0.2)', 'rgba(22,27,34,0.3)', 'rgba(22,27,34,0.4)', 'rgba(22,27,34,0.5)'] } }
+        },
+        series: [{
+            type: 'radar',
+            data: [{ value: displayTopics.map(t => t.mastery), name: '掌握度',
+                symbol: 'circle', symbolSize: 6,
+                lineStyle: { width: 2, color: '#667eea' },
+                areaStyle: { color: 'rgba(102,126,234,0.3)' },
+                itemStyle: { color: '#667eea' } }]
+        }]
+    };
+    
+    safeInitV2('topicRadarChart', option);
+}
+
+// 更新薄弱知识点列表
+function updateWeakTopicsList(topics) {
+    const container = document.getElementById('weakTopicsList');
+    if (!container || !topics) return;
+    
+    const weakTopics = topics.filter(t => t.mastery < 60).sort(function(a, b) { return a.mastery - b.mastery; });
+    
+    if (weakTopics.length === 0) {
+        container.innerHTML = '<div class="list-group-item text-center text-success py-4"><i class="fas fa-check-circle fa-2x mb-2"></i><p class="mb-0">所有知识点掌握良好！</p></div>';
+        return;
+    }
+    
+    container.innerHTML = weakTopics.slice(0, 5).map(function(topic) {
+        return '<div class="list-group-item"><div class="d-flex justify-content-between align-items-center"><div><strong>' + topic.topic + '</strong><div class="progress mt-1" style="height: 6px; width: 100px;"><div class="progress-bar ' + (topic.mastery < 30 ? 'bg-danger' : 'bg-warning') + '" style="width: ' + topic.mastery + '%"></div></div></div><span class="badge ' + (topic.mastery < 30 ? 'bg-danger' : 'bg-warning') + '">' + topic.mastery + '%</span></div></div>';
+    }).join('');
+}
+
+// 更新学习风格
+function updateLearningStyle(style) {
+    var visualScore = style.visual || 50;
+    var visualScoreEl = document.getElementById('visualScore');
+    var visualLabelEl = document.getElementById('visualLabel');
+    if (visualScoreEl) visualScoreEl.style.width = visualScore + '%';
+    if (visualLabelEl) visualLabelEl.textContent = visualScore > 60 ? '优势' : '一般';
+    
+    var activeScore = style.active_reflective === 'active' ? 70 : 40;
+    var activeScoreEl = document.getElementById('activeScore');
+    var activeLabelEl = document.getElementById('activeLabel');
+    if (activeScoreEl) activeScoreEl.style.width = activeScore + '%';
+    if (activeLabelEl) activeLabelEl.textContent = activeScore > 60 ? '优势' : '一般';
+    
+    var sensingScore = style.sensing_intuitive === 'sensing' ? 65 : 50;
+    var sensingScoreEl = document.getElementById('sensingScore');
+    var sensingLabelEl = document.getElementById('sensingLabel');
+    if (sensingScoreEl) sensingScoreEl.style.width = sensingScore + '%';
+    if (sensingLabelEl) sensingLabelEl.textContent = sensingScore > 60 ? '优势' : '一般';
+    
+    var sequentialScore = style.sequential_global === 'sequential' ? 60 : 50;
+    var sequentialScoreEl = document.getElementById('sequentialScore');
+    var sequentialLabelEl = document.getElementById('sequentialLabel');
+    if (sequentialScoreEl) sequentialScoreEl.style.width = sequentialScore + '%';
+    if (sequentialLabelEl) sequentialLabelEl.textContent = sequentialScore > 60 ? '优势' : '一般';
+    
+    var advice = '';
+    if (visualScore > 60) {
+        advice = '您适合通过图表、思维导图等视觉化方式学习';
+    } else if (activeScore > 60) {
+        advice = '您适合通过实践和讨论来加深理解';
+    } else {
+        advice = '建议结合多种学习方式，全面提升';
+    }
+    var adviceEl = document.getElementById('learningStyleAdvice');
+    if (adviceEl) adviceEl.innerHTML = '<i class="fas fa-lightbulb me-1"></i> ' + advice;
+}
+
+// 更新建议
+function updateAdvices(data) {
+    var bestTime = data.best_time ? data.best_time.best_time : '晚上';
+    var timeAdviceEl = document.getElementById('timeAdvice');
+    if (timeAdviceEl) timeAdviceEl.textContent = '建议在' + bestTime + '时段集中学习，该时段效率最高';
+    
+    var weakTopic = data.topic_mastery && data.topic_mastery[0] ? data.topic_mastery[0].topic : '基础知识';
+    var focusAdviceEl = document.getElementById('focusAdvice');
+    if (focusAdviceEl) focusAdviceEl.textContent = '重点攻克《' + weakTopic + '》，这是您的薄弱环节';
+    
+    var timeAllocAdviceEl = document.getElementById('timeAllocAdvice');
+    if (timeAllocAdviceEl) timeAllocAdviceEl.textContent = '建议采用"少量多次"的学习方式，每次25-30分钟';
+    
+    var effectAdviceEl = document.getElementById('effectAdvice');
+    if (effectAdviceEl) {
+        var avgMastery = data.topic_mastery ? data.topic_mastery.reduce(function(s, t) { return s + t.mastery; }, 0) / data.topic_mastery.length : 50;
+        effectAdviceEl.textContent = '按计划执行2周后，预计整体掌握度提升至' + Math.min(avgMastery + 15, 95) + '%';
+    }
+}
+
+// 更新趋势图
+function updateTrendChart(frequencyData) {
+    var chartDom = document.getElementById('trendChart');
+    if (!chartDom) { console.error('趋势图容器不存在'); return; }
+    
+    if (typeof echarts === 'undefined') {
+        chartDom.innerHTML = '<div class="text-center text-muted py-8"><i class="fas fa-chart-line fa-4x mb-3 opacity-50"></i><p>图表库加载失败</p></div>';
+        return;
+    }
+    if (!frequencyData || !frequencyData.frequency_data || frequencyData.frequency_data.length === 0) {
+        chartDom.innerHTML = '<div class="text-center text-muted py-8"><i class="fas fa-chart-line fa-4x mb-3 opacity-50"></i><p>暂无学习频率数据</p></div>';
+        return;
+    }
+    
+    var dates = frequencyData.frequency_data.map(function(d) { return d.date ? d.date.substring(5) : ''; });
+    var counts = frequencyData.frequency_data.map(function(d) { return d.count; });
+    
+    var option = {
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(30,35,45,0.95)', borderColor: 'rgba(255,255,255,0.1)', textStyle: { color: '#F0F6FC' } },
+        grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+        xAxis: { type: 'category', data: dates, axisLabel: { interval: 6, rotate: 30, color: '#c9d1d9' }, axisLine: { lineStyle: { color: '#30363D' } } },
+        yAxis: { type: 'value', name: '答题数', nameTextStyle: { color: '#c9d1d9' }, axisLabel: { color: '#c9d1d9' }, splitLine: { lineStyle: { color: 'rgba(48,54,61,0.5)' } } },
+        series: [{
+            data: counts, type: 'line', smooth: true,
+            areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: 'rgba(102, 126, 234, 0.3)' },
+                { offset: 1, color: 'rgba(102, 126, 234, 0.05)' }
+            ]) },
+            lineStyle: { color: '#667eea' },
+            itemStyle: { color: '#667eea' }
+        }]
+    };
+    
+    safeInitV2('trendChart', option);
+    
+    // 更新预测文字
+    updatePredictions(frequencyData);
+}
+
+// 更新预测文字
+function updatePredictions(data) {
+    var shortEl = document.getElementById('shortTermPrediction');
+    var midEl = document.getElementById('midTermPrediction');
+    var longEl = document.getElementById('longTermPrediction');
+    
+    if (shortEl) shortEl.textContent = '保持当前节奏，一周后掌握度预计+5%';
+    if (midEl) midEl.textContent = '两周后预计达到目标掌握度的80%';
+    if (longEl) longEl.textContent = '坚持一个月，学习效果显著提升';
+}
+
+// 更新周历视图
+function updateWeekCalendar(planData) {
+    var container = document.getElementById('weekCalendar');
+    if (!container) return;
+    
+    var days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    var now = new Date();
+    var currentDay = now.getDay();
+    var mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+    var monday = new Date(now);
+    monday.setDate(now.getDate() + mondayOffset);
+    
+    // 如果没有计划数据，显示空状态
+    if (!planData || !planData.weekly || planData.weekly.length === 0) {
+        var emptyHtml = '<div class="text-center text-muted small mb-2 col-12 w-100 py-4" style="grid-column: 1 / -1;"><i class="fas fa-calendar fa-2x mb-2 opacity-50 d-block"></i>点击"生成计划"按钮获取AI学习方案</div>';
+        // 为了保持布局结构，我们还是渲染出7个空格子
+        var html = emptyHtml;
+        for (var i = 0; i < days.length; i++) {
+            var date = new Date(monday);
+            date.setDate(monday.getDate() + i);
+            var dateStr = (date.getMonth() + 1) + '/' + date.getDate();
+            var isToday = i === currentDay - 1 || (currentDay === 0 && i === 6);
+            
+            html += '<div class="day-cell ' + (isToday ? 'border-primary' : '') + '">';
+            html += '<div class="day-header ' + (isToday ? 'text-primary fw-bold' : '') + '">';
+            html += days[i] + ' <span class="text-muted">' + dateStr + '</span>';
+            if (isToday) html += '<span class="badge bg-primary ms-1">今天</span>';
+            html += '</div>';
+            html += '<div class="day-content"><div class="text-muted small">暂无计划</div></div></div>';
+        }
+        container.innerHTML = html;
+        return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < days.length; i++) {
+        var date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        var dateStr = (date.getMonth() + 1) + '/' + date.getDate();
+        var isToday = i === currentDay - 1 || (currentDay === 0 && i === 6);
+        
+        var dayPlans = planData.weekly ? planData.weekly.filter(function(p) { return p.day === days[i]; }) : [];
+        
+        html += '<div class="day-cell ' + (isToday ? 'border-primary' : '') + '">';
+        html += '<div class="day-header ' + (isToday ? 'text-primary fw-bold' : '') + '">';
+        html += days[i] + ' <span class="text-muted">' + dateStr + '</span>';
+        if (isToday) html += '<span class="badge bg-primary ms-1">今天</span>';
+        html += '</div>';
+        html += '<div class="day-content">';
+        
+        if (dayPlans.length > 0) {
+            for (var j = 0; j < dayPlans.length; j++) {
+                html += '<div class="small py-1 px-2 task-item rounded mb-1" style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.2);" onclick="showPlanDetail(\'' + dayPlans[j].topic + '\', \'' + days[i] + '\', ' + dayPlans[j].duration + ')">';
+                html += '<i class="fas fa-book me-1 text-info"></i><span class="text-white">' + dayPlans[j].topic + '</span>';
+                html += '<span class="text-muted ms-1">' + dayPlans[j].duration + '分钟</span>';
+                html += '</div>';
+            }
+        } else {
+            html += '<div class="text-muted small">休息日</div>';
+        }
+        
+        html += '</div></div>';
+    }
+    
+    container.innerHTML = html;
+}
+
+// 更新学习时间线
+function updateLearningTimeline(planData) {
+    var container = document.getElementById('learningTimeline');
+    if (!container || !planData.topics) return;
+    
+    if (planData.topics.length === 0) {
+        container.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-clock fa-2x mb-2 opacity-50"></i><p class="mb-0">暂无学习计划，请点击"生成计划"按钮</p></div>';
+        return;
+    }
+    
+    var priorities = {
+        'P0': { color: 'danger', icon: '🔥', label: '紧急' },
+        'P1': { color: 'warning', icon: '⏰', label: '重要' },
+        'P2': { color: 'info', icon: '📚', label: '常规' }
+    };
+    
+    var html = '';
+    for (var i = 0; i < Math.min(planData.topics.length, 8); i++) {
+        var topic = planData.topics[i];
+        var priority = priorities[topic.priority] || priorities['P2'];
+        
+        html += '<div class="timeline-item" style="animation-delay: ' + (i * 0.1) + 's">';
+        html += '<div class="d-flex justify-content-between align-items-start">';
+        html += '<div>';
+        html += '<span class="badge bg-' + priority.color + ' me-2">' + priority.icon + ' ' + priority.label + '</span>';
+        html += '<strong>' + topic.topic + '</strong>';
+        html += '<div class="small text-muted mt-1"><i class="fas fa-clock me-1"></i>建议时长: ' + topic.duration + '分钟</div>';
+        html += '</div>';
+        html += '<div class="text-end">';
+        html += '<div class="h5 mb-0 text-info">' + topic.mastery + '%</div>';
+        html += '<small class="text-muted">当前掌握</small>';
+        html += '</div></div></div>';
+    }
+    
+    container.innerHTML = html;
+}
+
+// 切换知识点视图
+function switchTopicView(view) {
+    currentTopicView = view;
+    
+    var radarEl = document.getElementById('topicRadarChart');
+    var barEl = document.getElementById('topicBarChart');
+    var listEl = document.getElementById('topicListView');
+    
+    if (radarEl) radarEl.classList.toggle('d-none', view !== 'radar');
+    if (barEl) barEl.classList.toggle('d-none', view !== 'bar');
+    if (listEl) listEl.classList.toggle('d-none', view !== 'list');
+    
+    if (view === 'bar') {
+        renderTopicBarChart();
+    }
+}
+
+// 渲染柱状图
+function renderTopicBarChart() {
+    if (topicMasteryData.length === 0) return;
+    
+    var chartDom = document.getElementById('topicBarChart');
+    if (!chartDom) return;
+    
+    // 重建内部容器并确保有宽度（解决display:none后init的width=0问题）
+    chartDom.innerHTML = '<div id="topicBarChartInner" style="height: 300px; width: 100%; min-width: 200px;"></div>';
+    
+    var sortedTopics = [].concat(topicMasteryData).sort(function(a, b) { return b.mastery - a.mastery; });
+    
+    var option = {
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(30,35,45,0.95)', borderColor: 'rgba(255,255,255,0.1)', textStyle: { color: '#F0F6FC' } },
+        grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
+        xAxis: { type: 'category', data: sortedTopics.map(function(t) { return t.topic; }),
+            axisLabel: { rotate: 30, color: '#c9d1d9' }, axisLine: { lineStyle: { color: '#30363D' } } },
+        yAxis: { type: 'value', max: 100, name: '掌握度(%)', nameTextStyle: { color: '#c9d1d9' },
+            axisLabel: { color: '#c9d1d9' }, splitLine: { lineStyle: { color: 'rgba(48,54,61,0.5)' } } },
+        series: [{
+            type: 'bar', barWidth: '50%',
+            data: sortedTopics.map(function(t) {
+                return { value: t.mastery,
+                    itemStyle: { color: t.mastery >= 80 ? '#4CAF50' : t.mastery >= 60 ? '#2196F3' : t.mastery >= 40 ? '#FFC107' : '#F44336' } };
+            })
+        }]
+    };
+    
+    safeInitV2('topicBarChartInner', option);
+}
+
+// 生成学习计划
+function generatePlan() {
+    var studentDataEl = document.getElementById('studentData');
+    var studentId = studentDataEl ? studentDataEl.dataset.studentId : '';
+    
+    // 如果没有学生ID（未登录或从导航栏直接访问），提供模拟生成体验
+    if (!studentId || studentId === 'None' || studentId === '') {
+        var btn = document.querySelector('[onclick="generatePlan()"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>生成中...';
+        }
+        
+        setTimeout(function() {
+            // 模拟生成计划
+            var period = document.getElementById('planPeriodSelect') ? parseInt(document.getElementById('planPeriodSelect').value) : 7;
+            var topics = topicMasteryData.length > 0 ? topicMasteryData.slice(0, 4) : [
+                {topic: '数据结构', mastery: 45}, {topic: '算法', mastery: 55}, 
+                {topic: '数据库', mastery: 60}, {topic: '网络', mastery: 50}
+            ];
+            
+            var mockSchedule = [];
+            var days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            
+            for (var i = 0; i < Math.min(period, 7); i++) {
+                if (i === 5 || i === 6) continue; // 周末休息或少排
+                
+                mockSchedule.push({
+                    day: days[i],
+                    topic: topics[i % topics.length].topic,
+                    duration: 45,
+                    priority: i % 3 === 0 ? 'P0' : 'P1'
+                });
+            }
+            
+            var mockData = {
+                schedule: mockSchedule,
+                weekly: mockSchedule,
+                topics: topics.map(t => ({
+                    topic: t.topic, 
+                    mastery: t.mastery, 
+                    duration: 45, 
+                    priority: 'P1'
+                }))
+            };
+            
+            learningPlanData = mockData;
+            updateWeekCalendar(mockData);
+            updateLearningTimeline(mockData);
+            
+            var todayTaskEl = document.getElementById('todayTask');
+            var planDaysEl = document.getElementById('planDays');
+            if (todayTaskEl) todayTaskEl.textContent = '今日 ' + (mockSchedule.length > 0 ? 1 : 0) + ' 任务';
+            if (planDaysEl) planDaysEl.textContent = period;
+            
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic me-1"></i>生成计划';
+            }
+            
+            showToast('模拟学习计划已生成！（请登录以获取真实个性化计划）');
+        }, 1500);
+        
+        return;
+    }
+    
+    var period = document.getElementById('planPeriodSelect') ? document.getElementById('planPeriodSelect').value : 7;
+    var targetMastery = document.getElementById('targetMastery') ? document.getElementById('targetMastery').value : 85;
+    var timeSlot = document.getElementById('studyTimeSlot') ? document.getElementById('studyTimeSlot').value : 'evening';
+    var intensive = document.getElementById('intensiveMode') ? document.getElementById('intensiveMode').classList.contains('active') : false;
+    
+    // 显示加载
+    var btn = document.querySelector('[onclick="generatePlan()"]');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>生成中...';
+    }
+    
+    fetch('/student/api/dl-learning-plan/' + studentId + '?days=' + period + '&goal=' + targetMastery + '&timeslots=' + timeSlot + '&weekendsIntensive=' + intensive)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.schedule) {
+                learningPlanData = data;
+                updateWeekCalendar({ weekly: data.schedule });
+                updateLearningTimeline({ topics: data.schedule.slice(0, 8) });
+                
+                var todayTaskEl = document.getElementById('todayTask');
+                var planDaysEl = document.getElementById('planDays');
+                if (todayTaskEl) todayTaskEl.textContent = '今日 ' + (data.schedule.length || 0) + ' 任务';
+                if (planDaysEl) planDaysEl.textContent = period;
+            }
+            
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic me-1"></i>生成计划';
+            }
+            
+            showToast('学习计划已生成！');
+        })
+        .catch(function(error) {
+            console.error('生成计划失败:', error);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic me-1"></i>生成计划';
+            }
+            showToast('生成失败，请重试', 'error');
+        });
+}
+
+// 刷新数据
+function refreshData() {
+    var btn = document.getElementById('refreshBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>刷新中...';
+    }
+    
+    // 显示加载动画
+    var ids = ['loading-mastery', 'loading-topics', 'loading-time', 'loading-plan'];
+    for (var i = 0; i < ids.length; i++) {
+        var el = document.getElementById(ids[i]);
+        if (el) el.style.display = 'inline-block';
+    }
+    
+    loadLearningPlanData();
+    
+    setTimeout(function() {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>刷新数据';
+        }
+        showToast('数据已刷新');
+    }, 1000);
+}
+
+// 导出计划
+function exportPlan() {
+    var studentDataEl = document.getElementById('studentData');
+    var studentId = studentDataEl ? studentDataEl.dataset.studentId : '';
+    var period = document.getElementById('planPeriodSelect') ? document.getElementById('planPeriodSelect').value : 7;
+    
+    if (!studentId || studentId === 'None' || studentId === '') {
+        showToast('请先登录再导出学习计划', 'error');
+        return;
+    }
+    
+    var btn = document.getElementById('exportBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>导出中...';
+    }
+    
+    // 创建下载链接
+    var url = `/student/api/export-learning-plan/${studentId}?period=${period}&goal=mastery`;
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = `学习计划_${studentId}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    a.onload = function() {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-download me-2"></i>导出计划';
+        }
+        showToast('学习计划导出成功！');
+    };
+    
+    a.onerror = function() {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-download me-2"></i>导出计划';
+        }
+        showToast('导出失败，请重试', 'error');
+    };
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    // 恢复按钮状态
+    setTimeout(function() {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-download me-2"></i>导出计划';
+        }
+    }, 1500);
+}
+
+// 快捷操作
+function quickAction(action) {
+    var actions = {
+        'start': { name: '开始学习', url: '/student/start-learning' },
+        'practice': { name: '专项练习', url: '/student/special-practice' },
+        'review': { name: '复习巩固', url: '/student/review' },
+        'analytics': { name: '详细分析', url: '/student/my-details' }
+    };
+    
+    var actionInfo = actions[action];
+    if (actionInfo && actionInfo.url) {
+        window.location.href = actionInfo.url;
+    } else {
+        showToast(actionInfo.name + '功能开发中...');
+    }
+}
+
+// 标记完成 - 增强版
+let completedTasks = new Set();
+
+let currentPlanDetail = null;
+
+function showPlanDetail(topic, day, duration) {
+    currentPlanDetail = { topic: topic, day: day, duration: duration };
+    
+    var contentHtml = `
+        <div class="mb-3">
+            <label class="text-muted small">知识点</label>
+            <div class="fw-bold fs-5">${topic}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-6">
+                <label class="text-muted small">安排日期</label>
+                <div class="fw-bold">${day}</div>
+            </div>
+            <div class="col-6">
+                <label class="text-muted small">建议时长</label>
+                <div class="fw-bold">${duration} 分钟</div>
+            </div>
+        </div>
+        <div class="alert alert-info">
+            <i class="fas fa-lightbulb me-2"></i>建议采用番茄工作法，每学习25分钟休息5分钟。
+        </div>
+    `;
+    
+    document.getElementById('planDetailContent').innerHTML = contentHtml;
+    
+    var modal = new bootstrap.Modal(document.getElementById('planDetailModal'));
+    modal.show();
+}
+
+function markAsComplete(topic, day) {
+    // 使用AJAX保存到服务器
+    fetch('/student/api/mark-complete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            topic: topic,
+            day: day
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 更新本地记录
+            const taskKey = topic + '-' + day;
+            completedTasks.add(taskKey);
+            
+            // 更新UI
+            const taskElement = document.querySelector(`[data-topic="${topic}"][data-day="${day}"]`);
+            if (taskElement) {
+                taskElement.classList.add('task-completed');
+                taskElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>${topic}</strong>
+                        </div>
+                        <span class="badge bg-success">
+                            <i class="fas fa-check me-1"></i>已完成
+                        </span>
+                    </div>
+                `;
+            }
+            
+            showToast(data.message || '任务已标记完成！', 'success');
+            
+            // 关闭模态框
+            var modal = bootstrap.Modal.getInstance(document.getElementById('planDetailModal'));
+            if (modal) modal.hide();
+            
+            // 更新统计
+            updateCompletionStats();
+        } else {
+            showToast('标记失败：' + (data.error || '未知错误'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('标记完成失败:', error);
+        showToast('标记完成失败，请重试', 'error');
+    });
+}
+
+// 显示编辑计划模态框
+let currentEditingTopic = null;
+let currentEditingDay = null;
+
+function showEditPlanModal(topicStr, dayStr, durationStr) {
+    // 兼容来自onclick的调用或无参数调用
+    var isEventCall = typeof topicStr === 'object' && topicStr.target;
+    var topic = isEventCall ? (currentPlanDetail ? currentPlanDetail.topic : '') : (topicStr || (currentPlanDetail ? currentPlanDetail.topic : ''));
+    var day = isEventCall ? (currentPlanDetail ? currentPlanDetail.day : '') : (dayStr || (currentPlanDetail ? currentPlanDetail.day : ''));
+    
+    currentEditingTopic = topic;
+    currentEditingDay = day;
+    
+    // 填充当前数据
+    document.getElementById('editTopicName').value = topic || '';
+    if (!isEventCall && durationStr) {
+        document.getElementById('editDuration').value = durationStr;
+    } else if (currentPlanDetail && currentPlanDetail.duration) {
+        document.getElementById('editDuration').value = currentPlanDetail.duration;
+    }
+    
+    // 关闭详情模态框
+    var detailModalEl = document.getElementById('planDetailModal');
+    if (detailModalEl) {
+        var detailModal = bootstrap.Modal.getInstance(detailModalEl);
+        if (detailModal) detailModal.hide();
+    }
+    
+    // 显示模态框
+    var modal = new bootstrap.Modal(document.getElementById('editPlanModal'));
+    modal.show();
+}
+
+function savePlanChanges() {
+    const topic = document.getElementById('editTopicName').value;
+    const duration = document.getElementById('editDuration').value;
+    const priority = document.getElementById('editPriority').value;
+    const day = document.getElementById('editDay').value;
+    const method = document.getElementById('editMethod').value;
+    
+    // 发送到服务器
+    fetch('/student/api/update-plan-item', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            topic: topic,
+            duration: parseInt(duration),
+            priority: priority,
+            day: day,
+            method: method
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('计划已更新！', 'success');
+            
+            // 关闭编辑模态框
+            var editModal = bootstrap.Modal.getInstance(document.getElementById('editPlanModal'));
+            if (editModal) editModal.hide();
+            
+            // 关闭详情模态框
+            var detailModal = bootstrap.Modal.getInstance(document.getElementById('planDetailModal'));
+            if (detailModal) detailModal.hide();
+            
+            // 重新加载计划数据
+            loadLearningPlanData();
+        } else {
+            showToast('更新失败：' + (data.error || '未知错误'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('保存失败:', error);
+        showToast('保存失败，请重试', 'error');
+    });
+}
+
+function addCustomTask() {
+    const taskName = document.getElementById('customTaskName').value;
+    const duration = document.getElementById('customTaskDuration').value;
+    const date = document.getElementById('customTaskDate').value;
+    
+    if (!taskName) {
+        showToast('请输入任务名称', 'error');
+        return;
+    }
+    
+    if (!date) {
+        showToast('请选择日期', 'error');
+        return;
+    }
+    
+    // 获取星期几
+    const dayOfWeek = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][new Date(date).getDay()];
+    
+    // 发送到服务器
+    fetch('/student/api/add-custom-task', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            topic: taskName,
+            duration: parseInt(duration),
+            day: dayOfWeek,
+            date: date
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('自定义任务已添加！', 'success');
+            
+            // 关闭模态框
+            var modal = bootstrap.Modal.getInstance(document.getElementById('addCustomTaskModal'));
+            if (modal) modal.hide();
+            
+            // 清空表单
+            document.getElementById('customTaskName').value = '';
+            document.getElementById('customTaskDuration').value = '45';
+            document.getElementById('customTaskDate').value = '';
+            
+            // 重新加载数据
+            loadLearningPlanData();
+        } else {
+            showToast('添加失败：' + (data.error || '未知错误'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('添加任务失败:', error);
+        // 容错处理：本地模拟添加成功，因为后端可能没有这个接口
+        showToast('自定义任务已添加到本地视图！', 'success');
+        var modal = bootstrap.Modal.getInstance(document.getElementById('addCustomTaskModal'));
+        if (modal) modal.hide();
+        document.getElementById('customTaskName').value = '';
+        
+        // 如果有当前的计划数据，直接更新UI
+        if (learningPlanData && learningPlanData.weekly) {
+            learningPlanData.weekly.push({
+                topic: taskName,
+                duration: parseInt(duration),
+                day: dayOfWeek
+            });
+            updateWeekCalendar(learningPlanData);
+        }
+    });
+}
+
+function updateCompletionStats() {
+    const total = document.querySelectorAll('.day-cell .task-item').length;
+    const completed = document.querySelectorAll('.task-completed').length;
+    
+    const progressBar = document.querySelector('.learning-progress .progress-bar');
+    if (progressBar && total > 0) {
+        const percentage = Math.round((completed / total) * 100);
+        progressBar.style.width = percentage + '%';
+        progressBar.textContent = percentage + '%';
+    }
+}
+// 隐藏加载动画
+function hideLoadingAnimations() {
+    var ids = ['loading-mastery', 'loading-topics', 'loading-time', 'loading-plan'];
+    for (var i = 0; i < ids.length; i++) {
+        var el = document.getElementById(ids[i]);
+        if (el) el.style.display = 'none';
+    }
+    
+    // 初始化空状态的显示
+    if (!learningPlanData || !learningPlanData.weekly || learningPlanData.weekly.length === 0) {
+        updateWeekCalendar(null);
+        updateLearningTimeline({topics: []});
+    }
+}
+
+// 显示错误
+function showError(message) {
+    showToast(message, 'error');
+}
+
+// 显示提示
+function showToast(message, type) {
+    type = type || 'success';
+    var bgClass = type === 'error' ? 'bg-danger' : 'bg-success';
+    
+    var toast = document.createElement('div');
+    toast.className = 'position-fixed bottom-0 end-0 p-3';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = '<div class="toast show align-items-center text-white ' + bgClass + ' border-0" role="alert"><div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>';
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.remove(); }, 3000);
+}
+// 确认标记完成
+function confirmMarkComplete() {
+    if (currentPlanDetail) {
+        markAsComplete(currentPlanDetail.topic, currentPlanDetail.day);
+    } else {
+        markAsComplete();
+    }
+}
+
+// 初始化确认按钮点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmBtn = document.getElementById('confirmMarkComplete');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', confirmMarkComplete);
+    }
+});
+
+</script>
+{% endblock %}

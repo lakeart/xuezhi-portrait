@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}学智画像 - 教育大数据可视分析系统{% endblock %}</title>
+    
+    <!-- 引入图标库 (国内稳定CDN) -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- ECharts (国内稳定CDN) -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts-wordcloud/2.1.0/echarts-wordcloud.min.js"></script>
+    
+    <!-- 动画库 (国内稳定CDN) -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- 粒子效果 (国内稳定CDN) -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    
+    <!-- Animate.css (国内稳定CDN) -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <style>
+        :root {
+            /* 主色调 - 科技蓝渐变 */
+            --primary-start: #0061ff;
+            --primary-end: #60efff;
+            --primary-color: #0061ff;
+            
+            /* 辅助色 */
+            --secondary-color: #7c3aed;
+            --accent-color: #f472b6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            
+            /* 背景色 */
+            --bg-dark: #0f172a;
+            --bg-darker: #020617;
+            --bg-card: rgba(30, 41, 59, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            
+            /* 文字颜色 */
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            /* 边框 */
+            --border-color: rgba(148, 163, 184, 0.2);
+            --border-glow: rgba(0, 97, 255, 0.5);
+            
+            /* 阴影 */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-glow: 0 0 40px rgba(0, 97, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 50%, #1e293b 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 背景粒子效果 */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: transparent;
+        }
+
+        /* 导航栏 */
+        .navbar-pro {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand-pro {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary) !important;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .brand-text {
+            background: linear-gradient(135deg, var(--text-primary), var(--primary-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-link-pro {
+            color: var(--text-secondary) !important;
+            padding: 0.75rem 1.25rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            margin: 0 0.25rem;
+        }
+
+        .nav-link-pro:hover, .nav-link-pro.active {
+            color: var(--text-primary) !important;
+            background: var(--bg-glass);
+        }
+
+        .nav-link-pro.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-start), var(--primary-end));
+            border-radius: 2px;
+        }
+
+        .nav-icon {
+            width: 20px;
+            margin-right: 8px;
+            opacity: 0.8;
+        }
+
+        /* 用户菜单 */
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-glass);
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-menu:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(0, 97, 255, 0.2);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* 卡片样式 */
+        .card-pro {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .card-pro:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-5px);
+        }
+
+        .card-header-pro {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title-pro {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title-pro i {
+            color: var(--primary-color);
+        }
+
+        /* 统计卡片 */
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 97, 255, 0.1), rgba(6, 182, 212, 0.1));
+            border: 1px solid rgba(0, 97, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 97, 255, 0.1) 0%, transparent 70%);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon.blue { background: rgba(0, 97, 255, 0.2); color: var(--primary-color); }
+        .stat-icon.purple { background: rgba(124, 58, 237, 0.2); color: var(--secondary-color); }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.2); color: var(--success-color); }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.2); color: var(--warning-color); }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--primary-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .stat-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .stat-trend.up {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+        }
+
+        .stat-trend.down {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+        }
+
+        /* 数字人助手 */
+        .ai-assistant {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+        }
+
+        .ai-bubble {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-start), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 97, 255, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .ai-bubble:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(0, 97, 255, 0.6);
+        }
+
+        .ai-bubble i {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .ai-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--danger-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* AI对话框 */
+        .ai-chat-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 400px;
+            max-height: 600px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        .ai-chat-panel.active {
+            display: flex;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ai-chat-header {
+            background: linear-gradient(135deg, var(--primary-start), var(--secondary-color));
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ai-avatar {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .ai-info h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .ai-info span {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .ai-status {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .ai-chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            max-height: 400px;
+        }
+
+        .ai-message {
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .ai-message.user {
+            text-align: right;
+        }
+
+        .ai-message .content {
+            display: inline-block;
+            padding: 0.75rem 1rem;
+            border-radius: 15px;
+            max-width: 85%;
+            line-height: 1.5;
+        }
+
+        .ai-message.ai .content {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 5px;
+        }
+
+        .ai-message.user .content {
+            background: linear-gradient(135deg, var(--primary-start), var(--secondary-color));
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-chat-input {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .ai-chat-input input {
+            flex: 1;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .ai-chat-input input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .ai-chat-input button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--primary-start), var(--secondary-color));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-chat-input button:hover {
+            transform: scale(1.1);
+        }
+
+        /* 快捷问题按钮 */
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 页面标题 */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--primary-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            width: 100%;
+            height: 300px;
+        }
+
+        /* 加载动画 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            z-index: 10;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .ai-chat-panel {
+                width: calc(100% - 40px);
+                right: 20px;
+            }
+            
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景粒子 -->
+    <div id="particles-js"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar-pro">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand-pro" href="/">
+                <div class="brand-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <span class="brand-text">学智画像</span>
+            </a>
+
+            <div class="d-flex align-items-center gap-3">
+                <ul class="nav">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == 'teacher' %}
+                        <li class="nav-item">
+                            <a class="nav-link-pro {% if request.endpoint == 'analysis.index' %}active{% endif %}" href="/analysis/">
+                                <i class="fas fa-chart-line nav-icon"></i>数据分析
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link-pro {% if request.endpoint == 'big_data.index' %}active{% endif %}" href="/big-data/">
+                                <i class="fas fa-robot nav-icon"></i>智能分析
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link-pro" href="/teacher/students">
+                                <i class="fas fa-users nav-icon"></i>学生管理
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link-pro {% if request.endpoint == 'student.learning_plan' %}active{% endif %}" href="/student/learning-plan">
+                                <i class="fas fa-graduation-cap nav-icon"></i>学习中心
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link-pro" href="/student/quiz">
+                                <i class="fas fa-pen nav-icon"></i>答题练习
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link-pro" href="/student/progress">
+                                <i class="fas fa-chart-bar nav-icon"></i>学习进度
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <div class="user-menu" onclick="toggleUserMenu()">
+                                <div class="user-avatar">{{ current_user.username[0:2] }}</div>
+                                <div class="user-info">
+                                    <span class="user-name">{{ current_user.username }}</span>
+                                    <span class="user-role">{{ '教师' if current_user.role == 'teacher' else '学生' }}</span>
+                                </div>
+                                <i class="fas fa-chevron-down ms-2" style="color: var(--text-muted);"></i>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link-pro" href="/login">登录</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- AI数字人助手 -->
+    <div class="ai-assistant">
+        <div class="ai-chat-panel" id="aiChatPanel">
+            <div class="ai-chat-header">
+                <div class="ai-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="ai-info">
+                    <h4>智学助手</h4>
+                    <span><span class="ai-status"></span>在线</span>
+                </div>
+                <button class="btn-close btn-close-white ms-auto" onclick="toggleAIChat()"></button>
+            </div>
+            <div class="ai-chat-body" id="aiChatBody">
+                <div class="ai-message ai">
+                    <div class="content">
+                        👋 你好！我是智学助手，可以帮你：
+                        <div class="quick-questions">
+                            <button class="quick-btn" onclick="sendQuickQuestion('分析我的学习数据')">分析我的学习数据</button>
+                            <button class="quick-btn" onclick="sendQuickQuestion('推荐学习计划')">推荐学习计划</button>
+                            <button class="quick-btn" onclick="sendQuickQuestion('查看知识点掌握情况')">知识点掌握情况</button>
+                            <button class="quick-btn" onclick="sendQuickQuestion('如何提高学习效率')">提高学习效率</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ai-chat-input">
+                <input type="text" id="aiInput" placeholder="输入您的问题..." onkeypress="handleAIInput(event)">
+                <button onclick="sendAIMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="ai-bubble" onclick="toggleAIChat()">
+            <i class="fas fa-headset"></i>
+            <div class="ai-badge">1</div>
+        </div>
+    </div>
+
+    <script>
+        // 粒子背景初始化
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 30, density: { enable: true, value_area: 800 } },
+                color: { value: '#60efff' },
+                shape: { type: 'circle' },
+                opacity: { value: 0.3, random: true },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#60efff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out'
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: { enable: true, mode: 'grab' },
+                    onclick: { enable: true, mode: 'push' }
+                },
+                modes: {
+                    grab: { distance: 140, line_linked: { opacity: 0.5 } },
+                    push: { particles_nb: 4 }
+                }
+            },
+            retina_detect: true
+        });
+
+        // 切换AI对话框
+        function toggleAIChat() {
+            const panel = document.getElementById('aiChatPanel');
+            panel.classList.toggle('active');
+            
+            // 关闭时隐藏徽章
+            if (!panel.classList.contains('active')) {
+                document.querySelector('.ai-badge').style.display = 'none';
+            }
+        }
+
+        // 处理AI输入
+        function handleAIInput(event) {
+            if (event.key === 'Enter') {
+                sendAIMessage();
+            }
+        }
+
+        // 发送AI消息
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const chatBody = document.getElementById('aiChatBody');
+            
+            // 添加用户消息
+            chatBody.innerHTML += `
+                <div class="ai-message user">
+                    <div class="content">${message}</div>
+                </div>
+            `;
+            
+            input.value = '';
+            
+            // 模拟AI回复
+            setTimeout(() => {
+                const response = getAIResponse(message);
+                chatBody.innerHTML += `
+                    <div class="ai-message ai">
+                        <div class="content">${response}</div>
+                    </div>
+                `;
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 1000);
+            
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // 发送快捷问题
+        function sendQuickQuestion(question) {
+            document.getElementById('aiInput').value = question;
+            sendAIMessage();
+        }
+
+        // AI智能回复
+        function getAIResponse(question) {
+            const q = question.toLowerCase();
+            
+            if (q.includes('分析') && q.includes('学习数据')) {
+                return '📊 根据您的学习数据分析：<br><br>' +
+                       '• 最近7天学习时长：<strong>12.5小时</strong><br>' +
+                       '• 平均正确率：<strong>78%</strong><br>' +
+                       '• 薄弱知识点：<strong>算法设计、数据结构</strong><br><br>' +
+                       '💡 建议：加强算法相关题目的练习，每天保持30分钟以上的专项训练。';
+            }
+            
+            if (q.includes('学习计划') || q.includes('推荐')) {
+                return '📅 为您推荐个性化学习计划：<br><br>' +
+                       '• <strong>周一-周三</strong>：算法基础（每天45分钟）<br>' +
+                       '• <strong>周四-周五</strong>：数据结构（每天45分钟）<br>' +
+                       '• <strong>周末</strong>：综合练习与复习<br><br>' +
+                       '🎯 点击"生成深度学习计划"可查看详细安排！';
+            }
+            
+            if (q.includes('知识点') || q.includes('掌握')) {
+                return '📚 您的知识点掌握情况：<br><br>' +
+                       '✅ <strong>优秀</strong>：Python编程（92%）、数据库（85%）<br>' +
+                       '📈 <strong>良好</strong>：计算机网络（72%）、操作系统（68%）<br>' +
+                       '⚠️ <strong>需加强</strong>：算法设计（45%）、数据结构（52%）<br><br>' +
+                       '🔔 建议优先学习标记为"需加强"的知识点。';
+            }
+            
+            if (q.includes('效率') || q.includes('提高')) {
+                return '🚀 提高学习效率的小技巧：<br><br>' +
+                       '1. <strong>番茄工作法</strong>：25分钟专注学习，5分钟休息<br>' +
+                       '2. <strong>错题本</strong>：记录并定期复习错题<br>' +
+                       '3. <strong>交替学习</strong>：不同知识点穿插学习<br>' +
+                       '4. <strong>最佳时段</strong>：您最适合在<strong>上午9-11点</strong>学习<br><br>' +
+                       '💪 坚持这些习惯，学习效率会显著提升！';
+            }
+            
+            if (q.includes('帮助')) {
+                return '🤖 我可以帮您：<br><br>' +
+                       '• 📊 分析学习数据<br>' +
+                       '• 📅 生成学习计划<br>' +
+                       '• 📚 解答知识点问题<br>' +
+                       '• 🎯 提供学习建议<br>' +
+                       '• 📈 预测学习效果<br><br>' +
+                       '请告诉我您想了解什么？';
+            }
+            
+            // 默认回复
+            return '💡 感谢您的提问！我会尽力帮助您。<br><br>' +
+                   '您可以尝试以下问题：<br>' +
+                   '• "分析我的学习数据"<br>' +
+                   '• "推荐学习计划"<br>' +
+                   '• "查看知识点掌握情况"<br>' +
+                   '• "如何提高学习效率"';
+        }
+
+        // 卡片动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card-pro');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

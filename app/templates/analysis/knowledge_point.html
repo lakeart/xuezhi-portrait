@@ -1,0 +1,923 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic }} - 知识点分析{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 knowledge-point-container">
+    <!-- 页面标题和返回按钮 -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card fade-in gradient-header">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-circle gradient-green">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4 class="card-title mb-1">{{ topic }}</h4>
+                            <p class="text-muted mb-0 small">知识点详细分析与数据可视化</p>
+                        </div>
+                        <div class="ms-auto">
+                            <a href="{{ url_for('analysis.index') }}" class="btn btn-gradient-blue rounded-pill">
+                                <i class="fas fa-arrow-left me-2"></i>返回数据分析
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+            <div class="card stat-card gradient-blue-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon-circle gradient-blue me-3">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0 counter-animate">{{ total_submissions }}</h3>
+                            <p class="text-muted small mb-0">总答题数</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+            <div class="card stat-card gradient-green-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon-circle gradient-green me-3">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0 counter-animate">{{ avg_score }}</h3>
+                            <p class="text-muted small mb-0">平均得分</p>
+                        </div>
+                    </div>
+                    <div class="progress mt-3 rounded-pill" style="height: 6px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                            style="width: {{ avg_score * 10 }}%" 
+                            aria-valuenow="{{ avg_score }}" 
+                            aria-valuemin="0" 
+                            aria-valuemax="10">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+            <div class="card stat-card gradient-orange-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon-circle gradient-orange me-3">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0 counter-animate">{{ avg_time }}</h3>
+                            <p class="text-muted small mb-0">平均用时 (分钟)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+            <div class="card stat-card gradient-purple-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon-circle gradient-purple me-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0">{{ difficulty_stats.values()|sum(attribute='count') }}</h3>
+                            <p class="text-muted small mb-0">参与次数</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图表部分 -->
+    <div class="row mb-4">
+        <!-- 难度分布图表 -->
+        <div class="col-lg-6 mb-4">
+            <div class="card fade-in h-100" style="animation-delay: 0.1s;">
+                <div class="card-header gradient-green-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>难度分布
+                    </h5>
+                </div>
+                <div class="card-body d-flex">
+                    <div class="chart-container w-50">
+                        <canvas id="difficultyChart"></canvas>
+                    </div>
+                    <div class="stats-table w-50 ps-3">
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th>难度</th>
+                                        <th>数量</th>
+                                        <th>得分</th>
+                                        <th>用时</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for diff, stats in difficulty_stats.items() %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge 
+                                                {% if diff == '简单' %}bg-success{% elif diff == '中等' %}bg-warning{% else %}bg-danger{% endif %} rounded-pill">
+                                                {{ diff }}
+                                            </span>
+                                        </td>
+                                        <td>{{ stats.count }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2">{{ "%.1f"|format(stats.avg_score) }}</span>
+                                                <div class="progress flex-grow-1 rounded-pill" style="height: 4px;">
+                                                    <div class="progress-bar 
+                                                        {% if diff == '简单' %}bg-success{% elif diff == '中等' %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {{ stats.avg_score * 10 }}%">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ "%.1f"|format(stats.avg_time) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 题型分布图表 -->
+        <div class="col-lg-6 mb-4">
+            <div class="card fade-in h-100" style="animation-delay: 0.2s;">
+                <div class="card-header gradient-blue-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>题型分布
+                    </h5>
+                </div>
+                <div class="card-body d-flex">
+                    <div class="chart-container w-50">
+                        <canvas id="questionTypeChart"></canvas>
+                    </div>
+                    <div class="stats-table w-50 ps-3">
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th>题型</th>
+                                        <th>数量</th>
+                                        <th>得分</th>
+                                        <th>用时</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for style, stats in style_stats.items() %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-info rounded-pill">{{ style }}</span>
+                                        </td>
+                                        <td>{{ stats.count }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2">{{ "%.1f"|format(stats.avg_score) }}</span>
+                                                <div class="progress flex-grow-1 rounded-pill" style="height: 4px;">
+                                                    <div class="progress-bar bg-info" 
+                                                        role="progressbar" 
+                                                        style="width: {{ stats.avg_score * 10 }}%">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ "%.1f"|format(stats.avg_time) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- 时间段分布图表 -->
+        <div class="col-lg-6 mb-4">
+            <div class="card fade-in h-100" style="animation-delay: 0.3s;">
+                <div class="card-header gradient-purple-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>时间段分布
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container mb-3">
+                        <canvas id="timeDistributionChart"></canvas>
+                    </div>
+                    <div class="stats-pills d-flex flex-wrap justify-content-center">
+                        {% for region, stats in time_region_stats.items() %}
+                        <div class="time-region-pill me-2 mb-2 px-3 py-2 bg-light rounded-pill">
+                            <span class="badge bg-success rounded-pill me-1">{{ region }}</span>
+                            <span class="small">{{ stats.count }}次</span>
+                            <span class="small ms-2">{{ "%.1f"|format(stats.avg_score) }}分</span>
+                            <span class="small ms-2">{{ "%.1f"|format(stats.avg_time) }}分钟</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最近答题记录 -->
+        <div class="col-lg-6 mb-4">
+            <div class="card fade-in h-100" style="animation-delay: 0.4s;">
+                <div class="card-header gradient-orange-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>最近答题记录
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>提交时间</th>
+                                    <th>题型</th>
+                                    <th>难度</th>
+                                    <th>得分</th>
+                                    <th>用时</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sub in recent_submissions %}
+                                <tr>
+                                    <td>{{ sub.submit_time.strftime('%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge bg-info rounded-pill">{{ sub.question_style }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill 
+                                            {% if sub.difficulty == '简单' %}bg-success{% elif sub.difficulty == '中等' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ sub.difficulty }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill {% if sub.score > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ sub.score }}
+                                        </span>
+                                    </td>
+                                    <td>{{ sub.time_consumed }}分钟</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 学习趋势图表 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card fade-in h-100" style="animation-delay: 0.5s;">
+                <div class="card-header gradient-teal-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>学习趋势分析
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="learningTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 教学反馈卡片 -->
+    {% if current_user.is_teacher() %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card fade-in" style="animation-delay: 0.3s;">
+                <div class="card-header gradient-purple-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>教学反馈与建议
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4 mb-md-0">
+                            <div class="feedback-summary p-3 rounded-3" style="background: rgba(0,0,0,0.03);">
+                                <h6 class="fw-bold mb-3">知识点掌握程度</h6>
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="mastery-indicator me-3 rounded-circle d-flex align-items-center justify-content-center
+                                        {% if feedback.mastery_level == '优秀' %}bg-success{% elif feedback.mastery_level == '良好' %}bg-info{% elif feedback.mastery_level == '基本掌握' %}bg-warning{% else %}bg-danger{% endif %}"
+                                        style="width: 80px; height: 80px;">
+                                        <span class="text-white fs-4 fw-bold">
+                                            {{ topic_stats.accuracy_rate|round|int }}%
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="badge rounded-pill 
+                                            {% if feedback.mastery_level == '优秀' %}bg-success{% elif feedback.mastery_level == '良好' %}bg-info{% elif feedback.mastery_level == '基本掌握' %}bg-warning{% else %}bg-danger{% endif %} mb-2 px-3 py-2">
+                                            {{ feedback.mastery_level }}
+                                        </span>
+                                        <p class="text-muted small mb-0">整体掌握程度评估</p>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="fw-bold mb-2">优势领域</h6>
+                                <ul class="list-unstyled mb-3">
+                                    {% for area in feedback.strength_areas %}
+                                    <li class="mb-2 small">
+                                        <i class="fas fa-check-circle text-success me-2"></i>{{ area }}
+                                    </li>
+                                    {% else %}
+                                    <li class="mb-2 small text-muted">
+                                        <i class="fas fa-info-circle me-2"></i>暂无明显优势领域
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                
+                                <h6 class="fw-bold mb-2">薄弱环节</h6>
+                                <ul class="list-unstyled">
+                                    {% for area in feedback.problem_areas %}
+                                    <li class="mb-2 small">
+                                        <i class="fas fa-exclamation-circle text-danger me-2"></i>{{ area }}
+                                    </li>
+                                    {% else %}
+                                    <li class="mb-2 small text-muted">
+                                        <i class="fas fa-info-circle me-2"></i>未发现明显薄弱环节
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="teaching-suggestions p-3 rounded-3" style="background: rgba(0,0,0,0.03);">
+                                <h6 class="fw-bold mb-3">教学建议</h6>
+                                
+                                <div class="suggestions-list">
+                                    {% for suggestion in feedback.teaching_suggestions %}
+                                    <div class="suggestion-item d-flex p-3 mb-3 rounded-3 bg-white">
+                                        <div class="suggestion-icon me-3">
+                                            {% if '加强' in suggestion or '重点' in suggestion %}
+                                            <div class="suggestion-icon-bg bg-danger-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-bolt text-danger"></i>
+                                            </div>
+                                            {% elif '适当' in suggestion %}
+                                            <div class="suggestion-icon-bg bg-warning-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-sync-alt text-warning"></i>
+                                            </div>
+                                            {% elif '良好' in suggestion or '学生在' in suggestion %}
+                                            <div class="suggestion-icon-bg bg-success-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-check-double text-success"></i>
+                                            </div>
+                                            {% elif '提供' in suggestion %}
+                                            <div class="suggestion-icon-bg bg-info-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-lightbulb text-info"></i>
+                                            </div>
+                                            {% else %}
+                                            <div class="suggestion-icon-bg bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-info text-primary"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="suggestion-content">
+                                            <p class="mb-0">{{ suggestion }}</p>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="suggestion-item d-flex p-3 mb-3 rounded-3" style="background: var(--bg-elevated, #1C2333);">
+                                        <div class="suggestion-icon me-3">
+                                            <div class="suggestion-icon-bg bg-info-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-info text-info"></i>
+                                            </div>
+                                        </div>
+                                        <div class="suggestion-content">
+                                            <p class="mb-0">数据不足，暂无具体教学建议</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <a href="#" class="btn btn-sm btn-outline-purple rounded-pill" onclick="downloadTeachingSuggestions()">
+                                        <i class="fas fa-download me-2"></i>导出教学建议
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .gradient-header {
+        border: none;
+        background: linear-gradient(120deg, rgba(240, 244, 255, 0.8), rgba(255, 255, 255, 1));
+    }
+    
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .gradient-green {
+        background: linear-gradient(45deg, #4CAF50, #8BC34A);
+    }
+    
+    .gradient-blue {
+        background: linear-gradient(45deg, #2196F3, #4FC3F7);
+    }
+    
+    .gradient-purple {
+        background: linear-gradient(45deg, #9C27B0, #BA68C8);
+    }
+    
+    .gradient-orange {
+        background: linear-gradient(45deg, #FF9800, #FFCA28);
+    }
+    
+    .feature-icon-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover .feature-icon-circle {
+        transform: scale(1.1);
+    }
+    
+    .gradient-green-light {
+        background: linear-gradient(120deg, #E8F5E9, #F1F8E9);
+        border: none;
+        color: #198754;
+    }
+    
+    .gradient-blue-light {
+        background: linear-gradient(120deg, #E0F7FA, #E1F5FE);
+        border: none;
+        color: #0056b3;
+    }
+    
+    .gradient-purple-light {
+        background: linear-gradient(120deg, #F3E5F5, #EDE7F6);
+        border: none;
+        color: #1a1a1a;
+    }
+    
+    .gradient-orange-light {
+        background: linear-gradient(120deg, #FFF3E0, #FFF8E1);
+        border: none;
+        color: #fd7e14;
+    }
+    
+    .gradient-teal-light {
+        background: linear-gradient(120deg, #E0F2F1, #E0F7FA);
+        border: none;
+        color: #20c997;
+    }
+    
+    .btn-gradient-blue {
+        background: linear-gradient(45deg, #2196F3, #4FC3F7);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-gradient-blue:hover {
+        background: linear-gradient(45deg, #1E88E5, #29B6F6);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+    
+    .stat-card {
+        border: none;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        background-color: var(--bg-elevated, #1C2333);
+    }
+    
+    .gradient-blue-hover:hover {
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.05), rgba(56, 148, 255, 0.1));
+        transform: translateY(-3px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
+    }
+    
+    .gradient-green-hover:hover {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(72, 187, 120, 0.1));
+        transform: translateY(-3px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
+    }
+    
+    .gradient-orange-hover:hover {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.05), rgba(255, 171, 0, 0.1));
+        transform: translateY(-3px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
+    }
+    
+    .gradient-purple-hover:hover {
+        background: linear-gradient(135deg, rgba(111, 66, 193, 0.05), rgba(156, 39, 176, 0.1));
+        transform: translateY(-3px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+
+    .time-region-pill {
+        transition: all 0.2s ease;
+    }
+
+    .time-region-pill:hover {
+        background-color: #e9ecef !important;
+        transform: translateY(-2px);
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .counter-animate {
+        transition: all 0.5s ease-out;
+    }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 数字渐变动画效果
+    const counters = document.querySelectorAll('.counter-animate');
+    counters.forEach(counter => {
+        const target = parseFloat(counter.innerText);
+        const increment = target / 20;
+        let current = 0;
+        const timer = setInterval(() => {
+            current += increment;
+            counter.innerText = (current >= target) ? target.toString() : current.toFixed(1);
+            if (current >= target) {
+                clearInterval(timer);
+            }
+        }, 50);
+    });
+
+    // 配色方案
+    const colorPalette = {
+        primary: '#4361ee',
+        success: '#2ec4b6',
+        warning: '#ff9f1c',
+        info: '#4cc9f0',
+        danger: '#e63946',
+        primaryLight: 'rgba(67, 97, 238, 0.2)',
+        successLight: 'rgba(46, 196, 182, 0.2)',
+        warningLight: 'rgba(255, 159, 28, 0.2)',
+        infoLight: 'rgba(76, 201, 240, 0.2)',
+        dangerLight: 'rgba(230, 57, 70, 0.2)'
+    };
+
+    // 难度分布饼图
+    const difficultyNames = [];
+    const difficultyCounts = [];
+    const difficultyColors = [];
+    const difficultyBorders = [];
+    
+    {% for diff, stats in difficulty_stats.items() %}
+    difficultyNames.push('{{ diff }}');
+    difficultyCounts.push({{ stats.count }});
+    {% if diff == '简单' %}
+    difficultyColors.push(colorPalette.successLight);
+    difficultyBorders.push(colorPalette.success);
+    {% elif diff == '中等' %}
+    difficultyColors.push(colorPalette.warningLight);
+    difficultyBorders.push(colorPalette.warning);
+    {% else %}
+    difficultyColors.push(colorPalette.dangerLight);
+    difficultyBorders.push(colorPalette.danger);
+    {% endif %}
+    {% endfor %}
+    
+    const difficultyCtx = document.getElementById('difficultyChart').getContext('2d');
+    const difficultyChart = new Chart(difficultyCtx, {
+        type: 'doughnut',
+        data: {
+            labels: difficultyNames,
+            datasets: [{
+                data: difficultyCounts,
+                backgroundColor: difficultyColors,
+                borderColor: difficultyBorders,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // 题型分布饼图
+    const styleNames = [];
+    const styleCounts = [];
+    
+    {% for style, stats in style_stats.items() %}
+    styleNames.push('{{ style }}');
+    styleCounts.push({{ stats.count }});
+    {% endfor %}
+    
+    const questionTypeCtx = document.getElementById('questionTypeChart').getContext('2d');
+    const questionTypeChart = new Chart(questionTypeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: styleNames,
+            datasets: [{
+                data: styleCounts,
+                backgroundColor: [
+                    colorPalette.primaryLight,
+                    colorPalette.infoLight,
+                    colorPalette.successLight,
+                    colorPalette.warningLight,
+                    colorPalette.dangerLight
+                ],
+                borderColor: [
+                    colorPalette.primary,
+                    colorPalette.info,
+                    colorPalette.success,
+                    colorPalette.warning,
+                    colorPalette.danger
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // 时间段分布柱状图
+    const timeRegions = [];
+    const timeCounts = [];
+    const timeScores = [];
+    
+    {% for region, stats in time_region_stats.items() %}
+    timeRegions.push('{{ region }}');
+    timeCounts.push({{ stats.count }});
+    timeScores.push({{ stats.avg_score }});
+    {% endfor %}
+    
+    const timeDistributionCtx = document.getElementById('timeDistributionChart').getContext('2d');
+    const timeDistributionChart = new Chart(timeDistributionCtx, {
+        type: 'bar',
+        data: {
+            labels: timeRegions,
+            datasets: [
+                {
+                    label: '答题次数',
+                    data: timeCounts,
+                    backgroundColor: colorPalette.successLight,
+                    borderColor: colorPalette.success,
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    order: 1
+                },
+                {
+                    label: '平均得分',
+                    data: timeScores,
+                    backgroundColor: 'transparent',
+                    borderColor: colorPalette.primary,
+                    borderWidth: 2,
+                    type: 'line',
+                    tension: 0.4,
+                    pointBackgroundColor: colorPalette.primary,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    order: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false,
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // 学习趋势折线图（模拟数据）
+    const days = ['一周前', '6天前', '5天前', '4天前', '3天前', '2天前', '昨天', '今天'];
+    const scores = [6.5, 6.8, 7.2, 7.0, 7.5, 7.8, 8.2, 8.5];
+    const attempts = [3, 4, 2, 5, 3, 6, 4, 7];
+    
+    const learningTrendCtx = document.getElementById('learningTrendChart').getContext('2d');
+    const learningTrendChart = new Chart(learningTrendCtx, {
+        type: 'line',
+        data: {
+            labels: days,
+            datasets: [
+                {
+                    label: '平均得分',
+                    data: scores,
+                    backgroundColor: 'transparent',
+                    borderColor: colorPalette.primary,
+                    borderWidth: 3,
+                    pointBackgroundColor: colorPalette.primary,
+                    pointRadius: 4,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: '答题次数',
+                    data: attempts,
+                    backgroundColor: colorPalette.infoLight,
+                    borderColor: colorPalette.info,
+                    borderWidth: 1,
+                    pointBackgroundColor: colorPalette.info,
+                    pointRadius: 4,
+                    type: 'bar',
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: '平均得分'
+                    },
+                    max: 10,
+                    grid: {
+                        drawBorder: false,
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: '答题次数'
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // 图表下载功能
+    window.downloadChart = function(chartId, filename) {
+        const canvas = document.getElementById(chartId);
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `${filename}.png`;
+        link.href = image;
+        link.click();
+    };
+
+    // 定义导出教学建议函数在全局作用域
+    window.downloadTeachingSuggestions = function() {
+        // 准备教学建议文本
+        const topicName = "{{ topic }}";
+        const accuracyRate = "{{ topic_stats.accuracy_rate|round|int }}%";
+        const masteryLevel = "{{ feedback.mastery_level }}";
+        
+        // 创建文本内容
+        let content = `# ${topicName} - 知识点教学反馈\n\n`;
+        content += `## 整体掌握程度: ${masteryLevel} (${accuracyRate})\n\n`;
+        
+        // 添加优势领域
+        content += "## 优势领域:\n";
+        {% if feedback.strength_areas %}
+            {% for area in feedback.strength_areas %}
+        content += "- {{ area }}\n";
+            {% endfor %}
+        {% else %}
+        content += "- 暂无明显优势领域\n";
+        {% endif %}
+        
+        // 添加薄弱环节
+        content += "\n## 薄弱环节:\n";
+        {% if feedback.problem_areas %}
+            {% for area in feedback.problem_areas %}
+        content += "- {{ area }}\n";
+            {% endfor %}
+        {% else %}
+        content += "- 未发现明显薄弱环节\n";
+        {% endif %}
+        
+        // 添加教学建议
+        content += "\n## 教学建议:\n";
+        {% if feedback.teaching_suggestions %}
+            {% for suggestion in feedback.teaching_suggestions %}
+        content += "- {{ suggestion }}\n";
+            {% endfor %}
+        {% else %}
+        content += "- 数据不足，暂无具体教学建议\n";
+        {% endif %}
+        
+        // 添加生成时间
+        const now = new Date();
+        content += `\n生成时间: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+        
+        // 创建并触发下载
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${topicName}_教学建议_${now.toISOString().split('T')[0]}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,784 @@
+{% extends "base.html" %}
+
+{% block title %}学生管理 - 大学生画像可视化系统{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    /* 深色科技风背景 */
+    .student-list-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #1C2128 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* 动态网格背景 */
+    .list-grid-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        pointer-events: none;
+    }
+
+    /* 渐变光晕 */
+    .list-glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.2;
+        animation: glowPulse 8s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    .glow-1 {
+        width: 400px;
+        height: 400px;
+        background: linear-gradient(135deg, #26A69A, #4DB6AC);
+        top: -100px;
+        right: -100px;
+    }
+
+    @keyframes glowPulse {
+        0%, 100% { transform: scale(1); opacity: 0.2; }
+        50% { transform: scale(1.1); opacity: 0.3; }
+    }
+
+    /* 主内容区 */
+    .list-content {
+        position: relative;
+        z-index: 10;
+        padding: 2rem;
+    }
+
+    /* 页面标题卡片 */
+    .page-header-card {
+        background: rgba(28, 33, 40, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #26A69A, #4DB6AC, #80CBC4);
+        background-size: 300% 100%;
+        animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #26A69A, #4DB6AC);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        box-shadow: 0 0 30px rgba(38, 166, 154, 0.4);
+    }
+
+    .header-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #F0F6FC;
+        margin-bottom: 0.3rem;
+    }
+
+    .header-subtitle {
+        color: #8B949E;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* 内容卡片 */
+    .content-card {
+        background: rgba(28, 33, 40, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 0.6s ease backwards;
+        animation-delay: 0.1s;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(67, 100, 247, 0.1);
+    }
+
+    .section-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .section-icon.blue {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.2), rgba(111, 177, 252, 0.2));
+        color: #6FB1FC;
+    }
+
+    .section-icon.green {
+        background: linear-gradient(135deg, rgba(38, 166, 154, 0.2), rgba(77, 182, 172, 0.2));
+        color: #4DB6AC;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #F0F6FC;
+        margin: 0;
+    }
+
+    .section-subtitle {
+        font-size: 0.85rem;
+        color: #8B949E;
+        margin: 0;
+    }
+
+    /* 搜索和筛选 */
+    .search-section {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+    }
+
+    .search-box .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6FB1FC;
+        z-index: 1;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        background: rgba(13, 17, 23, 0.5);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 12px;
+        color: #F0F6FC;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: #6FB1FC;
+        box-shadow: 0 0 0 3px rgba(111, 177, 252, 0.15);
+    }
+
+    .search-box input::placeholder {
+        color: #8B949E;
+    }
+
+    .per-page-select {
+        min-width: 140px;
+    }
+
+    .per-page-select select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: rgba(13, 17, 23, 0.5);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 12px;
+        color: #F0F6FC;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .per-page-select select:focus {
+        outline: none;
+        border-color: #6FB1FC;
+        box-shadow: 0 0 0 3px rgba(111, 177, 252, 0.15);
+    }
+
+    /* 按钮样式 */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-action.primary {
+        background: linear-gradient(135deg, #26A69A, #4DB6AC);
+        color: white;
+    }
+
+    .btn-action.primary:hover {
+        background: linear-gradient(135deg, #4DB6AC, #80CBC4);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(38, 166, 154, 0.3);
+        color: white;
+    }
+
+    .btn-action.outline {
+        background: transparent;
+        border: 1px solid rgba(67, 100, 247, 0.3);
+        color: #6FB1FC;
+    }
+
+    .btn-action.outline:hover {
+        background: rgba(67, 100, 247, 0.1);
+        border-color: rgba(67, 100, 247, 0.5);
+        color: #6FB1FC;
+    }
+
+    /* 表格样式 */
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .data-table thead th {
+        background: rgba(13, 17, 23, 0.5);
+        color: #8B949E;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .data-table thead th:hover {
+        color: #F0F6FC;
+        background: rgba(67, 100, 247, 0.1);
+    }
+
+    .data-table thead th i {
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+        opacity: 0.5;
+    }
+
+    .data-table tbody td {
+        padding: 1rem;
+        color: #F0F6FC;
+        border-bottom: 1px solid rgba(67, 100, 247, 0.1);
+        vertical-align: middle;
+    }
+
+    .data-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .data-table tbody tr:hover {
+        background: rgba(67, 100, 247, 0.05);
+    }
+
+    /* 分页 */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(67, 100, 247, 0.1);
+    }
+
+    .pagination-info {
+        color: #8B949E;
+        font-size: 0.9rem;
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pagination-controls .btn-action {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .pagination-controls .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .pagination-pages {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .pagination-pages .btn-action {
+        padding: 0.5rem 0.75rem;
+        min-width: 40px;
+        justify-content: center;
+    }
+
+    .pagination-pages .btn-action.active {
+        background: linear-gradient(135deg, #26A69A, #4DB6AC);
+        color: white;
+    }
+
+    .page-jump {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: 1rem;
+    }
+
+    .page-jump input {
+        width: 60px;
+        padding: 0.4rem 0.5rem;
+        background: rgba(13, 17, 23, 0.5);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 8px;
+        color: #F0F6FC;
+        text-align: center;
+    }
+
+    .page-jump input:focus {
+        outline: none;
+        border-color: #6FB1FC;
+    }
+
+    /* 加载状态 */
+    .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem;
+        color: #6FB1FC;
+    }
+
+    .loading-spinner i {
+        font-size: 2rem;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+        .list-content {
+            padding: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+        }
+
+        .search-section {
+            flex-direction: column;
+        }
+
+        .search-box {
+            min-width: 100%;
+        }
+
+        .pagination-wrapper {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pagination-controls {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="student-list-page">
+    <!-- 背景效果 -->
+    <div class="list-grid-bg"></div>
+    <div class="list-glow glow-1"></div>
+    
+    <!-- 主内容 -->
+    <div class="list-content">
+        <!-- 页面标题 -->
+        <div class="page-header-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h1 class="header-title mb-1">学生管理</h1>
+                        <p class="header-subtitle mb-0">查看和管理学生信息与成绩</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('main.dashboard') }}" class="btn-action outline">
+                    <i class="fas fa-arrow-left"></i> 返回仪表盘
+                </a>
+            </div>
+        </div>
+
+        <!-- 学生列表 -->
+        <div class="content-card">
+            <div class="card-section-header">
+                <div class="section-icon green">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div>
+                    <h3 class="section-title mb-0">学生列表</h3>
+                    <p class="section-subtitle mb-0">管理学生账号和查看答题数据</p>
+                </div>
+            </div>
+
+            <!-- 搜索和筛选 -->
+            <div class="search-section">
+                <div class="search-box">
+                    <i class="fas fa-search input-icon"></i>
+                    <input type="text" id="searchInput" placeholder="搜索学号或邮箱...">
+                </div>
+                <button class="btn-action primary" id="searchButton">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+                <div class="per-page-select">
+                    <select id="perPageSelect">
+                        <option value="10">10条/页</option>
+                        <option value="20">20条/页</option>
+                        <option value="50">50条/页</option>
+                        <option value="100">100条/页</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-sort="id">ID <i class="fas fa-sort"></i></th>
+                            <th class="sortable" data-sort="username">学号 <i class="fas fa-sort"></i></th>
+                            <th class="sortable" data-sort="email">邮箱 <i class="fas fa-sort"></i></th>
+                            <th class="sortable" data-sort="submission_count">答题数量 <i class="fas fa-sort"></i></th>
+                            <th class="sortable" data-sort="avg_score">平均分数 <i class="fas fa-sort"></i></th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="loading-spinner">
+                                    <i class="fas fa-spinner"></i>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <div class="pagination-wrapper">
+                <div class="pagination-info" id="paginationInfo">
+                    加载中...
+                </div>
+                <div class="pagination-controls">
+                    <button class="btn-action outline btn-sm" id="firstPage" disabled>
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+                    <button class="btn-action outline btn-sm" id="prevPage" disabled>
+                        <i class="fas fa-angle-left"></i>
+                    </button>
+                    <div class="pagination-pages" id="paginationPages"></div>
+                    <button class="btn-action outline btn-sm" id="nextPage" disabled>
+                        <i class="fas fa-angle-right"></i>
+                    </button>
+                    <button class="btn-action outline btn-sm" id="lastPage" disabled>
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                    <div class="page-jump">
+                        <span style="color: #8B949E;">跳转</span>
+                        <input type="number" id="pageInput" min="1" placeholder="页码">
+                        <button class="btn-action outline btn-sm" id="jumpButton">跳转</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 初始化变量
+let currentPage = 1;
+let perPage = 10;
+let currentSort = 'username';
+let currentOrder = 'asc';
+let searchTerm = '';
+
+// 页面加载完成后执行
+document.addEventListener('DOMContentLoaded', function() {
+    // 加载数据
+    loadData();
+    
+    // 注册搜索按钮事件
+    document.getElementById('searchButton').addEventListener('click', function() {
+        searchTerm = document.getElementById('searchInput').value.trim();
+        currentPage = 1;
+        loadData();
+    });
+    
+    // 注册搜索框回车事件
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchTerm = this.value.trim();
+            currentPage = 1;
+            loadData();
+        }
+    });
+    
+    // 注册每页显示数量变更事件
+    document.getElementById('perPageSelect').addEventListener('change', function() {
+        perPage = parseInt(this.value);
+        currentPage = 1;
+        loadData();
+    });
+    
+    // 注册排序事件
+    document.querySelectorAll('th.sortable').forEach(function(th) {
+        th.addEventListener('click', function() {
+            const sort = this.dataset.sort;
+            
+            if (currentSort === sort) {
+                currentOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = sort;
+                currentOrder = 'asc';
+            }
+            
+            currentPage = 1;
+            loadData();
+        });
+    });
+    
+    // 分页按钮事件
+    document.getElementById('firstPage').addEventListener('click', function() { goToPage(1); });
+    document.getElementById('prevPage').addEventListener('click', function() { goToPage(currentPage - 1); });
+    document.getElementById('nextPage').addEventListener('click', function() { goToPage(currentPage + 1); });
+    document.getElementById('lastPage').addEventListener('click', function() {
+        const totalPages = parseInt(document.getElementById('paginationPages').dataset.total || 1);
+        goToPage(totalPages);
+    });
+    
+    // 跳转事件
+    document.getElementById('jumpButton').addEventListener('click', function() {
+        const pageNum = parseInt(document.getElementById('pageInput').value);
+        if (pageNum && pageNum >= 1) {
+            goToPage(pageNum);
+        }
+    });
+    
+    document.getElementById('pageInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const pageNum = parseInt(this.value);
+            if (pageNum && pageNum >= 1) {
+                goToPage(pageNum);
+            }
+        }
+    });
+});
+
+// 加载数据函数
+function loadData() {
+    document.getElementById('studentTableBody').innerHTML = '<tr><td colspan="6" class="text-center"><div class="loading-spinner"><i class="fas fa-spinner"></i></div></td></tr>';
+    document.getElementById('paginationInfo').textContent = '加载中...';
+    
+    const params = new URLSearchParams({
+        page: currentPage,
+        per_page: perPage,
+        sort: currentSort,
+        order: currentOrder
+    });
+    
+    if (searchTerm) {
+        params.append('search', searchTerm);
+    }
+    
+    fetch('/student/api/list?' + params.toString())
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('网络请求失败');
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            displayData(data.data);
+            updatePagination({
+                page: data.page,
+                per_page: data.per_page || 20,
+                total_count: data.total,
+                total_pages: data.pages
+            });
+            updateSortIcons(currentSort);
+        })
+        .catch(function(error) {
+            console.error('获取数据失败:', error);
+            document.getElementById('studentTableBody').innerHTML = 
+                '<tr><td colspan="6" class="text-center" style="color: #F85149;"><i class="fas fa-exclamation-circle me-2"></i>加载数据失败: ' + error.message + '</td></tr>';
+            document.getElementById('paginationInfo').textContent = '加载失败';
+        });
+}
+
+// 显示数据函数
+function displayData(students) {
+    const tableBody = document.getElementById('studentTableBody');
+    tableBody.innerHTML = '';
+    
+    if (students.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center" style="color: #8B949E;">没有找到符合条件的学生</td></tr>';
+        return;
+    }
+    
+    for (let i = 0; i < students.length; i++) {
+        const student = students[i];
+        const row = document.createElement('tr');
+        
+        row.innerHTML = 
+            '<td>' + student.id + '</td>' +
+            '<td>' + student.username + '</td>' +
+            '<td>' + student.email + '</td>' +
+            '<td>' + student.submission_count + '</td>' +
+            '<td>' + student.avg_score + '</td>' +
+            '<td>' +
+                '<a href="javascript:void(0)" onclick="viewStudentDetails(' + student.id + ')" class="btn-action primary btn-sm">' +
+                '<i class="fas fa-chart-line me-1"></i>详情</a>' +
+            '</td>';
+        
+        tableBody.appendChild(row);
+    }
+}
+
+// 更新排序图标
+function updateSortIcons(sortField) {
+    document.querySelectorAll('th.sortable i').forEach(function(icon) {
+        icon.className = 'fas fa-sort';
+    });
+    
+    const currentSortHeader = document.querySelector('th[data-sort="' + sortField + '"] i');
+    if (currentSortHeader) {
+        currentSortHeader.className = 'fas fa-sort-' + (currentOrder === 'asc' ? 'up' : 'down');
+    }
+}
+
+// 更新分页信息
+function updatePagination(pagination) {
+    const start = (pagination.page - 1) * pagination.per_page + 1;
+    const end = Math.min(pagination.page * pagination.per_page, pagination.total_count);
+    
+    document.getElementById('paginationInfo').textContent = 
+        '显示 ' + start + ' 到 ' + end + ' 条，共 ' + pagination.total_count + ' 条记录';
+    
+    // 更新按钮状态
+    document.getElementById('firstPage').disabled = pagination.page <= 1;
+    document.getElementById('prevPage').disabled = pagination.page <= 1;
+    document.getElementById('nextPage').disabled = pagination.page >= pagination.total_pages;
+    document.getElementById('lastPage').disabled = pagination.page >= pagination.total_pages;
+    
+    // 更新页码
+    const pagesContainer = document.getElementById('paginationPages');
+    pagesContainer.innerHTML = '';
+    pagesContainer.dataset.total = pagination.total_pages;
+    
+    if (pagination.total_pages <= 1) {
+        return;
+    }
+    
+    let startPage = Math.max(1, pagination.page - 2);
+    let endPage = Math.min(pagination.total_pages, pagination.page + 2);
+    
+    if (endPage - startPage < 4 && pagination.total_pages > 5) {
+        if (startPage === 1) {
+            endPage = Math.min(5, pagination.total_pages);
+        } else if (endPage === pagination.total_pages) {
+            startPage = Math.max(1, pagination.total_pages - 4);
+        }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-action outline btn-sm' + (pagination.page === i ? ' active' : '');
+        btn.textContent = i;
+        btn.addEventListener('click', function() { goToPage(i); });
+        pagesContainer.appendChild(btn);
+    }
+}
+
+// 跳转到指定页
+function goToPage(page) {
+    const totalPages = parseInt(document.getElementById('paginationPages').dataset.total || 1);
+    if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        loadData();
+    }
+}
+
+// 查看学生详情
+function viewStudentDetails(studentId) {
+    window.open('/student/details/' + studentId, '_blank');
+}
+</script>
+{% endblock %}

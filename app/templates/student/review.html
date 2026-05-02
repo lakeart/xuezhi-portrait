@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+
+{% block title %}复习巩固 - {{ student.username }}{% endblock %}
+
+{% block styles %}
+<style>
+    .review-container {
+        min-height: calc(100vh - 72px);
+        background: linear-gradient(135deg, #0D1117 0%, #161B22 100%);
+    }
+    
+    .memory-card {
+        background: rgba(67, 100, 247, 0.08);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .memory-card:hover {
+        background: rgba(67, 100, 247, 0.12);
+        border-color: rgba(67, 100, 247, 0.3);
+    }
+    
+    .memory-card.due {
+        border-color: rgba(248, 81, 73, 0.4);
+        background: rgba(248, 81, 73, 0.08);
+    }
+    
+    .memory-card.urgent {
+        border-color: rgba(248, 81, 73, 0.6);
+        background: rgba(248, 81, 73, 0.12);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.4); }
+        50% { box-shadow: 0 0 0 10px rgba(248, 81, 73, 0); }
+    }
+    
+    .forgetting-curve {
+        position: relative;
+        height: 200px;
+        background: rgba(28, 33, 40, 0.5);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .curve-line {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(to right, 
+            rgba(67, 100, 247, 0.8) 0%, 
+            rgba(67, 100, 247, 0.6) 30%, 
+            rgba(248, 81, 73, 0.6) 60%, 
+            rgba(248, 81, 73, 0.8) 100%);
+        clip-path: polygon(0 80%, 20% 75%, 40% 65%, 60% 50%, 80% 35%, 100% 20%, 100% 100%, 0 100%);
+    }
+    
+    .curve-label {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        color: #8B949E;
+        font-size: 0.85rem;
+    }
+    
+    .retention-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .retention-high {
+        background: rgba(46, 160, 67, 0.15);
+        color: #2EA043;
+    }
+    
+    .retention-medium {
+        background: rgba(210, 153, 34, 0.15);
+        color: #D29922;
+    }
+    
+    .retention-low {
+        background: rgba(248, 81, 73, 0.15);
+        color: #F85149;
+    }
+    
+    .review-btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #4364F7 0%, #6FB1FC 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(67, 100, 247, 0.3);
+    }
+    
+    .review-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 100, 247, 0.4);
+    }
+    
+    .review-btn.due {
+        background: linear-gradient(135deg, #F85149 0%, #FF7B72 100%);
+        box-shadow: 0 4px 15px rgba(248, 81, 73, 0.3);
+    }
+    
+    .spaced-repetition-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        background: rgba(28, 33, 40, 0.8);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .spaced-repetition-item .day {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(67, 100, 247, 0.2);
+        border-radius: 8px;
+        font-weight: 600;
+        color: #58A6FF;
+    }
+    
+    .spaced-repetition-item.done .day {
+        background: rgba(46, 160, 67, 0.2);
+        color: #2EA043;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-container py-6">
+    <div class="container max-w-5xl mx-auto">
+        <!-- 页面标题 -->
+        <div class="text-center mb-8 fade-in">
+            <h1 class="text-3xl font-bold text-white mb-3">
+                <i class="fas fa-sync-alt text-primary me-3"></i>
+                复习巩固
+            </h1>
+            <p class="text-gray-400">基于艾宾浩斯遗忘曲线，智能推荐复习内容</p>
+        </div>
+
+        <!-- 遗忘曲线可视化 -->
+        <div class="bg-card rounded-xl p-6 mb-6 fade-in" style="animation-delay: 0.1s;">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                <i class="fas fa-chart-line me-2 text-primary"></i>
+                记忆曲线预测
+            </h3>
+            
+            <div class="forgetting-curve mb-4">
+                <div class="curve-line"></div>
+                <div class="curve-label">时间 →</div>
+                <div style="position: absolute; top: 1rem; right: 1rem; text-align: right;">
+                    <div class="text-sm text-gray-400">记忆保留率</div>
+                    <div class="text-2xl font-bold text-white">{{ memory_retention }}%</div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="retention-badge retention-high mb-2">高保留</div>
+                        <div class="text-sm text-gray-400">最近学习</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="retention-badge retention-medium mb-2">中等</div>
+                        <div class="text-sm text-gray-400">3天前</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="retention-badge retention-low mb-2">需复习</div>
+                        <div class="text-sm text-gray-400">1周前</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="retention-badge retention-low mb-2">即将遗忘</div>
+                        <div class="text-sm text-gray-400">2周前</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 需要复习的内容 -->
+        <div class="bg-card rounded-xl p-6 mb-6 fade-in" style="animation-delay: 0.2s;">
+            <div class="d-flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">
+                    <i class="fas fa-clock me-2 text-warning"></i>
+                    需要复习的知识点
+                </h3>
+                <span class="text-sm text-gray-400">共 {{ due_topics_count }} 个知识点待复习</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {% for topic in due_topics %}
+                <div class="memory-card {% if topic.urgent %}urgent{% elif topic.due %}due{% endif %}">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-semibold text-white">{{ topic.name }}</span>
+                        <span class="text-xs px-2 py-1 rounded-full {% if topic.urgent %}bg-danger{% elif topic.due %}bg-warning{% else %}bg-info{% endif %}">
+                            {{ topic.status }}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-400">记忆保留</span>
+                        <span class="font-bold {% if topic.retention > 60 %}text-success{% elif topic.retention > 30 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ topic.retention }}%
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px;">
+                        <div 
+                            class="progress-bar" 
+                            style="width: {{ topic.retention }}%; background: {% if topic.retention > 60 %}#2EA043{% elif topic.retention > 30 %}#D29922{% else %}#F85149{% endif %};"
+                        ></div>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                        上次学习: {{ topic.last_studied }} | 建议复习: {{ topic.suggested_interval }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 间隔重复计划 -->
+        <div class="bg-card rounded-xl p-6 mb-6 fade-in" style="animation-delay: 0.3s;">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                <i class="fas fa-calendar-check me-2 text-success"></i>
+                间隔重复学习计划
+            </h3>
+            
+            <div class="space-y-3">
+                {% for item in spaced_repetition_plan %}
+                <div class="spaced-repetition-item {% if item.done %}done{% endif %}">
+                    <div class="day">{{ item.day }}</div>
+                    <div class="flex-grow">
+                        <div class="font-medium text-white">{{ item.topic }}</div>
+                        <div class="text-sm text-gray-400">{{ item.description }}</div>
+                    </div>
+                    <div>
+                        {% if item.done %}
+                        <i class="fas fa-check-circle text-success"></i>
+                        {% else %}
+                        <i class="fas fa-circle text-gray-500"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 开始复习按钮 -->
+        <div class="text-center fade-in" style="animation-delay: 0.4s;">
+            <button 
+                class="review-btn {% if due_topics_count > 0 %}due{% endif %}" 
+                id="startReviewBtn"
+                onclick="startReview()"
+            >
+                <i class="fas fa-play-circle me-2"></i>
+                {{ due_topics_count > 0 ? '开始复习 (' + due_topics_count + '个)' : '开始复习巩固' }}
+            </button>
+            <p class="text-gray-500 text-sm mt-3">预计复习时长: <span id="estimatedTime">{{ estimated_time }}</span>分钟</p>
+        </div>
+
+        <!-- 复习统计 -->
+        {% if review_stats %}
+        <div class="bg-card rounded-xl p-6 mt-6 fade-in" style="animation-delay: 0.5s;">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                <i class="fas fa-bar-chart me-2 text-info"></i>
+                复习统计
+            </h3>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-success">{{ review_stats.total_reviews }}</div>
+                    <div class="text-sm text-gray-400">总复习次数</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-primary">{{ review_stats.retained_topics }}</div>
+                    <div class="text-sm text-gray-400">已巩固知识点</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-warning">{{ review_stats.average_retention }}%</div>
+                    <div class="text-sm text-gray-400">平均保留率</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-info">{{ review_stats.consistency_days }}</div>
+                    <div class="text-sm text-gray-400">连续复习天数</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function startReview() {
+        const btn = document.getElementById('startReviewBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>准备中...';
+        
+        fetch('/student/api/start-review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                window.location.href = '/quiz/practice?session_id=' + result.session_id;
+            } else {
+                showToast(result.message || '开始复习失败', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play-circle me-2"></i>开始复习巩固';
+            }
+        })
+        .catch(error => {
+            console.error('开始复习失败:', error);
+            showToast('网络错误，请重试', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-play-circle me-2"></i>开始复习巩固';
+        });
+    }
+</script>
+{% endblock %}

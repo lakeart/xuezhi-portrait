@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人设置 - 学习画像系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4364F7;
+            --secondary: #6FB1FC;
+            --accent: #00D9FF;
+            --bg-dark: #0A0E27;
+            --bg-card: rgba(30, 41, 99, 0.7);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B4B4B4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(67, 100, 247, 0.15) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .navbar {
+            background: rgba(10, 14, 39, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary) !important;
+            font-weight: 700;
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent) !important;
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
+
+        /* 设置卡片 */
+        .settings-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+        }
+
+        .settings-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .icon-profile { background: rgba(67, 100, 247, 0.2); color: var(--primary); }
+        .icon-goal { background: rgba(0, 217, 255, 0.2); color: var(--accent); }
+        .icon-reminder { background: rgba(255, 193, 7, 0.2); color: #FFC107; }
+        .icon-privacy { background: rgba(46, 213, 115, 0.2); color: #2ED573; }
+
+        .settings-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .settings-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* 表单样式 */
+        .form-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            background: rgba(67, 100, 247, 0.1);
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            color: var(--text-primary);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(67, 100, 247, 0.1);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(67, 100, 247, 0.2);
+        }
+
+        /* 头像 */
+        .avatar-section {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .avatar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .avatar-hint {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        /* 复选框 */
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            background: rgba(67, 100, 247, 0.05);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-label {
+            flex: 1;
+        }
+
+        .checkbox-title {
+            font-weight: 500;
+        }
+
+        .checkbox-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* 目标设置 */
+        .goal-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 576px) {
+            .goal-item {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .goal-card {
+            background: rgba(67, 100, 247, 0.05);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .goal-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .goal-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+
+        /* 按钮 */
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(67, 100, 247, 0.4);
+            color: white;
+        }
+
+        /* 用户信息 */
+        .user-info-card {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .user-details h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .user-role {
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            background: rgba(67, 100, 247, 0.2);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.home') }}">
+                <i class="fas fa-brain me-2"></i>学习画像系统
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.home') }}">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('extra.notes') }}">
+                            <i class="fas fa-book me-1"></i>笔记
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('extra.notification_center') }}">
+                            <i class="fas fa-bell me-1"></i>通知
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('extra.profile_settings') }}">
+                            <i class="fas fa-cog me-1"></i>设置
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <h1 class="page-title">
+            <i class="fas fa-cog me-2"></i>个人设置
+        </h1>
+
+        <!-- 用户信息 -->
+        <div class="settings-card">
+            <div class="user-info-card">
+                <div class="user-avatar-large">
+                    {{ current_user.username[0].upper() }}
+                </div>
+                <div class="user-details">
+                    <h3>{{ current_user.username }}</h3>
+                    <span class="user-role">
+                        {% if current_user.is_teacher() %}教师{% else %}学生{% endif %}
+                    </span>
+                    <div style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.9rem;">
+                        {{ current_user.email }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 个人资料 -->
+        <div class="settings-card">
+            <div class="settings-header">
+                <div class="settings-icon icon-profile">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div class="settings-title">个人资料</div>
+                    <div class="settings-desc">完善你的个人资料，让学习更有目标</div>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('extra.update_profile') }}">
+                <div class="mb-3">
+                    <label class="form-label">个人简介</label>
+                    <input type="text" name="bio" class="form-control" 
+                           value="{{ profile.bio or '' }}" 
+                           placeholder="介绍一下自己..." maxlength="200">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">个性签名</label>
+                    <input type="text" name="signature" class="form-control" 
+                           value="{{ profile.signature or '' }}" 
+                           placeholder="一句话展示你的学习态度" maxlength="100">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">偏好知识点</label>
+                    <input type="text" name="preferred_topics" class="form-control" 
+                           value="{{ profile.preferred_topics or '' }}"
+                           placeholder="如：数学分析、线性代数、算法（用逗号分隔）">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">偏好难度</label>
+                    <select name="preferred_difficulty" class="form-select">
+                        <option value="">不限制</option>
+                        <option value="简单" {{ 'selected' if profile.preferred_difficulty == '简单' else '' }}>简单</option>
+                        <option value="中等" {{ 'selected' if profile.preferred_difficulty == '中等' else '' }}>中等</option>
+                        <option value="困难" {{ 'selected' if profile.preferred_difficulty == '困难' else '' }}>困难</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save me-2"></i>保存资料
+                </button>
+            </form>
+        </div>
+
+        <!-- 学习目标 -->
+        <div class="settings-card">
+            <div class="settings-header">
+                <div class="settings-icon icon-goal">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div>
+                    <div class="settings-title">学习目标</div>
+                    <div class="settings-desc">设定目标，让学习更有动力</div>
+                </div>
+            </div>
+
+            <div class="goal-item mb-4">
+                <div class="goal-card">
+                    <div class="goal-value">{{ profile.daily_goal or 10 }}</div>
+                    <div class="goal-label">每日目标（题数）</div>
+                </div>
+                <div class="goal-card">
+                    <div class="goal-value">{{ profile.weekly_goal or 50 }}</div>
+                    <div class="goal-label">每周目标（题数）</div>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('extra.update_profile') }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">每日目标</label>
+                        <input type="number" name="daily_goal" class="form-control" 
+                               value="{{ profile.daily_goal or 10 }}" min="1" max="100">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">每周目标</label>
+                        <input type="number" name="weekly_goal" class="form-control" 
+                               value="{{ profile.weekly_goal or 50 }}" min="1" max="500">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">学习目标描述</label>
+                    <input type="text" name="study_goal" class="form-control" 
+                           value="{{ profile.study_goal or '' }}"
+                           placeholder="例如：掌握Python数据分析技能">
+                </div>
+
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save me-2"></i>保存目标
+                </button>
+            </form>
+        </div>
+
+        <!-- 学习提醒 -->
+        <div class="settings-card">
+            <div class="settings-header">
+                <div class="settings-icon icon-reminder">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <div class="settings-title">学习提醒</div>
+                    <div class="settings-desc">设置提醒，养成良好学习习惯</div>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('extra.update_reminder') }}">
+                <div class="checkbox-item mb-3">
+                    <input type="checkbox" name="reminder_enabled" id="reminderEnabled" 
+                           {{ 'checked' if reminder and reminder.reminder_enabled else '' }}>
+                    <div class="checkbox-label">
+                        <div class="checkbox-title">启用学习提醒</div>
+                        <div class="checkbox-desc">每天定时提醒你学习</div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">提醒时间</label>
+                        <input type="time" name="reminder_time" class="form-control" 
+                               value="{{ reminder.reminder_time if reminder else '09:00' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">提醒频率</label>
+                        <select name="frequency" class="form-select">
+                            <option value="daily" {{ 'selected' if reminder and reminder.frequency == 'daily' else '' }}>每天</option>
+                            <option value="weekdays" {{ 'selected' if reminder and reminder.frequency == 'weekdays' else '' }}>工作日</option>
+                            <option value="weekly" {{ 'selected' if reminder and reminder.frequency == 'weekly' else '' }}>每周</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save me-2"></i>保存提醒设置
+                </button>
+            </form>
+        </div>
+
+        <!-- 隐私设置 -->
+        <div class="settings-card">
+            <div class="settings-header">
+                <div class="settings-icon icon-privacy">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div>
+                    <div class="settings-title">隐私设置</div>
+                    <div class="settings-desc">控制你的信息展示</div>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('extra.update_profile') }}">
+                <div class="checkbox-item mb-2">
+                    <input type="checkbox" name="show_achievements" id="showAchievements" 
+                           {{ 'checked' if profile.show_achievements != False else '' }}>
+                    <div class="checkbox-label">
+                        <div class="checkbox-title">展示成就</div>
+                        <div class="checkbox-desc">在个人页面显示你的成就</div>
+                    </div>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="show_rankings" id="showRankings" 
+                           {{ 'checked' if profile.show_rankings != False else '' }}>
+                    <div class="checkbox-label">
+                        <div class="checkbox-title">参与排行榜</div>
+                        <div class="checkbox-desc">在排行榜中显示你的信息</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-save mt-3">
+                    <i class="fas fa-save me-2"></i>保存隐私设置
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

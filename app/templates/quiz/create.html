@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}创建题目 - 大学生画像可视化系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card fade-in gradient-header">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-circle gradient-green">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4 class="card-title mb-1">创建新题目</h4>
+                            <p class="text-muted mb-0 small">添加新的测验题目到题库</p>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('quiz.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>返回题库
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('quiz.create') }}" id="questionForm">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card fade-in" style="animation-delay: 0.1s;">
+                <div class="card-header gradient-blue-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>基本信息
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="topic" class="form-label">知识点</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-primary">
+                                <i class="fas fa-tag"></i>
+                            </span>
+                            <input type="text" class="form-control" id="topic" name="topic" placeholder="例如：循环结构" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="difficulty" class="form-label">难度等级</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-primary">
+                                <i class="fas fa-signal"></i>
+                            </span>
+                            <select class="form-select" id="difficulty" name="difficulty" required>
+                                <option value="">选择难度</option>
+                                <option value="简单">简单</option>
+                                <option value="中等">中等</option>
+                                <option value="困难">困难</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="style" class="form-label">题目类型</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-primary">
+                                <i class="fas fa-tasks"></i>
+                            </span>
+                            <select class="form-select" id="style" name="style" required>
+                                <option value="">选择题型</option>
+                                <option value="选择题">选择题</option>
+                                <option value="填空题">填空题</option>
+                                <option value="判断题">判断题</option>
+                                <option value="解答题">解答题</option>
+                                <option value="编程题">编程题</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card fade-in" style="animation-delay: 0.2s;">
+                <div class="card-header gradient-purple-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-question-circle me-2"></i>题目内容
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="content" class="form-label">题目描述</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-primary">
+                                <i class="fas fa-edit"></i>
+                            </span>
+                            <textarea class="form-control" id="content" name="content" rows="4" placeholder="输入题目内容..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="answer" class="form-label">标准答案</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-primary">
+                                <i class="fas fa-check-circle"></i>
+                            </span>
+                            <textarea class="form-control" id="answer" name="answer" rows="3" placeholder="输入标准答案..." required></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card fade-in" style="animation-delay: 0.3s;">
+                <div class="card-header gradient-green-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>选项设置
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="optionsContainer" class="mb-3 d-none">
+                        <label class="form-label">选项列表</label>
+                        <div class="options-list">
+                            <div class="option-item mb-2">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-primary">A</span>
+                                    <input type="text" class="form-control option-input" name="options[]" placeholder="选项内容...">
+                                </div>
+                            </div>
+                            <div class="option-item mb-2">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-primary">B</span>
+                                    <input type="text" class="form-control option-input" name="options[]" placeholder="选项内容...">
+                                </div>
+                            </div>
+                            <div class="option-item mb-2">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-primary">C</span>
+                                    <input type="text" class="form-control option-input" name="options[]" placeholder="选项内容...">
+                                </div>
+                            </div>
+                            <div class="option-item mb-2">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-primary">D</span>
+                                    <input type="text" class="form-control option-input" name="options[]" placeholder="选项内容...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="addOptionBtn">
+                                <i class="fas fa-plus me-1"></i>添加选项
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <button type="submit" class="btn btn-gradient-green px-5">
+                <i class="fas fa-plus-circle me-2"></i>保存题目
+            </button>
+            <a href="{{ url_for('quiz.index') }}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-times me-2"></i>取消
+            </a>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+$(document).ready(function() {
+    // 监听题型变化，显示或隐藏选项设置
+    $('#style').change(function() {
+        const style = $(this).val();
+        if (style === '选择题' || style === '判断题') {
+            $('#optionsContainer').removeClass('d-none').addClass('fade-in');
+            
+            if (style === '判断题') {
+                // 判断题只需要两个选项
+                $('.option-item').slice(2).addClass('d-none');
+                $('.option-item').eq(0).find('input').val('正确');
+                $('.option-item').eq(1).find('input').val('错误');
+                $('#addOptionBtn').addClass('d-none');
+            } else {
+                // 选择题显示全部选项
+                $('.option-item').removeClass('d-none');
+                $('.option-item input').val('');
+                $('#addOptionBtn').removeClass('d-none');
+            }
+        } else {
+            $('#optionsContainer').addClass('d-none');
+        }
+    });
+    
+    // 添加选项按钮
+    $('#addOptionBtn').click(function() {
+        const optionCount = $('.option-item').length;
+        const nextLabel = String.fromCharCode(65 + optionCount); // A, B, C, ... 
+        
+        const newOption = `
+            <div class="option-item mb-2 fade-in">
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-primary">${nextLabel}</span>
+                    <input type="text" class="form-control option-input" name="options[]" placeholder="选项内容...">
+                    <button type="button" class="btn btn-outline-danger remove-option">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        $('.options-list').append(newOption);
+    });
+    
+    // 删除选项
+    $(document).on('click', '.remove-option', function() {
+        $(this).closest('.option-item').fadeOut(300, function() {
+            $(this).remove();
+            // 重新排序标签
+            $('.option-item').each(function(index) {
+                $(this).find('.input-group-text').text(String.fromCharCode(65 + index));
+            });
+        });
+    });
+    
+    // 表单验证
+    $('#questionForm').submit(function(e) {
+        const style = $('#style').val();
+        const answer = $('#answer').val();
+        
+        if (style === '选择题') {
+            // 检查答案是否为单个字母选项
+            if (!/^[A-Za-z]$/.test(answer.trim())) {
+                e.preventDefault();
+                alert('选择题的答案应为单个字母，如：A, B, C 等');
+                $('#answer').focus();
+            }
+        } else if (style === '判断题') {
+            // 检查判断题答案是否为"正确"或"错误"
+            const trimmedAnswer = answer.trim();
+            if (trimmedAnswer !== '正确' && trimmedAnswer !== '错误' && 
+                trimmedAnswer !== 'A' && trimmedAnswer !== 'B') {
+                e.preventDefault();
+                alert('判断题的答案应为"正确"或"错误"，或者字母"A"或"B"');
+                $('#answer').focus();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .gradient-header {
+        border: none;
+        background: rgba(28, 33, 40, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+    }
+    
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .gradient-green {
+        background: linear-gradient(45deg, #4CAF50, #8BC34A);
+    }
+    
+    .gradient-blue {
+        background: linear-gradient(45deg, #2196F3, #4FC3F7);
+    }
+    
+    .gradient-purple {
+        background: linear-gradient(45deg, #9C27B0, #BA68C8);
+    }
+    
+    .fade-in {
+        opacity: 0;
+        animation: fadeInUp 0.5s ease forwards;
+    }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .gradient-blue-light {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.15), rgba(111, 177, 252, 0.1));
+        border: none;
+        color: #6FB1FC;
+    }
+    
+    .gradient-green-light {
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.15), rgba(72, 187, 120, 0.1));
+        border: none;
+        color: #3FB950;
+    }
+    
+    .gradient-purple-light {
+        background: linear-gradient(135deg, rgba(163, 113, 247, 0.15), rgba(199, 125, 239, 0.1));
+        border: none;
+        color: #1a1a1a;
+    }
+    
+    .btn-gradient-green {
+        background: linear-gradient(45deg, #4CAF50, #8BC34A);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        padding: 10px 24px;
+        border-radius: 6px;
+    }
+    
+    .btn-gradient-green:hover {
+        background: linear-gradient(45deg, #3f9943, #7CB342);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        color: white;
+        transform: translateY(-3px);
+    }
+    
+    .btn-gradient-blue {
+        background: linear-gradient(45deg, #2196F3, #4FC3F7);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        padding: 8px 16px;
+        border-radius: 6px;
+    }
+    
+    .btn-gradient-blue:hover {
+        background: linear-gradient(45deg, #1E88E5, #29B6F6);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        color: white;
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %} 
