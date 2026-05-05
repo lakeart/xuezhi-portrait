@@ -24,8 +24,9 @@ def check_environment():
         import torch
         print(f"PyTorch版本: {torch.__version__}")
     except ImportError:
-        print("PyTorch未安装")
-        return False
+        print("PyTorch未安装（可选功能）")
+    
+    print("核心依赖包检查完成！")
     
     print("环境检查完成！")
     return True

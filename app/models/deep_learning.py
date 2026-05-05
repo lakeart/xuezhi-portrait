@@ -3,10 +3,6 @@ import json
 import os
 import random
 from datetime import datetime, timedelta
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
 import pickle
 import logging
 
@@ -19,105 +15,75 @@ MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../static/
 if not os.path.exists(MODEL_DIR):
     os.makedirs(MODEL_DIR)
 
-# 知识点预测模型
-class KnowledgeMasteryModel(nn.Module):
-    def __init__(self, topic_size=50, student_size=3, hidden_size=64):
-        """学习掌握度预测模型
-        
-        参数:
-            topic_size: 知识点特征维度
-            student_size: 学生特征维度
-            hidden_size: 隐藏层大小
-        """
-        super(KnowledgeMasteryModel, self).__init__()
-        
-        # 特征嵌入层
-        self.topic_embedding = nn.Embedding(topic_size, hidden_size//2)
-        self.student_embedding = nn.Linear(student_size, hidden_size//2)
-        
-        # 深度网络
-        self.network = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(hidden_size, hidden_size//2),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(hidden_size//2, 1),
-            nn.Sigmoid()
-        )
-    
-    def forward(self, topic_features, student_features, time_features=None):
-        """前向传播
-        
-        参数:
-            topic_features: 知识点特征 [batch_size, topic_size]
-            student_features: 学生特征 [batch_size, student_size]
-            time_features: 时间特征 [batch_size, time_size]
-            
-        返回:
-            预测的掌握度百分比
-        """
-        # 嵌入特征
-        topic_emb = self.topic_embedding(topic_features)
-        student_emb = self.student_embedding(student_features)
-        
-        # 合并特征
-        combined = torch.cat([topic_emb.squeeze(1), student_emb], dim=1)
-        
-        # 通过网络
-        prediction = self.network(combined)
-        
-        # 将预测结果缩放到0-100范围
-        return prediction * 100
+# 尝试导入 PyTorch，如果失败则跳过
+try:
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+    TORCH_AVAILABLE = True
+    logger.info("PyTorch 已加载，将使用深度学习模型")
+except ImportError:
+    TORCH_AVAILABLE = False
+    logger.warning("PyTorch 未找到，将使用规则方法替代")
 
-# 学习计划优化模型
-class LearningScheduleModel(nn.Module):
-    def __init__(self, topic_size=50, student_size=3, time_size=6, hidden_size=64):
-        """学习计划优化模型
+# 如果有 PyTorch，定义模型
+if TORCH_AVAILABLE:
+    # 知识点预测模型
+    class KnowledgeMasteryModel(nn.Module):
+        def __init__(self, topic_size=50, student_size=3, hidden_size=64):
+            super(KnowledgeMasteryModel, self).__init__()
+            
+            # 特征嵌入层
+            self.topic_embedding = nn.Embedding(topic_size, hidden_size//2)
+            self.student_embedding = nn.Linear(student_size, hidden_size//2)
+            
+            # 深度网络
+            self.network = nn.Sequential(
+                nn.Linear(hidden_size, hidden_size),
+                nn.ReLU(),
+                nn.Dropout(0.2),
+                nn.Linear(hidden_size, hidden_size//2),
+                nn.ReLU(),
+                nn.Dropout(0.2),
+                nn.Linear(hidden_size//2, 1),
+                nn.Sigmoid()
+            )
         
-        参数:
-            topic_size: 知识点特征维度
-            student_size: 学生特征维度
-            time_size: 时间特征维度
-            hidden_size: 隐藏层大小
-        """
-        super(LearningScheduleModel, self).__init__()
+        def forward(self, topic_features, student_features, time_features=None):
+            topic_emb = self.topic_embedding(topic_features)
+            student_emb = self.student_embedding(student_features)
+            combined = torch.cat([topic_emb.squeeze(1), student_emb], dim=1)
+            prediction = self.network(combined)
+            return prediction * 100
+
+    # 学习计划优化模型
+    class LearningScheduleModel(nn.Module):
+        def __init__(self, topic_size=50, student_size=3, time_size=6, hidden_size=64):
+            super(LearningScheduleModel, self).__init__()
+            
+            # 特征嵌入层
+            self.topic_embedding = nn.Embedding(topic_size, hidden_size//2)
+            self.student_embedding = nn.Linear(student_size, hidden_size//2)
+            self.time_embedding = nn.Linear(time_size, hidden_size//4)
+            
+            # 效率评分网络
+            self.efficiency_net = nn.Sequential(
+                nn.Linear(hidden_size + hidden_size//4, hidden_size),
+                nn.ReLU(),
+                nn.Dropout(0.2),
+                nn.Linear(hidden_size, hidden_size//2),
+                nn.ReLU(),
+                nn.Linear(hidden_size//2, 1),
+                nn.Sigmoid()
+            )
         
-        # 特征嵌入层
-        self.topic_embedding = nn.Embedding(topic_size, hidden_size//2)
-        self.student_embedding = nn.Linear(student_size, hidden_size//2)
-        self.time_embedding = nn.Linear(time_size, hidden_size//4)
-        
-        # 效率评分网络
-        self.efficiency_net = nn.Sequential(
-            nn.Linear(hidden_size + hidden_size//4, hidden_size),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(hidden_size, hidden_size//2),
-            nn.ReLU(),
-            nn.Linear(hidden_size//2, 1),
-            nn.Sigmoid()
-        )
-    
-    def forward(self, topic_features, student_features, time_features):
-        """计算特定时间学习特定知识点的效率评分
-        
-        返回:
-            学习效率评分 (0-1)
-        """
-        # 嵌入特征
-        topic_emb = self.topic_embedding(topic_features)
-        student_emb = self.student_embedding(student_features)
-        time_emb = self.time_embedding(time_features)
-        
-        # 合并特征
-        combined = torch.cat([topic_emb.squeeze(1), student_emb, time_emb], dim=1)
-        
-        # 通过网络
-        efficiency = self.efficiency_net(combined)
-        
-        return efficiency
+        def forward(self, topic_features, student_features, time_features):
+            topic_emb = self.topic_embedding(topic_features)
+            student_emb = self.student_embedding(student_features)
+            time_emb = self.time_embedding(time_features)
+            combined = torch.cat([topic_emb.squeeze(1), student_emb, time_emb], dim=1)
+            efficiency = self.efficiency_net(combined)
+            return efficiency
 
 
 class DeepLearningModel:
@@ -125,24 +91,29 @@ class DeepLearningModel:
     
     def __init__(self):
         """初始化模型"""
-        # 强制使用CPU，避免CUDA内存问题
-        self.device = torch.device("cpu")
-        logger.info(f"使用设备: {self.device}")
-        
-        # 初始化模型
-        self.mastery_model = KnowledgeMasteryModel().to(self.device)
-        self.schedule_model = LearningScheduleModel().to(self.device)
+        # 如果有 PyTorch，初始化模型
+        if TORCH_AVAILABLE:
+            self.device = torch.device("cpu")
+            logger.info(f"使用设备: {self.device}")
+            
+            self.mastery_model = KnowledgeMasteryModel().to(self.device)
+            self.schedule_model = LearningScheduleModel().to(self.device)
         
         # 特征映射
         self.topic_to_idx = {}  # 知识点到索引的映射
         self.feature_scaler = None  # 特征标准化
         
         # 加载预训练模型
-        self.model_loaded = self._load_model()
+        self.model_loaded = self._load_model() if TORCH_AVAILABLE else False
     
     def _load_model(self):
         """加载预训练模型权重"""
         try:
+            # 如果没有 PyTorch，直接使用规则方法
+            if not TORCH_AVAILABLE:
+                logger.info("PyTorch 不可用，将使用规则方法")
+                return False
+            
             # 尝试加载预训练的模型
             mastery_model_path = os.path.join(MODEL_DIR, 'mastery_model.pth')
             schedule_model_path = os.path.join(MODEL_DIR, 'schedule_model.pth')
@@ -175,6 +146,11 @@ class DeepLearningModel:
     def _initialize_with_simulated_data(self):
         """使用模拟数据初始化模型"""
         try:
+            # 如果没有 PyTorch，直接使用规则方法
+            if not TORCH_AVAILABLE:
+                logger.info("PyTorch 不可用，跳过模型初始化")
+                return False
+            
             # 生成一些模拟数据进行训练
             logger.info("使用模拟数据初始化模型...")
             
@@ -194,7 +170,10 @@ class DeepLearningModel:
             return False
     
     def _prepare_topic_features(self, topic):
-        """准备知识点特征"""
+        """准备知识点特征（仅在有 PyTorch 时使用）"""
+        if not TORCH_AVAILABLE:
+            return None
+        
         # 将知识点名称转换为索引ID
         topic_id = self.topic_to_idx.get(topic, random.randint(0, len(self.topic_to_idx)-1 if self.topic_to_idx else 9))
         
@@ -204,7 +183,10 @@ class DeepLearningModel:
         return topic_tensor
     
     def _prepare_student_features(self, student_data):
-        """准备学生特征"""
+        """准备学生特征（仅在有 PyTorch 时使用）"""
+        if not TORCH_AVAILABLE:
+            return None
+        
         # 提取学生特征
         learning_style = student_data.get('learning_style', {})
         
@@ -233,7 +215,10 @@ class DeepLearningModel:
         return student_tensor
     
     def _prepare_time_features(self, time_slot, weekday):
-        """准备时间特征"""
+        """准备时间特征（仅在有 PyTorch 时使用）"""
+        if not TORCH_AVAILABLE:
+            return None
+        
         # 时间段 one-hot 编码
         time_slots = ['早上', '上午', '下午', '晚上', '深夜']
         time_slot_idx = time_slots.index(time_slot) if time_slot in time_slots else 0
@@ -262,8 +247,8 @@ class DeepLearningModel:
         返回:
             预测的掌握度提升百分比
         """
-        # 如果模型未加载成功，使用规则方法
-        if not self.model_loaded:
+        # 如果没有 PyTorch 或模型未加载成功，使用规则方法
+        if not TORCH_AVAILABLE or not self.model_loaded:
             return self._rule_based_prediction(student_data, topic_data, duration_hours)
         
         try:

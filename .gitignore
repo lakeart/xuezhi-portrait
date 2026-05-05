@@ -1,18 +1,23 @@
-﻿# Python
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-
-# Database
-*.db
-instance/
+*.so
+*.dll
+*.exe
+*.egg
+*.egg-info/
+dist/
+build/
 
 # Environment
 .env
 .env.local
 .env.*.local
+venv/
+env/
+ENV/
 
 # IDE
 .vscode/
@@ -20,24 +25,29 @@ instance/
 *.swp
 *.swo
 *~
+*.DS_Store
 
-# Build
-dist/
-build/
-*.egg-info/
+# Database
+*.db
+*.sqlite
+*.sqlite3
+instance/
 
 # Logs
 logs/
 *.log
 
-# OS
-.DS_Store
-Thumbs.db
-
 # ngrok
+ngrok
 ngrok.exe
 ngrok.zip
 ngrok3.zip
 
-# Other
+# System files
+Thumbs.db
+
+# 其他
+*.pth
+*.pt
 *.pkl
+system_architecture.png
