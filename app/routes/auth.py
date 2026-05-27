@@ -57,8 +57,13 @@ def register():
             flash('邮箱已被注册')
             return render_template('auth/register.html', form=form)
         
+        # 获取角色（默认为student）
+        role = request.form.get('role', 'student')
+        if role not in ('student', 'teacher', 'admin'):
+            role = 'student'
+        
         # 创建新用户
-        new_user = User(username=username, email=email, password=password)
+        new_user = User(username=username, email=email, password=password, role=role)
         db.session.add(new_user)
         db.session.commit()
         

@@ -1382,7 +1382,7 @@
                     </div>
                     <div class="user-info">
                         <span class="user-name">{{ current_user.username }}</span>
-                        <span class="user-role">{{ '教师' if current_user.is_teacher() else '学生' }}</span>
+                        <span class="user-role">{{ '管理员' if current_user.role == 'admin' else ('教师' if current_user.is_teacher() else '学生') }}</span>
                     </div>
                     <i class="fas fa-chevron-down" style="font-size: 0.7rem; color: var(--text-muted);"></i>
                 </div>

@@ -683,6 +683,13 @@
                             <span>教师</span>
                         </label>
                     </div>
+                    <div class="role-option">
+                        <input type="radio" name="role" id="role-admin" value="admin">
+                        <label class="role-label" for="role-admin">
+                            <i class="fas fa-crown"></i>
+                            <span>管理员</span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- 用户名 -->
@@ -760,6 +767,11 @@
                     <span class="demo-role">学生：</span>
                     <span class="demo-credentials">student / student123</span>
                     <button class="btn-copy" onclick="fillCredentials('student', 'student123', 'student')">填入</button>
+                </div>
+                <div class="demo-account">
+                    <span class="demo-role">管理员：</span>
+                    <span class="demo-credentials">admin / admin123</span>
+                    <button class="btn-copy" onclick="fillCredentials('admin', 'admin123', 'admin')">填入</button>
                 </div>
             </div>
         </div>

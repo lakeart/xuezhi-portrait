@@ -43,6 +43,9 @@ ngrok.exe
 ngrok.zip
 ngrok3.zip
 
+# Archive
+*.zip
+
 # System files
 Thumbs.db
 

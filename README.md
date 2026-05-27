@@ -1,12 +1,16 @@
 # 学智画像：教育大数据赋能高校学情可视分析系统
 
-基于Python Flask的大学生计算机能力画像与智能学习分析系统。
+基于 Python Flask 的大学生计算机能力画像与智能学习分析系统。
 
 ## 项目简介
 
-本系统旨在为高校教师和学生提供全方位的计算机能力分析与学习支持，通过数据可视化、智能问答、个性化学习计划等功能，帮助教师精准掌握学生学习状态，帮助学生了解自身能力画像并获得针对性的学习建议。
+本系统面向高校教师、学生和管理员三类用户，通过数据可视化、智能问答、个性化学习计划等功能，帮助教师精准掌握学生学习状态，帮助学生了解自身能力画像并获得针对性的学习建议。
 
 ## 功能特性
+
+### 管理员端
+- 与教师端功能一致，可管理所有学生数据、题库和系统设置
+- 适合系统管理维护角色使用
 
 ### 教师端
 - **数据分析仪表盘**：实时查看学生参与度、正确率、用时等核心指标
@@ -18,10 +22,11 @@
   - 学习效率分析
   - 预测预警系统
 - **学生管理**：查看学生答题详情，追踪学习轨迹
+- **题库管理**：添加、编辑、删除题目
 
 ### 学生端
 - **个人画像**：清晰了解自身计算机能力的优势与不足
-- **智能问答助手**：24小时在线的AI学习助手，解答学习疑问
+- **智能问答助手**：AI 学习助手，解答学习疑问
 - **个性化学习计划**：基于个人能力画像的定制化学习路径
 - **学习中心**：知识点学习、专项练习、错题复习
 
@@ -37,33 +42,28 @@
 
 ```
 .
-├── app/                      # 应用主目录
-│   ├── __init__.py          # Flask应用工厂
-│   ├── models/              # 数据模型
-│   │   ├── user.py          # 用户模型
-│   │   ├── quiz.py          # 题目与答题模型
-│   │   └── extra.py         # 扩展功能模型
-│   ├── routes/              # 路由控制器
-│   │   ├── analysis.py      # 数据分析路由
-│   │   ├── student.py       # 学生相关路由
-│   │   ├── intelligent_assistant.py  # 智能问答路由
-│   │   └── ...
-│   ├── templates/           # Jinja2模板
-│   │   ├── index.html       # 首页
-│   │   ├── analysis/        # 数据分析页面
-│   │   ├── student/         # 学生页面
-│   │   └── intelligent_assistant/  # 智能问答页面
-│   ├── utils/               # 工具函数
-│   └── static/              # 静态资源
-├── instance/                 # 实例数据（含数据库）
-├── tests/                    # 单元测试
-├── run.py                    # 应用入口
-├── requirements.txt          # Python依赖
-├── Dockerfile                # Docker配置
-├── docker-compose.yml         # Docker编排
-├── nginx.conf                # Nginx配置
-├── start.bat                 # Windows启动脚本
-└── install.bat               # Windows安装脚本
+├── app/                       # 应用主目录
+│   ├── __init__.py           # Flask应用工厂
+│   ├── models/               # 数据模型 (User / Quiz / Feature)
+│   ├── routes/               # 路由控制器 (auth / analysis / student / quiz / assistant)
+│   ├── templates/            # Jinja2 模板
+│   ├── utils/                # 工具函数
+│   └── static/               # 静态资源
+├── demo/                      # 讯飞智文PPT接口示例与诊断脚本
+├── tests/                     # 单元测试
+├── instance/                  # 实例数据（含 SQLite 数据库）
+├── run.py                     # 开发环境入口
+├── wsgi.py                    # 生产环境 WSGI 入口
+├── set_db.py                  # 数据库初始化与测试数据生成
+├── deploy.py                  # 部署脚本（支持 Gunicorn / Waitress）
+├── take_screenshots.py        # 页面截图工具（供文档使用）
+├── requirements.txt           # 完整 Python 依赖
+├── requirements_light.txt     # 精简 Python 依赖（不含重型包）
+├── Dockerfile                 # Docker 镜像配置
+├── docker-compose.yml         # Docker 编排
+├── nginx.conf                 # Nginx 反向代理配置
+├── install.bat                # Windows 一键安装脚本
+└── start.bat                  # Windows 一键启动脚本
 ```
 
 ## 快速部署
@@ -76,7 +76,7 @@
 
 2. **克隆/下载项目**
    ```bash
-   cd d:\1
+   cd 项目目录
    ```
 
 3. **创建虚拟环境（推荐）**
@@ -130,9 +130,11 @@
 
 | 角色 | 用户名 | 密码 |
 |------|--------|------|
-| 教师 | admin | admin123 |
-| 学生 | student1 | password |
-| 学生 | student2 | password |
+| 管理员 | admin | admin123 |
+| 教师 | teacher | teacher123 |
+| 学生 | student | student123 |
+
+> 运行 `python set_db.py` 后会额外生成 50 个模拟学生账号（学号即密码）。
 
 ## 生产环境部署
 
@@ -157,18 +159,12 @@
 ### 运行测试
 ```bash
 pytest tests/
-# 或
-python run_tests.py
 ```
 
-### 重新构建模板（修改模板后）
+### 使用精简依赖
+如果不需要完整功能（如机器学习分析），可安装精简依赖：
 ```bash
-python rebuild_templates.py
-```
-
-### 系统检查
-```bash
-python system_check.py
+pip install -r requirements_light.txt
 ```
 
 ## 项目特色

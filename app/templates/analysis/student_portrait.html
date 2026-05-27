@@ -647,13 +647,13 @@
                                                     </div>
                                                     <div class="col-md-5">
                                                         <div class="feature-importance-info p-3 bg-light rounded">
-                                                            <h6 class="mb-3">预测模型说明</h6>
-                                                            <p class="small">本预测基于随机森林算法对历史数据进行分析。图表显示了各因素对预测结果的相对影响程度：</p>
-                                                            <ul class="small feature-importance-list">
-                                                                <li><strong>lag_1 - lag_4</strong>：不同时间窗口的历史数据影响</li>
-                                                                <li><strong>trend</strong>：时间趋势因素</li>
+                                                            <h6 class="mb-3" style="color: #F0F6FC;">预测模型说明</h6>
+                                                            <p class="small" style="color: #F0F6FC;">本预测基于随机森林算法对历史数据进行分析。图表显示了各因素对预测结果的相对影响程度：</p>
+                                                            <ul class="small feature-importance-list" style="color: #F0F6FC;">
+                                                                <li style="color: #F0F6FC;"><strong>lag_1 - lag_4</strong>：不同时间窗口的历史数据影响</li>
+                                                                <li style="color: #F0F6FC;"><strong>trend</strong>：时间趋势因素</li>
                                                             </ul>
-                                                            <div class="alert alert-info mt-2 p-2 small">
+                                                            <div class="alert alert-info mt-2 p-2 small" style="background: rgba(67, 100, 247, 0.1); border-color: rgba(88, 166, 255, 0.3); color: #F0F6FC;">
                                                                 <i class="fas fa-info-circle me-1"></i>
                                                                 绿色条形高度表示特征对预测的影响程度，数值越高表示该因素越重要。
                                                             </div>
@@ -1708,6 +1708,7 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'same-origin',  // 确保发送session cookie
             body: JSON.stringify({
                 target: target,
                 period: period
@@ -1715,13 +1716,16 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                // 检查响应是否是HTML（可能是重定向到登录页）
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('text/html')) {
-                    throw new Error('需要登录才能使用此功能');
-                }
+                // 尝试解析JSON错误响应
                 return response.json().then(data => {
                     throw new Error(data.error || '服务器返回错误');
+                }).catch(() => {
+                    // 如果不是JSON，检查是否是HTML（可能是重定向到登录页）
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('text/html')) {
+                        throw new Error('需要登录才能使用此功能，请刷新页面后重新登录');
+                    }
+                    throw new Error('服务器返回错误 (状态码: ' + response.status + ')');
                 });
             }
             return response.json();
@@ -1868,12 +1872,41 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // 显示错误信息
-            alert('预测分析错误: ' + errorMessage);
+            showToast('预测分析错误', errorMessage, 'error');
             
             // 清除结果区域
             predictionResults.style.display = 'none';
         });
     });
+    
+    // Toast显示函数
+    function showToast(title, message, type) {
+        const toast = document.getElementById('toastContainer');
+        const toastTitle = toast.querySelector('.toast-title');
+        const toastMessage = toast.querySelector('.toast-message');
+        
+        toast.className = 'custom-toast ' + (type || 'toast-error');
+        toastTitle.textContent = title;
+        toastMessage.textContent = message;
+        toast.style.display = 'block';
+        
+        // 触发重排以启用过渡动画
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        
+        // 3秒后自动隐藏
+        setTimeout(hideToast, 4000);
+    }
+    
+    // Toast隐藏函数
+    function hideToast() {
+        const toast = document.getElementById('toastContainer');
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 300);
+    }
     
     // 知识点关联分析
     const runTopicAnalysisBtn = document.getElementById('runTopicAnalysisBtn');
@@ -2430,31 +2463,31 @@ document.addEventListener('DOMContentLoaded', function() {
             
             profileDiv.innerHTML = `
                 <div class="profile-header" style="border-left: 4px solid ${getClusterColor(profile.cluster_id - 1)}">
-                    <h6 class="text-primary mb-2">群体 ${profile.cluster_id} <span class="badge rounded-pill bg-secondary">${profile.size}人</span></h6>
+                    <h6 class="mb-2" style="color: #F0F6FC;">群体 ${profile.cluster_id} <span class="badge rounded-pill" style="background: rgba(67, 100, 247, 0.3); color: #F0F6FC;">${profile.size}人</span></h6>
                 </div>
                 <div class="profile-body">
                     <div class="row mb-2">
                         <div class="col-6">
-                            <span class="text-muted small">平均分数:</span> 
-                            <span class="badge" style="background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-color);">${profile.avg_score.toFixed(1)}</span>
+                            <span class="small" style="color: #F0F6FC;">平均分数:</span> 
+                            <span class="badge" style="background: rgba(67, 100, 247, 0.2); color: #F0F6FC; border: 1px solid rgba(67, 100, 247, 0.3);">${profile.avg_score.toFixed(1)}</span>
                         </div>
                         <div class="col-6">
-                            <span class="text-muted small">平均用时:</span> 
-                            <span class="badge" style="background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-color);">${profile.avg_time.toFixed(1)}秒</span>
+                            <span class="small" style="color: #F0F6FC;">平均用时:</span> 
+                            <span class="badge" style="background: rgba(67, 100, 247, 0.2); color: #F0F6FC; border: 1px solid rgba(67, 100, 247, 0.3);">${profile.avg_time.toFixed(1)}秒</span>
                         </div>
                     </div>
                     <div class="mb-2">
-                        <span class="text-muted d-block mb-1 small">特征标签:</span> 
+                        <span class="d-block mb-1 small" style="color: #F0F6FC;">特征标签:</span> 
                         <div class="feature-tags">
-                            ${profile.key_features.map(f => `<span class="badge rounded-pill bg-info m-1">${f}</span>`).join('')}
+                            ${profile.key_features.map(f => `<span class="badge rounded-pill m-1" style="background: rgba(32, 201, 151, 0.2); color: #20c997;">${f}</span>`).join('')}
                         </div>
                     </div>
                     <div>
-                        <span class="text-muted small">教学建议:</span>
-                        <p class="small mt-1 suggestion-text">${profile.recommendation}</p>
+                        <span class="small" style="color: #F0F6FC;">教学建议:</span>
+                        <p class="small mt-1 suggestion-text" style="color: #F0F6FC;">${profile.recommendation}</p>
                     </div>
                 </div>
-                ${index < clusterProfiles.length - 1 ? '<hr class="my-2">' : ''}
+                ${index < clusterProfiles.length - 1 ? '<hr class="my-2" style="border-color: rgba(67, 100, 247, 0.2);">' : ''}
             `;
             
             featuresContainer.appendChild(profileDiv);
@@ -3222,6 +3255,190 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% block styles %}
 <style>
+    /* 深色主题覆盖 - 确保在深色背景上可见 */
+    .card {
+        background: var(--bg-card, #1C2128);
+        border: 1px solid var(--border-color, rgba(67, 100, 247, 0.15));
+        color: var(--text-primary, #F0F6FC);
+    }
+    
+    .card-header {
+        background: rgba(28, 33, 40, 0.9);
+        border-bottom: 1px solid var(--border-color, rgba(67, 100, 247, 0.15));
+        color: var(--text-primary, #F0F6FC);
+    }
+    
+    .card-body {
+        color: var(--text-primary, #F0F6FC);
+    }
+    
+    .card-title {
+        color: var(--text-primary, #F0F6FC);
+    }
+    
+    /* 浅色渐变改为深色版本 */
+    .gradient-header {
+        background: linear-gradient(135deg, rgba(28, 33, 40, 0.9) 0%, rgba(37, 43, 53, 0.9) 100%);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 12px;
+    }
+    
+    .gradient-blue-light {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.15) 0%, rgba(67, 100, 247, 0.08) 100%);
+        border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+        color: #6FB1FC !important;
+    }
+    
+    .gradient-green-light {
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.15) 0%, rgba(46, 160, 67, 0.08) 100%);
+        border-bottom: 1px solid rgba(46, 160, 67, 0.2);
+        color: #2EA043 !important;
+    }
+    
+    .gradient-purple-light {
+        background: linear-gradient(135deg, rgba(163, 113, 247, 0.15) 0%, rgba(163, 113, 247, 0.08) 100%);
+        border-bottom: 1px solid rgba(163, 113, 247, 0.2);
+        color: #A371F7 !important;
+    }
+    
+    .gradient-teal-light {
+        background: linear-gradient(135deg, rgba(32, 201, 151, 0.15) 0%, rgba(32, 201, 151, 0.08) 100%);
+        border-bottom: 1px solid rgba(32, 201, 151, 0.2);
+        color: #20c997 !important;
+    }
+    
+    /* 背景覆盖 */
+    #predictionAnalysis {
+        background-color: rgba(28, 33, 40, 0.8) !important;
+        color: #F0F6FC;
+    }
+    
+    #predictionAnalysis p,
+    #predictionAnalysis li {
+        color: #8B949E;
+    }
+    
+    .topic-list {
+        background-color: rgba(28, 33, 40, 0.8) !important;
+        border: 1px solid rgba(67, 100, 247, 0.2) !important;
+    }
+    
+    .topic-item {
+        border-bottom: 1px solid rgba(67, 100, 247, 0.1);
+        color: #F0F6FC;
+    }
+    
+    .topic-item:hover {
+        background-color: rgba(67, 100, 247, 0.1);
+    }
+    
+    .topic-tag {
+        background-color: rgba(67, 100, 247, 0.15);
+        color: #6FB1FC;
+    }
+    
+    .topic-tag:hover {
+        background-color: rgba(67, 100, 247, 0.25);
+    }
+    
+    /* 导航标签 */
+    .nav-link {
+        color: #8B949E;
+        background: rgba(28, 33, 40, 0.5);
+        border: 1px solid rgba(67, 100, 247, 0.1);
+    }
+    
+    .nav-link:hover {
+        color: #F0F6FC;
+        background: rgba(67, 100, 247, 0.1);
+    }
+    
+    .nav-link.active {
+        color: #F0F6FC;
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.2), rgba(67, 100, 247, 0.1));
+        border-color: rgba(67, 100, 247, 0.3);
+    }
+    
+    /* 表单元素深色覆盖 */
+    .form-label {
+        color: #F0F6FC;
+    }
+    
+    .form-check-label {
+        color: #8B949E;
+    }
+    
+    .form-check-input:checked {
+        background-color: #4364F7;
+        border-color: #4364F7;
+    }
+    
+    /* 警告框深色覆盖 */
+    .alert {
+        background: rgba(67, 100, 247, 0.1);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        color: #8B949E;
+    }
+    
+    .alert-info {
+        background: rgba(88, 166, 255, 0.1);
+        border-color: rgba(88, 166, 255, 0.3);
+        color: #58A6FF;
+    }
+    
+    .alert-success {
+        background: rgba(46, 160, 67, 0.1);
+        border-color: rgba(46, 160, 67, 0.3);
+        color: #3FB950;
+    }
+    
+    .alert-warning {
+        background: rgba(210, 153, 34, 0.1);
+        border-color: rgba(210, 153, 34, 0.3);
+        color: #D29922;
+    }
+    
+    .alert-danger {
+        background: rgba(248, 81, 73, 0.1);
+        border-color: rgba(248, 81, 73, 0.3);
+        color: #F85149;
+    }
+    
+    /* 徽章深色覆盖 */
+    .badge {
+        color: #F0F6FC;
+    }
+    
+    .bg-primary {
+        background-color: #4364F7 !important;
+    }
+    
+    /* 聚类特征容器 */
+    .cluster-features-container {
+        background: rgba(28, 33, 40, 0.8) !important;
+    }
+    
+    .cluster-features-container h6 {
+        color: #F0F6FC;
+    }
+    
+    /* 结果区域 */
+    .result-header {
+        color: #F0F6FC;
+    }
+    
+    .result-header h6 {
+        color: #F0F6FC;
+    }
+    
+    /* 图表容器 */
+    .chart-container {
+        background: rgba(28, 33, 40, 0.8);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: 12px;
+        padding: 1rem;
+    }
+    
     /* 共享样式 */
     .fade-in {
         animation: fadeIn 0.5s ease-in-out;
@@ -3230,32 +3447,6 @@ document.addEventListener('DOMContentLoaded', function() {
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .gradient-header {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border: none;
-        border-radius: 10px;
-    }
-    
-    .gradient-blue-light {
-        background: linear-gradient(135deg, #e8f4fd 0%, #d1e6fa 100%);
-        color: #0d6efd;
-    }
-    
-    .gradient-green-light {
-        background: linear-gradient(135deg, #e8f8ee 0%, #d1fad8 100%);
-        color: #198754;
-    }
-    
-    .gradient-purple-light {
-        background: linear-gradient(135deg, #f3e8fd 0%, #e5d1fa 100%);
-        color: #1a1a1a;
-    }
-    
-    .gradient-teal-light {
-        background: linear-gradient(135deg, #e8fcfc 0%, #d1f5fa 100%);
-        color: #20c997;
     }
     
     .gradient-blue {
@@ -3290,23 +3481,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /* 模块标签样式 */
     .custom-nav-pills .nav-link {
-        color: #495057;
+        color: #8B949E;
         border-radius: 6px;
         padding: 10px 15px;
         margin-bottom: 8px;
         transition: all 0.3s;
         border-left: 3px solid transparent;
+        background: rgba(28, 33, 40, 0.5);
     }
-    
+
     .custom-nav-pills .nav-link.active {
-        background-color: #f8f9fa;
-        color: #0d6efd;
-        border-left: 3px solid #0d6efd;
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.2), rgba(67, 100, 247, 0.1));
+        color: #6FB1FC;
+        border-left: 3px solid #4364F7;
         font-weight: bold;
     }
-    
+
     .custom-nav-pills .nav-link:hover:not(.active) {
-        background-color: #f0f0f0;
+        background: rgba(67, 100, 247, 0.1);
+        color: #F0F6FC;
         transform: translateX(3px);
     }
     
@@ -3314,6 +3507,13 @@ document.addEventListener('DOMContentLoaded', function() {
     .cluster-features-container {
         max-height: 300px;
         overflow-y: auto;
+        background: rgba(28, 33, 40, 0.9) !important;
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        color: #F0F6FC;
+    }
+    
+    .cluster-features-container * {
+        color: #F0F6FC;
     }
     
     .cluster-features-scroll {
@@ -3323,17 +3523,60 @@ document.addEventListener('DOMContentLoaded', function() {
     .cluster-profile-card {
         animation: fadeIn 0.5s ease-in-out;
         animation-fill-mode: both;
+        background: rgba(37, 43, 53, 0.8);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
     }
     
     .profile-header {
         padding: 8px 12px;
-        border-left: 4px solid #0d6efd;
-        background-color: rgba(240, 242, 245, 0.5);
+        border-left: 4px solid #4364F7;
+        background-color: rgba(67, 100, 247, 0.1);
         border-radius: 4px;
+    }
+    
+    .profile-header h6 {
+        color: #F0F6FC;
+        margin: 0;
     }
     
     .profile-body {
         padding: 12px;
+        color: #F0F6FC;
+    }
+    
+    /* Bootstrap浅色类覆盖 */
+    .bg-light {
+        background-color: rgba(28, 33, 40, 0.9) !important;
+    }
+    
+    .text-muted {
+        color: #8B949E !important;
+    }
+    
+    .table-light {
+        --bs-table-bg: rgba(28, 33, 40, 0.95);
+        --bs-table-striped-bg: rgba(37, 43, 53, 0.9);
+        --bs-table-hover-bg: rgba(67, 100, 247, 0.1);
+        color: #F0F6FC;
+    }
+    
+    .table-light th,
+    .table-light td {
+        color: #F0F6FC !important;
+        border-color: rgba(67, 100, 247, 0.15);
+    }
+    
+    .table {
+        color: #F0F6FC;
+    }
+    
+    .table td,
+    .table th {
+        color: #F0F6FC;
+        border-color: rgba(67, 100, 247, 0.1);
     }
     
     .feature-tags {
@@ -3342,8 +3585,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     .suggestion-text {
-        color: #6c757d;
+        color: #F0F6FC;
         line-height: 1.4;
+    }
+    
+    /* 聚类分析表格样式 */
+    #clusterTableBody td {
+        color: #F0F6FC;
+        background: rgba(28, 33, 40, 0.8);
+    }
+    
+    #clusterTableBody tr:hover td {
+        background: rgba(67, 100, 247, 0.15);
     }
     
     /* 学习风格相关样式 */
@@ -3465,24 +3718,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /* 知识点网络图样式 */
     #topicNetworkGraph {
-        background-color: #f8f9fa;
+        background-color: rgba(28, 33, 40, 0.8);
         border-radius: 8px;
+        border: 1px solid rgba(67, 100, 247, 0.2);
     }
     
     /* 预测结果样式 */
     .prediction-point {
-        background-color: rgba(13, 110, 253, 0.2);
-        border: 2px solid #0d6efd;
+        background-color: rgba(67, 100, 247, 0.2);
+        border: 2px solid #4364F7;
         border-radius: 50%;
     }
     
     /* 聚类详情样式 */
     .student-card {
-        border: 1px solid #dee2e6;
+        border: 1px solid rgba(67, 100, 247, 0.2);
         border-radius: 6px;
         padding: 10px;
         margin-bottom: 10px;
         transition: all 0.3s;
+        background: rgba(28, 33, 40, 0.6);
     }
     
     .student-card:hover {
@@ -3516,9 +3771,13 @@ document.addEventListener('DOMContentLoaded', function() {
         font-size: 0.85rem;
     }
     
+    .feature-basis-list li {
+        color: #8B949E;
+    }
+    
     .feature-basis-list li::before {
         content: "•";
-        color: #6c757d;
+        color: #6FB1FC;
         font-weight: bold;
         display: inline-block;
         width: 1em;
@@ -3526,47 +3785,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     .text-purple {
-        color: #6f42c1 !important;
+        color: #A371F7 !important;
     }
     
     .text-orange {
-        color: #fd7e14 !important;
+        color: #D29922 !important;
     }
     
     .bg-purple {
-        background-color: #6f42c1 !important;
+        background-color: #A371F7 !important;
         }
     
     .bg-orange {
-        background-color: #fd7e14 !important;
-    }
-    
-    /* 预测结果样式 */
-    .prediction-point {
-        background-color: rgba(13, 110, 253, 0.2);
-        border: 2px solid #0d6efd;
-        border-radius: 50%;
-    }
-    
-    /* 预测分析区域样式 */
-    #predictionAnalysis {
-        transition: opacity 0.5s ease;
-        padding: 15px;
-        border-radius: 5px;
-        background-color: #f8f9fa;
-    }
-    
-    #predictionAnalysis p {
-        margin-bottom: 10px;
-        line-height: 1.6;
-    }
-    
-    #predictionAnalysis ul {
-        margin-bottom: 0;
-    }
-    
-    #predictionAnalysis li {
-        margin-bottom: 8px;
+        background-color: #D29922 !important;
     }
     
     /* 预测干预表格样式 */
@@ -3582,7 +3813,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /* 预测图表样式 */
     #predictionChart {
-            opacity: 0;
+        opacity: 0;
         transition: opacity 0.5s ease;
     }
     
@@ -3595,33 +3826,14 @@ document.addEventListener('DOMContentLoaded', function() {
         pointer-events: none;
     }
     
-    /* 知识点关联分析样式 */
-    .topic-list {
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        padding: 8px;
-        background-color: #f8f9fa;
-    }
-    
-    .topic-item {
-        padding: 6px 8px;
-        border-bottom: 1px solid #eee;
-        transition: all 0.2s;
-    }
-    
     .topic-item:last-child {
         border-bottom: none;
-    }
-    
-    .topic-item:hover {
-        background-color: #f1f1f1;
     }
     
     .btn-outline-teal {
         color: #20c997;
         border-color: #20c997;
+        background: transparent;
     }
     
     .btn-outline-teal:hover {
@@ -3642,6 +3854,64 @@ document.addEventListener('DOMContentLoaded', function() {
         color: white;
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-gradient-blue {
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        color: white;
+        border: none;
+        transition: all 0.3s;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+    }
+    
+    .btn-gradient-blue:hover {
+        background: linear-gradient(135deg, #4364F7, #6FB1FC);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 100, 247, 0.4);
+    }
+    
+    .btn-gradient-blue:active {
+        transform: translateY(0);
+    }
+    
+    .btn-gradient-blue:disabled {
+        background: linear-gradient(135deg, #3a4a5c, #4a5a6c);
+        color: #8B949E;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .btn-gradient-green {
+        background: linear-gradient(135deg, #0ba360, #3cba92);
+        color: white;
+        border: none;
+        transition: all 0.3s;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+    }
+    
+    .btn-gradient-green:hover {
+        background: linear-gradient(135deg, #3cba92, #56d08a);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(11, 163, 96, 0.4);
+    }
+    
+    .btn-gradient-green:active {
+        transform: translateY(0);
+    }
+    
+    .btn-gradient-green:disabled {
+        background: linear-gradient(135deg, #3a4a5c, #4a5a6c);
+        color: #8B949E;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
     }
     
     #topicNetworkGraph {
@@ -3679,5 +3949,77 @@ document.addEventListener('DOMContentLoaded', function() {
         color: white;
         font-weight: 500;
     }
+    
+    /* 自定义Toast提示框样式 */
+    .custom-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        max-width: 450px;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, rgba(28, 33, 40, 0.95), rgba(37, 43, 53, 0.95));
+        border: 1px solid rgba(67, 100, 247, 0.3);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        color: #F0F6FC;
+        font-size: 14px;
+        line-height: 1.5;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+    }
+    
+    .custom-toast.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    .custom-toast.toast-error {
+        border-left: 4px solid #F85149;
+    }
+    
+    .custom-toast.toast-success {
+        border-left: 4px solid #3FB950;
+    }
+    
+    .custom-toast.toast-warning {
+        border-left: 4px solid #D29922;
+    }
+    
+    .custom-toast .toast-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #F0F6FC;
+    }
+    
+    .custom-toast .toast-message {
+        color: #F0F6FC;
+    }
+    
+    .custom-toast .toast-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: #F0F6FC;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0;
+        line-height: 1;
+    }
+    
+    .custom-toast .toast-close:hover {
+        color: #6FB1FC;
+    }
 </style>
+
+<!-- Toast容器 -->
+<div id="toastContainer" class="custom-toast" style="display: none;">
+    <button type="button" class="toast-close" onclick="hideToast()">&times;</button>
+    <div class="toast-title"></div>
+    <div class="toast-message"></div>
+</div>
 {% endblock %} 

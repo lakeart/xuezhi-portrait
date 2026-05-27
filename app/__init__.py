@@ -1,18 +1,38 @@
 import os
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import json
 from datetime import datetime
 from markupsafe import Markup
 
+# 可选：本地开发通过 .env 注入环境变量（不强依赖）
+try:
+    from dotenv import load_dotenv
+except Exception:  # pragma: no cover
+    load_dotenv = None
+
 # 创建数据库实例
 db = SQLAlchemy()
 login_manager = LoginManager()
 
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    """处理未授权访问 - API请求返回JSON，页面请求重定向到登录页"""
+    if request.is_json:
+        return jsonify({'error': '需要登录才能使用此功能', 'code': 'LOGIN_REQUIRED'}), 401
+    else:
+        from flask import redirect, url_for
+        return redirect(url_for('auth.login'))
+
 def create_app():
     # 创建Flask应用实例
     app = Flask(__name__)
+
+    # 优先加载项目根目录 .env（如果存在）
+    if load_dotenv:
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+        load_dotenv(os.path.join(project_root, '.env'), override=False)
     
     # 配置数据库
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-for-testing'
@@ -35,6 +55,7 @@ def create_app():
     from app.routes.nav import nav_bp
     from app.routes.features import features_bp
     from app.routes.extra_features import extra_bp
+    from app.routes.agent_system import bp as agent_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -46,10 +67,22 @@ def create_app():
     app.register_blueprint(nav_bp)
     app.register_blueprint(features_bp, url_prefix='/features')
     app.register_blueprint(extra_bp, url_prefix='/extra')
+    app.register_blueprint(agent_bp, url_prefix='/agent')
     
     # 创建数据库表
     with app.app_context():
+        # 先导入模型，确保 SQLAlchemy 已注册所有表
+        from app.models.agent_models import (
+            StudentProfileModel,
+            LearningResourceModel,
+            LearningPathModel,
+            AssessmentReportModel,
+            ChatHistoryModel,
+            DigitalHumanVideoTaskModel,
+        )
+
         db.create_all()
+
         # 初始化成就系统
         from app.utils.achievement_checker import init_achievements
         init_achievements()

@@ -306,6 +306,16 @@
         padding-left: 2.75rem !important;
     }
 
+    /* 角色选择器选中样式 */
+    .role-option input:checked + .role-label {
+        border-color: #4364F7 !important;
+        background: rgba(67, 100, 247, 0.15) !important;
+    }
+    .role-option input:checked + .role-label i,
+    .role-option input:checked + .role-label span {
+        color: #6FB1FC !important;
+    }
+
     /* 密码强度指示器 */
     .password-strength {
         margin-top: 0.5rem;
@@ -584,6 +594,34 @@
                         <i class="fas fa-check-double input-icon"></i>
                         <input type="password" class="form-control input-with-icon" id="confirm_password" name="confirm_password" placeholder=" " required>
                         <label for="confirm_password">确认密码</label>
+                    </div>
+                    
+                    <!-- 角色选择 -->
+                    <div class="mb-4">
+                        <label class="form-label" style="color: #8B949E; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.6rem;">选择身份</label>
+                        <div class="role-selector" style="display: flex; gap: 0.75rem;">
+                            <div class="role-option" style="flex: 1; position: relative;">
+                                <input type="radio" name="role" id="reg-role-student" value="student" checked style="position: absolute; opacity: 0;">
+                                <label class="role-label" for="reg-role-student" style="display: flex; flex-direction: column; align-items: center; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border: 2px solid rgba(67, 100, 247, 0.2); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
+                                    <i class="fas fa-user-graduate" style="font-size: 1.3rem; margin-bottom: 0.35rem; color: #8B949E;"></i>
+                                    <span style="font-size: 0.85rem; color: #8B949E; font-weight: 500;">学生</span>
+                                </label>
+                            </div>
+                            <div class="role-option" style="flex: 1; position: relative;">
+                                <input type="radio" name="role" id="reg-role-teacher" value="teacher" style="position: absolute; opacity: 0;">
+                                <label class="role-label" for="reg-role-teacher" style="display: flex; flex-direction: column; align-items: center; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border: 2px solid rgba(67, 100, 247, 0.2); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
+                                    <i class="fas fa-chalkboard-teacher" style="font-size: 1.3rem; margin-bottom: 0.35rem; color: #8B949E;"></i>
+                                    <span style="font-size: 0.85rem; color: #8B949E; font-weight: 500;">教师</span>
+                                </label>
+                            </div>
+                            <div class="role-option" style="flex: 1; position: relative;">
+                                <input type="radio" name="role" id="reg-role-admin" value="admin" style="position: absolute; opacity: 0;">
+                                <label class="role-label" for="reg-role-admin" style="display: flex; flex-direction: column; align-items: center; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border: 2px solid rgba(67, 100, 247, 0.2); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
+                                    <i class="fas fa-crown" style="font-size: 1.3rem; margin-bottom: 0.35rem; color: #8B949E;"></i>
+                                    <span style="font-size: 0.85rem; color: #8B949E; font-weight: 500;">管理员</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     
                     <button type="submit" class="btn-register">
