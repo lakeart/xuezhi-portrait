@@ -36,7 +36,12 @@ def create_app():
     
     # 配置数据库
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-for-testing'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quiz_system.db'
+    
+    # 确保 instance 目录存在
+    instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'instance')
+    os.makedirs(instance_path, exist_ok=True)
+    db_path = os.path.join(instance_path, 'quiz_system.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # 初始化扩展
