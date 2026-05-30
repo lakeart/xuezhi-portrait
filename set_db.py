@@ -58,19 +58,28 @@ def reset_database():
     print("数据库结构已重置")
 
 def create_default_users():
-    """创建默认用户：教师和学生"""
+    """创建默认用户：管理员、教师和学生"""
     print("正在创建默认用户...")
     
-    # 创建教师（admin直接设置为教师身份，不再单独设置管理员角色）
-    teacher = User(
+    # 管理员
+    admin = User(
         username='admin',
         email='admin@example.com',
         password='admin123',
+        role='admin'
+    )
+    db.session.add(admin)
+    
+    # 教师
+    teacher = User(
+        username='teacher',
+        email='teacher@example.com',
+        password='teacher123',
         role='teacher'
     )
     db.session.add(teacher)
     
-    # 创建示例学生
+    # 学生
     student = User(
         username='student',
         email='student@example.com',
