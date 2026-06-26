@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>能力测试中心 - 学智画像</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #07111f;
+            --bg-soft: rgba(12, 24, 42, 0.92);
+            --panel: rgba(12, 20, 34, 0.88);
+            --line: rgba(148, 163, 184, 0.16);
+            --text: #f8fafc;
+            --muted: #9fb0c8;
+            --blue: #4f9cf9;
+            --green: #16c47f;
+            --amber: #f5b942;
+            --rose: #f87171;
+            --cyan: #22d3ee;
+            --shadow: 0 24px 60px rgba(2, 6, 23, 0.35);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 10% 0%, rgba(79, 156, 249, 0.18), transparent 26%),
+                radial-gradient(circle at 88% 12%, rgba(22, 196, 127, 0.16), transparent 24%),
+                linear-gradient(180deg, #07111f 0%, #091524 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 28px;
+            background: rgba(7, 17, 31, 0.92);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .nav-logo {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1d4ed8, #22d3ee);
+            box-shadow: 0 10px 24px rgba(34, 211, 238, 0.18);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--muted);
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            transition: 0.2s ease;
+            font-size: 14px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text);
+            background: rgba(79, 156, 249, 0.14);
+        }
+
+        .nav-side {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .btn-logout {
+            color: var(--text);
+            text-decoration: none;
+            padding: 10px 14px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            transition: 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            border-color: rgba(248, 113, 113, 0.35);
+            background: rgba(248, 113, 113, 0.08);
+        }
+
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.75fr);
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .hero-card,
+        .hero-score,
+        .quick-card,
+        .category-bar,
+        .catalog-panel,
+        .progress-panel,
+        .result-shell,
+        .history-panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        .hero-card {
+            padding: 24px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(79, 156, 249, 0.14);
+            color: #b9e0ff;
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+
+        .hero-title {
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 12px;
+        }
+
+        .hero-desc {
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 18px;
+        }
+
+        .hero-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .metric-box {
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(6, 14, 26, 0.58);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .metric-box strong {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .metric-box span {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .hero-score {
+            padding: 22px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .score-ring {
+            width: 168px;
+            height: 168px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: conic-gradient(var(--blue) 0 78%, rgba(255,255,255,0.08) 78% 100%);
+            position: relative;
+        }
+
+        .score-ring::after {
+            content: "";
+            position: absolute;
+            inset: 14px;
+            border-radius: 50%;
+            background: #091525;
+        }
+
+        .score-ring strong,
+        .score-ring span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .score-ring strong {
+            font-size: 42px;
+            line-height: 1;
+        }
+
+        .score-ring span {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .score-note {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .quick-card {
+            padding: 16px;
+            text-decoration: none;
+            color: var(--text);
+            transition: 0.2s ease;
+        }
+
+        .quick-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(79, 156, 249, 0.32);
+        }
+
+        .quick-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 12px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .quick-card h4 {
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+
+        .quick-card p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .category-bar {
+            padding: 18px 20px;
+            margin-bottom: 18px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .section-desc {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .category-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip-btn {
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(7, 17, 31, 0.56);
+            color: var(--muted);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .chip-btn.active,
+        .chip-btn:hover {
+            color: var(--text);
+            border-color: rgba(79, 156, 249, 0.34);
+            background: rgba(79, 156, 249, 0.14);
+        }
+
+        .catalog-panel {
+            padding: 20px;
+        }
+
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .test-card {
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(7, 17, 31, 0.56);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            transition: 0.2s ease;
+            cursor: pointer;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(79, 156, 249, 0.28);
+        }
+
+        .test-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .test-icon {
+            width: 52px;
+            height: 52px;
+            display: grid;
+            place-items: center;
+            border-radius: 16px;
+            font-size: 22px;
+            color: white;
+        }
+
+        .card-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            background: rgba(34, 211, 238, 0.12);
+            color: #a5f3fc;
+        }
+
+        .test-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .test-card p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+            min-height: 72px;
+            margin-bottom: 14px;
+        }
+
+        .meta-row,
+        .mini-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .meta-item,
+        .mini-tags span {
+            font-size: 12px;
+            color: var(--muted);
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.08);
+        }
+
+        .test-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .test-footer button {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #1d4ed8, #22d3ee);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .progress-panel {
+            padding: 22px;
+            display: none;
+        }
+
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .progress-meta strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .progress-meta span {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .progress-track {
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            background: linear-gradient(90deg, #16c47f, #4f9cf9);
+        }
+
+        .question-card {
+            padding: 24px;
+            border-radius: 18px;
+            background: rgba(7, 17, 31, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .question-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .question-chip {
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            background: rgba(79, 156, 249, 0.12);
+            color: #bfdbfe;
+        }
+
+        .question-text {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option-btn {
+            width: 100%;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 16px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(255,255,255,0.03);
+            color: var(--text);
+            cursor: pointer;
+            transition: 0.2s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover:not(.disabled) {
+            border-color: rgba(79, 156, 249, 0.3);
+            background: rgba(79, 156, 249, 0.1);
+        }
+
+        .option-btn.disabled {
+            cursor: default;
+        }
+
+        .option-index {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            background: rgba(148, 163, 184, 0.16);
+            font-size: 13px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .option-btn.correct {
+            border-color: rgba(22, 196, 127, 0.4);
+            background: rgba(22, 196, 127, 0.12);
+        }
+
+        .option-btn.correct .option-index {
+            background: var(--green);
+        }
+
+        .option-btn.wrong {
+            border-color: rgba(248, 113, 113, 0.4);
+            background: rgba(248, 113, 113, 0.12);
+        }
+
+        .option-btn.wrong .option-index {
+            background: var(--rose);
+        }
+
+        .result-shell {
+            padding: 22px;
+            display: none;
+        }
+
+        .result-top {
+            display: grid;
+            grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .result-summary,
+        .result-analysis,
+        .result-review,
+        .result-history {
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(7, 17, 31, 0.58);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .result-score {
+            font-size: 72px;
+            line-height: 1;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4f9cf9, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .level-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(79, 156, 249, 0.12);
+            color: #bfdbfe;
+            margin-bottom: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .stats-item {
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .stats-item strong {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .stats-item span {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .analysis-card {
+            padding: 16px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .analysis-card h4 {
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .analysis-card ul {
+            margin: 0;
+            padding-left: 18px;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+
+        .analysis-card li + li {
+            margin-top: 4px;
+        }
+
+        .breakdown-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .breakdown-item {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .breakdown-item .top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .bar {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+        }
+
+        .bar span {
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f5b942, #16c47f);
+        }
+
+        .review-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .review-card {
+            padding: 16px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .review-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .review-card h5 {
+            margin: 0 0 8px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .review-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .review-meta span {
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            background: rgba(79, 156, 249, 0.1);
+            color: #bfdbfe;
+        }
+
+        .review-card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.75;
+            font-size: 14px;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .action-btn {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #1d4ed8, #22d3ee);
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--line);
+        }
+
+        .history-panel {
+            display: none;
+            padding: 18px;
+            margin-top: 18px;
+        }
+
+        .history-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .history-item {
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .history-item strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .history-item span {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 992px) {
+            .hero,
+            .result-top {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-metrics,
+            .quick-actions {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 28px;
+            }
+
+            .hero-metrics,
+            .quick-actions,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-container {
+                padding: 18px 14px 42px;
+            }
+
+            .question-text {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a href="/" class="nav-brand">
+        <div class="nav-logo"><i class="fas fa-graduation-cap"></i></div>
+        <span>学智画像</span>
+    </a>
+    <div class="nav-links">
+        <a href="/" class="nav-link"><i class="fas fa-home"></i> 首页</a>
+        <a href="/intelligent-assistant" class="nav-link"><i class="fas fa-robot"></i> 智能问答</a>
+        <a href="/test/assessment" class="nav-link active"><i class="fas fa-clipboard-check"></i> 能力测试</a>
+        <a href="/analysis/report" class="nav-link"><i class="fas fa-chart-line"></i> 学习报告</a>
+        <a href="/student/learning-plan" class="nav-link"><i class="fas fa-route"></i> 学习计划</a>
+    </div>
+    <div class="nav-side">
+        <span style="color: var(--muted); font-size: 14px;">{{ current_user.username }}</span>
+        <a href="/auth/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> 退出</a>
+    </div>
+</nav>
+
+<main class="main-container">
+    <section class="hero">
+        <div class="hero-card">
+            <div class="hero-badge">
+                <i class="fas fa-brain"></i>
+                高校专业能力测评中心
+            </div>
+            <div class="hero-title">面向大学生的专业化能力测试，直接回流学习画像与资源生成</div>
+            <div class="hero-desc">
+                覆盖计算机、人工智能、数据分析以及民航运行、空中交通管理、飞行签派、航空机务等方向。
+                测试结果将输出分数、难度分布、逐题解析和薄弱标签，便于后续由多智能体系统继续生成个性化学习资源与学习路径。
+            </div>
+            <div class="hero-metrics">
+                <div class="metric-box">
+                    <strong>13 类</strong>
+                    <span>专业测试方向</span>
+                </div>
+                <div class="metric-box">
+                    <strong>高校导向</strong>
+                    <span>本科课程场景</span>
+                </div>
+                <div class="metric-box">
+                    <strong>民航特色</strong>
+                    <span>运行、空管、机务</span>
+                </div>
+                <div class="metric-box">
+                    <strong>逐题解析</strong>
+                    <span>支持错题复盘</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-score">
+            <div class="score-ring">
+                <div>
+                    <strong>AI</strong>
+                    <span>评测闭环</span>
+                </div>
+            </div>
+            <div class="score-note">
+                测评数据可用于动态画像更新、资源精准推送和个性化学习计划重排，形成完整的学习多智能体闭环。
+            </div>
+        </div>
+    </section>
+
+    <section class="quick-actions">
+        <a href="/" class="quick-card">
+            <div class="quick-icon" style="background: linear-gradient(135deg, #2563eb, #38bdf8);"><i class="fas fa-house"></i></div>
+            <h4>返回首页</h4>
+            <p>回到项目总览</p>
+        </a>
+        <a href="/intelligent-assistant" class="quick-card">
+            <div class="quick-icon" style="background: linear-gradient(135deg, #7c3aed, #38bdf8);"><i class="fas fa-robot"></i></div>
+            <h4>智能问答</h4>
+            <p>基于知识库继续追问与答疑</p>
+        </a>
+        <a href="/analysis/report" class="quick-card">
+            <div class="quick-icon" style="background: linear-gradient(135deg, #f59e0b, #facc15);"><i class="fas fa-chart-pie"></i></div>
+            <h4>学习报告</h4>
+            <p>查看学习成效与预警</p>
+        </a>
+        <a href="/student/learning-plan" class="quick-card">
+            <div class="quick-icon" style="background: linear-gradient(135deg, #10b981, #22c55e);"><i class="fas fa-calendar-check"></i></div>
+            <h4>学习计划</h4>
+            <p>根据测评结果生成路径</p>
+        </a>
+        <button type="button" class="quick-card" onclick="toggleHistoryPanel()" style="text-align:left;">
+            <div class="quick-icon" style="background: linear-gradient(135deg, #ec4899, #f97316);"><i class="fas fa-clock-rotate-left"></i></div>
+            <h4>测试记录</h4>
+            <p>查看本地历史成绩与方向变化</p>
+        </button>
+    </section>
+
+    <section class="category-bar" id="testTypeSection">
+        <div class="section-head">
+            <div>
+                <div class="section-title">按专业方向选择测试</div>
+                <div class="section-desc">支持专业分类筛选，适合高校课程、实验课与专业基础能力测评。</div>
+            </div>
+            <div class="card-tag"><i class="fas fa-sitemap"></i> 分类测评</div>
+        </div>
+        <div class="category-chips" id="categoryChips"></div>
+    </section>
+
+    <section class="catalog-panel" id="catalogPanel">
+        <div class="catalog-grid" id="catalogGrid"></div>
+    </section>
+
+    <section class="progress-panel" id="testProgressSection">
+        <div class="progress-meta">
+            <div>
+                <strong id="progressTitle">编程基础</strong>
+                <span id="progressSubtitle">高校专业基础能力测试</span>
+            </div>
+            <div>
+                <strong><span id="currentQNum">1</span> / <span id="totalQNum">6</span></strong>
+                <span id="progressMetaText">第 1 题</span>
+            </div>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="question-card">
+            <div class="question-chip-row">
+                <span class="question-chip" id="testTypeChip">专业方向</span>
+                <span class="question-chip" id="questionDifficultyChip">中等</span>
+                <span class="question-chip" id="questionTagChip">知识点</span>
+            </div>
+            <div class="question-text" id="questionText"></div>
+            <div class="options-grid" id="optionsContainer"></div>
+        </div>
+    </section>
+
+    <section class="result-shell" id="testResultSection">
+        <div class="result-top">
+            <div class="result-summary">
+                <div class="result-score" id="finalScoreDisplay">85%</div>
+                <div class="level-pill"><i class="fas fa-award"></i> <span id="levelBadgeText">良好水平</span></div>
+                <div style="color: var(--muted); line-height: 1.8;" id="resultSummaryText">
+                    本次测评已完成，系统正在输出知识点分析、难度表现与学习建议。
+                </div>
+                <div class="stats-grid">
+                    <div class="stats-item">
+                        <strong id="correctNum">0</strong>
+                        <span>正确题数</span>
+                    </div>
+                    <div class="stats-item">
+                        <strong id="wrongNum">0</strong>
+                        <span>错误题数</span>
+                    </div>
+                    <div class="stats-item">
+                        <strong id="timeUsed">00:00</strong>
+                        <span>总用时</span>
+                    </div>
+                </div>
+                <div class="action-row">
+                    <button class="action-btn primary" onclick="restartTest()"><i class="fas fa-redo"></i> 再测一次</button>
+                    <button class="action-btn secondary" onclick="openLearningPlan()"><i class="fas fa-route"></i> 去生成学习计划</button>
+                </div>
+            </div>
+            <div class="result-analysis">
+                <div class="section-head" style="margin-bottom: 10px;">
+                    <div>
+                        <div class="section-title" style="font-size: 20px;">详细分析</div>
+                        <div class="section-desc">结合难度、标签和错题表现给出学习建议。</div>
+                    </div>
+                    <div class="card-tag"><i class="fas fa-chart-line"></i> 可回流画像</div>
+                </div>
+                <div class="analysis-grid">
+                    <div class="analysis-card">
+                        <h4><i class="fas fa-signal me-1"></i>难度表现</h4>
+                        <div class="breakdown-list" id="difficultyBreakdown"></div>
+                    </div>
+                    <div class="analysis-card">
+                        <h4><i class="fas fa-star me-1"></i>能力总结</h4>
+                        <ul id="strengthList"></ul>
+                    </div>
+                    <div class="analysis-card">
+                        <h4><i class="fas fa-triangle-exclamation me-1"></i>薄弱点</h4>
+                        <ul id="weaknessList"></ul>
+                    </div>
+                    <div class="analysis-card">
+                        <h4><i class="fas fa-lightbulb me-1"></i>学习建议</h4>
+                        <ul id="suggestionList"></ul>
+                    </div>
+                </div>
+                <div class="analysis-card" style="margin-top: 14px;">
+                    <h4><i class="fas fa-lightbulb me-1"></i>功能关联说明</h4>
+                    <ul id="fitToTrackList">
+                        <li>测试结果将作为学习画像动态更新的输入。</li>
+                        <li>薄弱知识点可直接触发资源生成与学习路径重排。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-review">
+            <div class="section-head">
+                <div>
+                    <div class="section-title" style="font-size: 20px;">逐题答案与解析</div>
+                    <div class="section-desc">适合答辩演示时展示“学习效果评估 + 复盘建议”闭环。</div>
+                </div>
+                <div class="card-tag"><i class="fas fa-file-circle-check"></i> 详细复盘</div>
+            </div>
+            <div class="review-list" id="reviewList"></div>
+        </div>
+    </section>
+
+    <section class="history-panel" id="historyPanel">
+        <div class="section-head">
+            <div>
+                <div class="section-title" style="font-size: 20px;">最近测试记录</div>
+                <div class="section-desc">记录保存在浏览器本地，便于演示不同方向的测评结果。</div>
+            </div>
+            <button class="action-btn secondary" type="button" onclick="clearHistory()">清空记录</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+    </section>
+</main>
+
+<script>
+const categories = [
+    { key: "all", label: "全部方向" },
+    { key: "computing", label: "计算机与软件" },
+    { key: "ai", label: "人工智能与数据" },
+    { key: "aviation", label: "民航特色专业" }
+];
+
+const assessmentCatalog = [
+    {
+        key: "programming",
+        category: "computing",
+        name: "编程基础",
+        icon: "fa-laptop-code",
+        color: "linear-gradient(135deg, #2563eb, #38bdf8)",
+        desc: "面向计算机类大学生，覆盖 Python 基础语法、函数、数据结构和面向对象。",
+        audience: "计算机/软件工程本科生",
+        duration: "约 12 分钟",
+        difficultyHint: "基础-中等",
+        questions: [
+            { q: "Python 中用于定义函数的关键字是什么？", opts: ["function", "def", "func", "lambda"], ans: 1, difficulty: "基础", tag: "语法基础", explanation: "Python 使用 def 定义具名函数，lambda 用于匿名函数。" },
+            { q: "若要遍历列表中的元素并同时获得索引，推荐使用什么方式？", opts: ["for x in list", "while index < len(list)", "enumerate(list)", "range(list)"], ans: 2, difficulty: "中等", tag: "列表与迭代", explanation: "enumerate(list) 可以同时返回索引和值，写法更简洁。" },
+            { q: "下面哪个数据结构适合表示键值映射？", opts: ["list", "tuple", "dict", "set"], ans: 2, difficulty: "基础", tag: "数据结构", explanation: "dict 是 Python 中最常用的键值映射结构。" },
+            { q: "面向对象中，__init__ 方法的主要作用是什么？", opts: ["销毁对象", "定义类变量", "初始化对象实例", "重载运算符"], ans: 2, difficulty: "中等", tag: "面向对象", explanation: "__init__ 会在创建对象时自动执行，常用于初始化实例属性。" },
+            { q: "时间复杂度为 O(n log n) 的常见排序算法是？", opts: ["冒泡排序", "快速排序平均情况", "选择排序", "顺序查找"], ans: 1, difficulty: "进阶", tag: "算法基础", explanation: "快速排序平均时间复杂度为 O(n log n)，但最坏情况下会退化。" },
+            { q: "单元测试在大学软件课程实践中的核心价值是什么？", opts: ["减少变量数量", "提升代码可靠性并便于回归验证", "替代所有调试", "只用于前端页面"], ans: 1, difficulty: "挑战", tag: "工程实践", explanation: "单元测试可以帮助快速发现回归问题，是软件工程课程的重要实践能力。" }
+        ]
+    },
+    {
+        key: "algorithm",
+        category: "computing",
+        name: "算法思维",
+        icon: "fa-brain",
+        color: "linear-gradient(135deg, #7c3aed, #c084fc)",
+        desc: "聚焦数据结构、查找排序、动态规划与复杂度分析，适合算法课程训练。",
+        audience: "计科/软件/网工本科生",
+        duration: "约 15 分钟",
+        difficultyHint: "中等-挑战",
+        questions: [
+            { q: "二分查找的前提条件是什么？", opts: ["数组元素唯一", "数据已经有序", "数组长度为偶数", "只能查找整数"], ans: 1, difficulty: "基础", tag: "查找算法", explanation: "二分查找依赖有序序列，否则无法判断下一步舍弃哪一半。" },
+            { q: "队列这种结构的典型特征是？", opts: ["后进先出", "先进先出", "随机访问", "双向弹出"], ans: 1, difficulty: "基础", tag: "数据结构", explanation: "队列是 FIFO 结构，常用于层序遍历和任务调度。" },
+            { q: "动态规划的两个经典特征是？", opts: ["贪心选择和二叉树", "最优子结构和重叠子问题", "回溯和剪枝", "递归和排序"], ans: 1, difficulty: "中等", tag: "动态规划", explanation: "动态规划适用于问题可拆解且子问题重复出现的场景。" },
+            { q: "哈希表平均查找复杂度通常是？", opts: ["O(n)", "O(log n)", "O(1)", "O(n log n)"], ans: 2, difficulty: "基础", tag: "哈希结构", explanation: "在冲突分布合理时，哈希表平均查找复杂度接近 O(1)。" },
+            { q: "对于图的深度优先遍历，常与哪种辅助结构关联？", opts: ["栈", "队列", "堆", "哈希表"], ans: 0, difficulty: "中等", tag: "图算法", explanation: "深度优先遍历可以用递归或显式栈实现。" },
+            { q: "在课程设计中评估一个算法是否可扩展，最关键的指标之一是什么？", opts: ["界面颜色", "时间和空间复杂度", "注释长度", "文件命名"], ans: 1, difficulty: "挑战", tag: "复杂度分析", explanation: "复杂度体现算法在数据规模增长时的可扩展能力。" }
+        ]
+    },
+    {
+        key: "math",
+        category: "computing",
+        name: "数学逻辑",
+        icon: "fa-calculator",
+        color: "linear-gradient(135deg, #16c47f, #4ade80)",
+        desc: "覆盖高数、线性代数与概率统计，是工科本科课程的重要基础。",
+        audience: "工科/信息类本科生",
+        duration: "约 14 分钟",
+        difficultyHint: "基础-进阶",
+        questions: [
+            { q: "极限 lim(x→0) sinx / x 的值是？", opts: ["0", "1", "不存在", "无穷大"], ans: 1, difficulty: "基础", tag: "高等数学", explanation: "这是高数中的经典极限结论。" },
+            { q: "两个向量正交意味着它们的点积结果为？", opts: ["1", "0", "-1", "不确定"], ans: 1, difficulty: "基础", tag: "线性代数", explanation: "向量正交的定义就是点积为 0。" },
+            { q: "概率密度函数在整个定义域上的积分应当等于多少？", opts: ["0", "1", "2", "任意常数"], ans: 1, difficulty: "中等", tag: "概率统计", explanation: "概率总和应为 1，因此密度函数整体积分为 1。" },
+            { q: "若矩阵 A 可逆，则 det(A) 必须满足什么条件？", opts: ["等于 0", "不等于 0", "大于 1", "小于 1"], ans: 1, difficulty: "中等", tag: "矩阵性质", explanation: "行列式非零是矩阵可逆的充要条件之一。" },
+            { q: "标准正态分布 N(0,1) 中，0 表示什么？", opts: ["方差", "均值", "标准差", "样本量"], ans: 1, difficulty: "基础", tag: "概率统计", explanation: "N(0,1) 的第一个参数是均值。" },
+            { q: "在机器学习课程里，梯度下降法最主要的用途是什么？", opts: ["排序数组", "寻找损失函数极小值", "生成测试数据", "进行矩阵求逆"], ans: 1, difficulty: "挑战", tag: "数值优化", explanation: "梯度下降通过沿负梯度方向迭代逼近损失函数最小值。" }
+        ]
+    },
+    {
+        key: "english",
+        category: "computing",
+        name: "学术英语",
+        icon: "fa-language",
+        color: "linear-gradient(135deg, #f59e0b, #facc15)",
+        desc: "围绕大学学习常见的学术表达、阅读理解与技术英语基础能力。",
+        audience: "全体高校学生",
+        duration: "约 10 分钟",
+        difficultyHint: "基础-中等",
+        questions: [
+            { q: "在学术写作中，abstract 通常指论文的哪一部分？", opts: ["目录", "摘要", "参考文献", "附录"], ans: 1, difficulty: "基础", tag: "学术表达", explanation: "abstract 即摘要，用于概述论文目标、方法和结果。" },
+            { q: "单词 'reliable' 最接近的含义是？", opts: ["可重复的", "可靠的", "高效的", "复杂的"], ans: 1, difficulty: "基础", tag: "词汇理解", explanation: "reliable 表示值得信赖、结果稳定可靠。" },
+            { q: "下列哪个句子更符合学术表达习惯？", opts: ["This thing is very nice.", "The experiment demonstrates significant improvement.", "I feel it is kind of okay.", "This paper is super good."], ans: 1, difficulty: "中等", tag: "学术写作", explanation: "学术表达强调客观、准确与规范。" },
+            { q: "在技术文档中，deploy 更常见的意思是？", opts: ["删除", "部署", "复盘", "压缩"], ans: 1, difficulty: "基础", tag: "技术英语", explanation: "deploy 常用于系统部署、服务上线等场景。" },
+            { q: "阅读科研论文时，最适合快速抓住研究贡献的部分通常是？", opts: ["标题和摘要", "作者邮箱", "页脚", "附录"], ans: 0, difficulty: "中等", tag: "论文阅读", explanation: "标题与摘要是最快了解研究目标和贡献的入口。" },
+            { q: "如果需要在国际课程项目中汇报实验结果，最重要的能力之一是？", opts: ["口语与图表说明结合", "只会背稿", "只会写代码", "避免任何互动"], ans: 0, difficulty: "挑战", tag: "学术展示", explanation: "国际课程汇报通常要求口语表达、图表解读和逻辑组织并重。" }
+        ]
+    },
+    {
+        key: "computer_network",
+        category: "computing",
+        name: "计算机网络",
+        icon: "fa-network-wired",
+        color: "linear-gradient(135deg, #2563eb, #60a5fa)",
+        desc: "围绕网络体系结构、传输机制、路由交换与网络安全基础，适合普通高校计算机类专业课程。",
+        audience: "计科/网工/信安本科生",
+        duration: "约 13 分钟",
+        difficultyHint: "基础-进阶",
+        questions: [
+            { q: "TCP/IP 分层模型中，IP 协议主要工作在哪一层？", opts: ["应用层", "传输层", "网络层", "数据链路层"], ans: 2, difficulty: "基础", tag: "网络分层", explanation: "IP 是网络层核心协议，负责寻址与路由转发。" },
+            { q: "HTTP 协议默认基于哪种传输层协议？", opts: ["UDP", "TCP", "ICMP", "ARP"], ans: 1, difficulty: "基础", tag: "应用协议", explanation: "传统 HTTP 运行在 TCP 之上，强调可靠传输。" },
+            { q: "路由器最主要的作用是什么？", opts: ["只放大信号", "根据路由表转发分组", "只负责加密", "存储网页内容"], ans: 1, difficulty: "中等", tag: "路由交换", explanation: "路由器根据网络层地址与路由表选择转发路径。" },
+            { q: "子网划分最直接的意义之一是什么？", opts: ["增加显示器亮度", "更高效地管理地址和广播域", "替代 DNS", "只用于无线网络"], ans: 1, difficulty: "中等", tag: "地址管理", explanation: "子网划分有助于地址规划和控制广播范围。" },
+            { q: "CSMA/CD 机制主要关联哪类网络环境？", opts: ["传统共享以太网", "纯卫星通信", "蓝牙耳机", "数据库集群"], ans: 0, difficulty: "进阶", tag: "介质访问控制", explanation: "CSMA/CD 是传统以太网共享介质场景下的冲突检测机制。" },
+            { q: "在高校网络实验中评估一个协议方案是否实用，通常需要同时关注什么？", opts: ["界面颜色与口号", "吞吐、时延和可靠性", "键盘品牌", "实验室大小"], ans: 1, difficulty: "挑战", tag: "网络性能", explanation: "协议设计和网络实验评估通常同时关注吞吐、时延、丢包和可靠性。" }
+        ]
+    },
+    {
+        key: "database_system",
+        category: "computing",
+        name: "数据库系统",
+        icon: "fa-database",
+        color: "linear-gradient(135deg, #0f766e, #14b8a6)",
+        desc: "适合普通高校软件、信息管理与大数据专业，考查 SQL、范式、事务和索引基础。",
+        audience: "软件工程/大数据/信管本科生",
+        duration: "约 12 分钟",
+        difficultyHint: "基础-挑战",
+        questions: [
+            { q: "SQL 中用于查询数据的关键字是？", opts: ["UPDATE", "SELECT", "INSERT", "CREATE"], ans: 1, difficulty: "基础", tag: "SQL 基础", explanation: "SELECT 用于从表中检索数据。" },
+            { q: "事务的 ACID 特性中，Consistency 表示什么？", opts: ["一致性", "压缩性", "并行性", "可视化"], ans: 0, difficulty: "中等", tag: "事务管理", explanation: "Consistency 表示事务前后数据库都应保持一致状态。" },
+            { q: "建立索引的主要目的通常是？", opts: ["减少所有磁盘空间", "提高查询效率", "替代主键", "只美化表结构"], ans: 1, difficulty: "基础", tag: "索引优化", explanation: "索引核心价值是加速查询，但也会带来维护成本。" },
+            { q: "第三范式主要是为了减少什么问题？", opts: ["界面卡顿", "数据冗余与更新异常", "服务器温度", "网络带宽"], ans: 1, difficulty: "中等", tag: "数据库设计", explanation: "范式设计有助于降低冗余和插入、删除、更新异常。" },
+            { q: "左连接 LEFT JOIN 的核心特点是什么？", opts: ["只返回右表数据", "保留左表全部记录", "只能连接三张表", "一定去重"], ans: 1, difficulty: "进阶", tag: "多表查询", explanation: "LEFT JOIN 会保留左表全部记录，即便右表没有匹配项。" },
+            { q: "在教育数据系统中做学习画像存储时，数据库设计除了正确性，还应重点考虑什么？", opts: ["图标数量", "扩展性与查询性能", "背景音乐", "按钮颜色"], ans: 1, difficulty: "挑战", tag: "系统设计", explanation: "学习画像与行为数据通常规模更大，需要兼顾扩展性和查询性能。" }
+        ]
+    },
+    {
+        key: "electronic_information",
+        category: "computing",
+        name: "电子信息基础",
+        icon: "fa-microchip",
+        color: "linear-gradient(135deg, #f97316, #fb7185)",
+        desc: "覆盖电路、信号、通信与嵌入式基础，是普通高校电子信息类专业常见入门课程。",
+        audience: "电子信息/通信工程本科生",
+        duration: "约 14 分钟",
+        difficultyHint: "基础-进阶",
+        questions: [
+            { q: "欧姆定律描述了哪三个物理量之间的关系？", opts: ["功率、电容、电感", "电压、电流、电阻", "频率、波长、相位", "速度、位移、加速度"], ans: 1, difficulty: "基础", tag: "电路基础", explanation: "欧姆定律是电子信息类入门课程中的基础公式之一。" },
+            { q: "数字信号与模拟信号最典型的区别是什么？", opts: ["数字信号是离散的", "模拟信号没有幅值", "数字信号不能传输", "模拟信号一定更安全"], ans: 0, difficulty: "基础", tag: "信号基础", explanation: "数字信号在时间或幅值上通常表现为离散形式。" },
+            { q: "奈奎斯特采样定理强调采样频率至少应满足什么条件？", opts: ["大于信号最高频率的一半", "等于直流分量", "大于信号最高频率的两倍", "越低越好"], ans: 2, difficulty: "中等", tag: "信号处理", explanation: "采样频率至少应为信号最高频率的两倍，以避免混叠。" },
+            { q: "在通信系统中，调制的主要作用之一是什么？", opts: ["增加纸张厚度", "便于信号传输与频谱利用", "降低显示器分辨率", "只用于存储数据"], ans: 1, difficulty: "中等", tag: "通信原理", explanation: "调制有助于信号匹配信道特性并提高传输效率。" },
+            { q: "嵌入式系统设计中，软硬件协同最关注的是什么？", opts: ["只写注释", "功能、时延、功耗与可靠性平衡", "只选最快芯片", "忽略接口匹配"], ans: 1, difficulty: "进阶", tag: "嵌入式设计", explanation: "嵌入式系统强调软硬件资源协同和平衡设计指标。" },
+            { q: "如果把多智能体学习系统用于电子信息专业教学，最有价值的作用之一是什么？", opts: ["替代实验箱", "基于学生短板自动生成讲解文档与训练任务", "删除基础课", "只生成宣传海报"], ans: 1, difficulty: "挑战", tag: "教学应用", explanation: "赛题强调个性化资源生成，这在电子信息教学中同样适合做分层训练支持。" }
+        ]
+    },
+    {
+        key: "ai_foundation",
+        category: "ai",
+        name: "人工智能基础",
+        icon: "fa-microchip",
+        color: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
+        desc: "围绕机器学习、深度学习和大模型基础概念，适合人工智能课程导学与复盘。",
+        audience: "人工智能/自动化本科生",
+        duration: "约 15 分钟",
+        difficultyHint: "中等-挑战",
+        questions: [
+            { q: "监督学习最典型的特征是什么？", opts: ["没有标签数据", "依赖带标签样本训练", "不需要损失函数", "只用于图像"], ans: 1, difficulty: "基础", tag: "机器学习", explanation: "监督学习通过输入与标签的映射关系进行训练。" },
+            { q: "神经网络中的激活函数主要作用是什么？", opts: ["降低内存消耗", "引入非线性表达能力", "替代损失函数", "减少训练样本"], ans: 1, difficulty: "中等", tag: "深度学习", explanation: "没有激活函数时，多层线性网络仍可等价为单层线性变换。" },
+            { q: "大模型中的 RAG 常用于解决什么问题？", opts: ["图像压缩", "补充外部知识并降低幻觉", "数据库建表", "浏览器渲染"], ans: 1, difficulty: "中等", tag: "大模型应用", explanation: "RAG 将检索结果作为上下文注入生成过程，有助于提升准确性。" },
+            { q: "训练集、验证集、测试集的主要区别是什么？", opts: ["名称不同但作用相同", "分别用于训练、调参与最终评估", "只要训练集即可", "测试集用于反向传播"], ans: 1, difficulty: "中等", tag: "模型评估", explanation: "这是机器学习实验设计中的基础规范。" },
+            { q: "过拟合通常表现为？", opts: ["训练和测试都很差", "训练好、泛化差", "训练慢但泛化强", "数据量越大越明显"], ans: 1, difficulty: "中等", tag: "泛化能力", explanation: "过拟合意味着模型记住了训练数据细节，但在新数据上表现差。" },
+            { q: "在教育场景中，学习多智能体系统的价值更接近哪一项？", opts: ["只生成聊天回复", "通过分工协作完成画像、资源、规划和评估闭环", "替代数据库", "只做登录系统"], ans: 1, difficulty: "挑战", tag: "智能体协同", explanation: "赛题强调多角色智能体协同，而非单点问答能力。" }
+        ]
+    },
+    {
+        key: "data_analysis",
+        category: "ai",
+        name: "数据分析建模",
+        icon: "fa-chart-column",
+        color: "linear-gradient(135deg, #14b8a6, #2dd4bf)",
+        desc: "面向数据科学与信息管理方向，考查清洗、建模、可视化和解释能力。",
+        audience: "数据科学/大数据本科生",
+        duration: "约 13 分钟",
+        difficultyHint: "基础-挑战",
+        questions: [
+            { q: "数据清洗阶段最常见的任务之一是？", opts: ["设计海报", "处理缺失值", "压缩视频", "部署服务器"], ans: 1, difficulty: "基础", tag: "数据预处理", explanation: "缺失值、异常值、重复值都是数据清洗的常见对象。" },
+            { q: "箱线图更适合用于发现什么问题？", opts: ["文本语法错误", "异常值与分布范围", "数据库主键", "网络延迟"], ans: 1, difficulty: "中等", tag: "可视化分析", explanation: "箱线图能直观展示中位数、分位数和异常值情况。" },
+            { q: "相关系数接近 0 最能说明什么？", opts: ["一定没有任何关系", "线性相关性较弱", "一定是负相关", "模型失效"], ans: 1, difficulty: "中等", tag: "统计分析", explanation: "相关系数接近 0 主要说明线性相关不明显，不代表完全无关系。" },
+            { q: "建立预测模型时，最重要的目标之一是？", opts: ["让训练误差永远为 0", "在新数据上保持较好泛化", "让字段名更长", "减少所有特征"], ans: 1, difficulty: "中等", tag: "建模思维", explanation: "泛化能力决定模型在真实场景中的价值。" },
+            { q: "A/B 测试在数据驱动决策中常用于？", opts: ["随机删除数据", "比较两种方案效果差异", "加快显卡运算", "生成论文摘要"], ans: 1, difficulty: "进阶", tag: "实验设计", explanation: "A/B 测试用于评估不同策略在目标指标上的真实差异。" },
+            { q: "对大学生学习数据进行建模时，为什么要关注可解释性？", opts: ["因为界面更好看", "便于教师和学生理解推荐原因", "可替代所有评估", "只为节省内存"], ans: 1, difficulty: "挑战", tag: "可解释建模", explanation: "教育场景强调透明度，推荐结果需要能解释给教师和学生。" }
+        ]
+    },
+    {
+        key: "civil_aviation_ops",
+        category: "aviation",
+        name: "民航运行管理",
+        icon: "fa-plane-departure",
+        color: "linear-gradient(135deg, #0f766e, #22c55e)",
+        desc: "面向民航运输与运行管理专业本科生，关注航班运行、协同保障和效率意识。",
+        audience: "民航运输/运行管理本科生",
+        duration: "约 12 分钟",
+        difficultyHint: "基础-进阶",
+        questions: [
+            { q: "航班放行前，运行保障最核心的目标之一是什么？", opts: ["提升广告曝光", "确保安全、正常、准点运行", "减少值机人员", "只关注客舱服务"], ans: 1, difficulty: "基础", tag: "运行目标", explanation: "民航运行保障首先服务于安全，其次兼顾正常和效率。" },
+            { q: "A-CDM 更强调哪种理念？", opts: ["单部门独立决策", "机场协同决策", "完全人工运行", "仅航司内部共享"], ans: 1, difficulty: "中等", tag: "协同运行", explanation: "A-CDM 强调机场、空管、航司等多方协同共享信息与决策。" },
+            { q: "在大学专业课程中分析航班延误，最常用的第一步通常是？", opts: ["先做海报", "明确延误链条和关键影响因素", "直接发布结论", "只看单次天气"], ans: 1, difficulty: "中等", tag: "延误分析", explanation: "延误治理通常从识别关键因子和链式传导入手。" },
+            { q: "民航运行管理中的“周转时间”通常指什么？", opts: ["乘客购票时间", "飞机落地到再次起飞的地面保障时间", "航班计划编制时间", "值机排队时间"], ans: 1, difficulty: "基础", tag: "运行指标", explanation: "周转时间是衡量航班运行效率的重要指标之一。" },
+            { q: "面对大面积航班不正常，运行管理更需要哪种能力？", opts: ["只做静态统计", "多部门联动与动态调配", "只修改界面颜色", "完全依赖乘客自助"], ans: 1, difficulty: "进阶", tag: "应急处置", explanation: "大面积不正常运行考验资源调配和协同决策能力。" },
+            { q: "如果把学习多智能体系统映射到民航运行场景，最类似的思想是？", opts: ["单人值守", "多角色协同决策", "只存储数据", "只做聊天界面"], ans: 1, difficulty: "挑战", tag: "系统协同", explanation: "赛题中的多智能体分工协同，与民航运行中的协同决策逻辑高度一致。" }
+        ]
+    },
+    {
+        key: "air_traffic_control",
+        category: "aviation",
+        name: "空中交通管理",
+        icon: "fa-tower-observation",
+        color: "linear-gradient(135deg, #0284c7, #38bdf8)",
+        desc: "面向空管类专业课程，覆盖流量管理、间隔控制和运行安全意识。",
+        audience: "空管/交通运输本科生",
+        duration: "约 14 分钟",
+        difficultyHint: "中等-挑战",
+        questions: [
+            { q: "空中交通管理最基本的目标是什么？", opts: ["只追求速度", "保障飞行安全和运行有序", "减少所有语音通信", "只服务国际航班"], ans: 1, difficulty: "基础", tag: "空管目标", explanation: "空管工作的首要目标始终是安全，其次是有序和高效。" },
+            { q: "流量管理在繁忙空域中的作用主要是？", opts: ["增加广告收益", "平衡需求与容量", "缩短跑道长度", "改变飞机机型"], ans: 1, difficulty: "中等", tag: "流量管理", explanation: "流量管理通过控制需求与容量匹配来缓解拥堵风险。" },
+            { q: "标准仪表离场程序 SID 的主要意义是？", opts: ["为航班定价", "规范离场路径与程序", "统计旅客信息", "替代气象预报"], ans: 1, difficulty: "中等", tag: "程序运行", explanation: "SID 用于规范离场程序，提高安全性与运行效率。" },
+            { q: "在课程训练中分析冲突解脱策略时，通常需要优先考虑什么？", opts: ["社交媒体评价", "安全间隔是否满足", "客舱餐食", "票价波动"], ans: 1, difficulty: "基础", tag: "间隔控制", explanation: "冲突解脱首先要满足安全间隔标准。" },
+            { q: "扇区容量紧张时，最合理的运行思路是？", opts: ["忽略容量限制", "采取流量控制和协同分流", "只依赖天气改善", "暂停所有航班"], ans: 1, difficulty: "进阶", tag: "容量管理", explanation: "容量约束场景下需要采取流控和协同分流等组合策略。" },
+            { q: "如果将学习数据分析引入空管教学，最有价值的作用之一是？", opts: ["替代专业课程", "识别学生薄弱环节并做针对性训练", "删除模拟机课程", "只生成宣传文案"], ans: 1, difficulty: "挑战", tag: "教学应用", explanation: "赛题强调个性化干预，这在空管教学中同样适用。" }
+        ]
+    },
+    {
+        key: "flight_dispatch",
+        category: "aviation",
+        name: "飞行签派基础",
+        icon: "fa-map-location-dot",
+        color: "linear-gradient(135deg, #a855f7, #f472b6)",
+        desc: "聚焦航路、天气、油量与备降意识，适用于飞行签派和航行情报课程。",
+        audience: "签派/航行情报本科生",
+        duration: "约 12 分钟",
+        difficultyHint: "中等-进阶",
+        questions: [
+            { q: "飞行签派工作中，航班放行前必须重点关注哪类信息？", opts: ["广告投放", "天气、航路与运行限制", "旅客餐食偏好", "值机柜台数量"], ans: 1, difficulty: "基础", tag: "放行准备", explanation: "天气、航路、备降和运行限制都是签派决策核心信息。" },
+            { q: "备降机场的选择最不应忽视的因素之一是？", opts: ["机场 logo 颜色", "运行条件和可用性", "附近酒店价格", "社交平台热度"], ans: 1, difficulty: "中等", tag: "备降决策", explanation: "备降机场需要满足可达性、气象、设施和运行条件等要求。" },
+            { q: "航油计划的核心目标更接近哪一项？", opts: ["越少越好", "在安全基础上满足运行需求", "只根据旅客数量决定", "完全不受天气影响"], ans: 1, difficulty: "中等", tag: "燃油计划", explanation: "航油计划既要满足安全储备，也要结合航路和天气等因素。" },
+            { q: "在签派课程案例分析中，NOTAM 的主要作用是什么？", opts: ["提供娱乐新闻", "发布运行限制和重要航行情报", "替代气象图", "表示跑道长度"], ans: 1, difficulty: "基础", tag: "航行情报", explanation: "NOTAM 用于发布临时运行信息和限制，是签派重要依据。" },
+            { q: "如果航路天气恶化，签派更合理的处理方式通常是？", opts: ["忽略风险继续放行", "结合备份方案和最新情报动态调整", "只修改时间表", "完全取消所有任务"], ans: 1, difficulty: "进阶", tag: "动态决策", explanation: "签派决策应随实时情报动态更新，不能静态处理。" },
+            { q: "把大模型用于签派教学最合适的场景之一是什么？", opts: ["自动驾驶飞机", "生成案例讲解与复盘建议", "替代所有规章学习", "只做图标设计"], ans: 1, difficulty: "挑战", tag: "智能教学", explanation: "大模型更适合用于教学辅助、案例解释和个性化训练材料生成。" }
+        ]
+    },
+    {
+        key: "aviation_maintenance",
+        category: "aviation",
+        name: "航空机务与适航",
+        icon: "fa-screwdriver-wrench",
+        color: "linear-gradient(135deg, #f97316, #fb7185)",
+        desc: "面向机务与适航类本科课程，关注维修规范、放行意识和安全文化。",
+        audience: "航空机务/适航本科生",
+        duration: "约 13 分钟",
+        difficultyHint: "基础-挑战",
+        questions: [
+            { q: "机务维修工作中最根本的原则是什么？", opts: ["速度优先", "安全与规范优先", "成本优先", "外观优先"], ans: 1, difficulty: "基础", tag: "维修原则", explanation: "机务工作必须首先满足安全与规章要求。" },
+            { q: "适航管理更强调什么？", opts: ["临时宣传", "航空器持续满足安全运行要求", "票价管理", "旅客服务"], ans: 1, difficulty: "中等", tag: "适航基础", explanation: "适航管理关注航空器全生命周期的合规与安全状态。" },
+            { q: "维修记录在机务管理中的重要作用之一是？", opts: ["只为了装订文件", "支持追溯、放行与持续适航管理", "仅用于财务报销", "只给乘客查看"], ans: 1, difficulty: "中等", tag: "记录管理", explanation: "完整维修记录是故障追溯和持续适航的重要依据。" },
+            { q: "在机务实训中，执行工卡的意义是什么？", opts: ["替代全部判断", "确保维修步骤符合规范", "缩短文件长度", "减少所有检查"], ans: 1, difficulty: "基础", tag: "维修规范", explanation: "工卡帮助维修作业按标准步骤执行和留痕。" },
+            { q: "如果发现重复性故障，最合理的后续动作是？", opts: ["忽略并继续运行", "开展原因分析并追踪整改效果", "只重启系统", "不记录"], ans: 1, difficulty: "进阶", tag: "故障分析", explanation: "重复性故障往往需要根因分析与持续改进。" },
+            { q: "将学习多智能体系统应用于机务教学，最有价值的方向之一是什么？", opts: ["替代飞机维修", "围绕规章、案例、错题和流程做个性化训练", "删除实训课程", "只生成壁纸"], ans: 1, difficulty: "挑战", tag: "教学闭环", explanation: "多智能体更适合做教学支持、案例复盘和能力补短，而不是替代真实维修。" }
+        ]
+    }
+];
+
+const categoryMap = Object.fromEntries(categories.map(item => [item.key, item]));
+const testMap = Object.fromEntries(assessmentCatalog.map(item => [item.key, item]));
+const state = {
+    filter: "all",
+    activeType: null,
+    questionIndex: 0,
+    correctCount: 0,
+    startTime: null,
+    answers: []
+};
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function(char) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&#39;"
+        }[char];
+    });
+}
+
+function formatTime(seconds) {
+    const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const secs = String(seconds % 60).padStart(2, "0");
+    return `${mins}:${secs}`;
+}
+
+function getLevel(score) {
+    if (score >= 90) return "优秀水平";
+    if (score >= 75) return "良好水平";
+    if (score >= 60) return "发展中";
+    return "需重点补强";
+}
+
+function getLevelSummary(score, testName) {
+    if (score >= 90) return `你在“${testName}”方向的基础能力较为扎实，已经具备继续做高阶专题训练的条件。`;
+    if (score >= 75) return `你在“${testName}”方向已有较稳定基础，建议围绕薄弱点继续做分层训练。`;
+    if (score >= 60) return `你在“${testName}”方向具备入门到中等水平，适合先补齐关键概念再进行综合练习。`;
+    return `你在“${testName}”方向当前需要重点夯实基础概念，适合先做讲解文档、知识卡片和基础题复练。`;
+}
+
+function computeDifficultyBreakdown(answers) {
+    const levels = ["基础", "中等", "进阶", "挑战"];
+    return levels.map(level => {
+        const group = answers.filter(item => item.difficulty === level);
+        if (!group.length) return null;
+        const correct = group.filter(item => item.isCorrect).length;
+        return {
+            level,
+            total: group.length,
+            correct,
+            accuracy: Math.round(correct / group.length * 100)
+        };
+    }).filter(Boolean);
+}
+
+function buildLocalStrengths(score, answers) {
+    const strengths = [];
+    const strongTags = {};
+    answers.filter(item => item.isCorrect).forEach(item => {
+        strongTags[item.tag] = (strongTags[item.tag] || 0) + 1;
+    });
+    const sorted = Object.entries(strongTags).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([tag]) => tag);
+
+    if (score >= 85) {
+        strengths.push("基础知识和课程常规题表现稳定。");
+    } else if (score >= 70) {
+        strengths.push("对核心概念已有较好的理解框架。");
+    } else {
+        strengths.push("具备进一步提升的基础，适合通过专题复盘继续进步。");
+    }
+    if (sorted.length) {
+        strengths.push(`当前优势较明显的知识标签包括：${sorted.join("、")}。`);
+    }
+    return strengths;
+}
+
+function buildLocalWeaknesses(answers) {
+    const weakTags = {};
+    answers.filter(item => !item.isCorrect).forEach(item => {
+        weakTags[item.tag] = (weakTags[item.tag] || 0) + 1;
+    });
+    const sorted = Object.entries(weakTags).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([tag]) => tag);
+    if (!sorted.length) {
+        return ["当前没有明显薄弱点，可以尝试更高难度题组进一步区分水平。"];
+    }
+    const result = [`当前主要失分点集中在：${sorted.join("、")}。`];
+    if (answers.some(item => !item.isCorrect && item.difficulty === "挑战")) {
+        result.push("面对挑战题时迁移应用能力仍需加强。");
+    }
+    return result;
+}
+
+function buildLocalSuggestions(test) {
+    return [
+        `建议围绕“${test.name}”先补齐错题标签，再进入综合训练。`,
+        "将错题题干与解析整理成知识卡片，第二轮优先复盘。",
+        "可进入智能问答与学习计划模块，基于当前结果生成个性化资源与路径。"
+    ];
+}
+
+function renderCategoryChips() {
+    $("categoryChips").innerHTML = categories.map(item => `
+        <button type="button" class="chip-btn ${state.filter === item.key ? "active" : ""}" onclick="setCategoryFilter('${item.key}')">
+            ${escapeHtml(item.label)}
+        </button>
+    `).join("");
+}
+
+function setCategoryFilter(key) {
+    state.filter = key;
+    renderCategoryChips();
+    renderCatalog();
+}
+
+function renderCatalog() {
+    const list = assessmentCatalog.filter(item => state.filter === "all" || item.category === state.filter);
+    $("catalogGrid").innerHTML = list.map(item => `
+        <article class="test-card">
+            <div class="test-top">
+                <div class="test-icon" style="background: ${item.color};"><i class="fas ${item.icon}"></i></div>
+                <span class="card-tag"><i class="fas fa-user-graduate"></i>${escapeHtml(categoryMap[item.category].label)}</span>
+            </div>
+            <h3>${escapeHtml(item.name)}</h3>
+            <p>${escapeHtml(item.desc)}</p>
+            <div class="meta-row">
+                <span class="meta-item"><i class="fas fa-file-lines"></i> ${item.questions.length} 题</span>
+                <span class="meta-item"><i class="fas fa-clock"></i> ${escapeHtml(item.duration)}</span>
+            </div>
+            <div class="mini-tags" style="margin-top: 10px;">
+                <span>${escapeHtml(item.audience)}</span>
+                <span>推荐难度：${escapeHtml(item.difficultyHint)}</span>
+            </div>
+            <div class="test-footer">
+                <span style="color: var(--muted); font-size: 13px;">答题后输出逐题解析</span>
+                <button type="button" onclick="startTest('${item.key}')">开始测试</button>
+            </div>
+        </article>
+    `).join("");
+}
+
+function startTest(key) {
+    const test = testMap[key];
+    if (!test) return;
+    state.activeType = key;
+    state.questionIndex = 0;
+    state.correctCount = 0;
+    state.startTime = Date.now();
+    state.answers = [];
+
+    $("testTypeSection").classList.add("hidden");
+    $("catalogPanel").classList.add("hidden");
+    $("testResultSection").style.display = "none";
+    $("testProgressSection").style.display = "block";
+
+    $("progressTitle").textContent = test.name;
+    $("progressSubtitle").textContent = `${test.audience} · ${test.duration}`;
+    $("totalQNum").textContent = test.questions.length;
+
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const test = testMap[state.activeType];
+    const question = test.questions[state.questionIndex];
+    const total = test.questions.length;
+
+    $("currentQNum").textContent = state.questionIndex + 1;
+    $("progressMetaText").textContent = `第 ${state.questionIndex + 1} 题 / 共 ${total} 题`;
+    $("progressFill").style.width = `${((state.questionIndex + 1) / total) * 100}%`;
+    $("questionText").textContent = question.q;
+    $("testTypeChip").textContent = test.name;
+    $("questionDifficultyChip").textContent = question.difficulty;
+    $("questionTagChip").textContent = question.tag;
+
+    const letters = ["A", "B", "C", "D"];
+    $("optionsContainer").innerHTML = question.opts.map((option, index) => `
+        <button type="button" class="option-btn" onclick="handleSelect(${index})">
+            <span class="option-index">${letters[index]}</span>
+            <span>${escapeHtml(option)}</span>
+        </button>
+    `).join("");
+}
+
+function handleSelect(selectedIndex) {
+    const test = testMap[state.activeType];
+    const question = test.questions[state.questionIndex];
+    const buttons = Array.from(document.querySelectorAll(".option-btn"));
+    const isCorrect = selectedIndex === question.ans;
+
+    buttons.forEach((button, index) => {
+        button.classList.add("disabled");
+        if (index === question.ans) {
+            button.classList.add("correct");
+        } else if (index === selectedIndex && !isCorrect) {
+            button.classList.add("wrong");
+        }
+    });
+
+    if (isCorrect) {
+        state.correctCount += 1;
+    }
+
+    state.answers.push({
+        question: question.q,
+        tag: question.tag,
+        difficulty: question.difficulty,
+        selectedIndex,
+        correctIndex: question.ans,
+        selectedOption: question.opts[selectedIndex],
+        correctOption: question.opts[question.ans],
+        isCorrect,
+        explanation: question.explanation
+    });
+
+    window.setTimeout(() => {
+        state.questionIndex += 1;
+        if (state.questionIndex < test.questions.length) {
+            renderQuestion();
+        } else {
+            showResult();
+        }
+    }, 900);
+}
+
+function renderDifficultyBreakdown(answers) {
+    const breakdown = computeDifficultyBreakdown(answers);
+    $("difficultyBreakdown").innerHTML = breakdown.map(item => `
+        <div class="breakdown-item">
+            <div class="top">
+                <span>${escapeHtml(item.level)}</span>
+                <span>${item.correct}/${item.total} · ${item.accuracy}%</span>
+            </div>
+            <div class="bar"><span style="width:${item.accuracy}%"></span></div>
+        </div>
+    `).join("");
+}
+
+function renderList(containerId, items) {
+    const container = $(containerId);
+    container.innerHTML = (items || []).map(item => `<li>${escapeHtml(item)}</li>`).join("");
+}
+
+function renderReviewList(answers) {
+    const letters = ["A", "B", "C", "D"];
+    $("reviewList").innerHTML = answers.map((item, index) => `
+        <article class="review-card">
+            <div class="review-head">
+                <div class="card-tag"><i class="fas ${item.isCorrect ? "fa-check" : "fa-rotate-left"}"></i> ${item.isCorrect ? "答对" : "需复盘"}</div>
+                <div style="color: var(--muted); font-size: 12px;">第 ${index + 1} 题</div>
+            </div>
+            <h5>${escapeHtml(item.question)}</h5>
+            <div class="review-meta">
+                <span>${escapeHtml(item.tag)}</span>
+                <span>${escapeHtml(item.difficulty)}</span>
+                <span>你的答案：${letters[item.selectedIndex] || "-"}</span>
+                <span>正确答案：${letters[item.correctIndex] || "-"}</span>
+            </div>
+            <p>${escapeHtml(item.explanation)}</p>
+        </article>
+    `).join("");
+}
+
+function saveHistory(entry) {
+    const key = "xuezhi_assessment_history";
+    const history = JSON.parse(window.localStorage.getItem(key) || "[]");
+    history.unshift(entry);
+    window.localStorage.setItem(key, JSON.stringify(history.slice(0, 8)));
+}
+
+function renderHistory() {
+    const history = JSON.parse(window.localStorage.getItem("xuezhi_assessment_history") || "[]");
+    if (!history.length) {
+        $("historyList").innerHTML = `<div class="history-item"><strong>暂无测试记录</strong><span>完成一次测试后，这里会显示最近的专业方向与成绩变化。</span></div>`;
+        return;
+    }
+    $("historyList").innerHTML = history.map(item => `
+        <div class="history-item">
+            <strong>${escapeHtml(item.name)} · ${item.score}%</strong>
+            <span>${escapeHtml(item.category)} · ${escapeHtml(item.level)} · ${escapeHtml(item.time)}</span>
+        </div>
+    `).join("");
+}
+
+function toggleHistoryPanel() {
+    const panel = $("historyPanel");
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
+    renderHistory();
+}
+
+function clearHistory() {
+    window.localStorage.removeItem("xuezhi_assessment_history");
+    renderHistory();
+}
+
+function openLearningPlan() {
+    window.location.href = "/student/learning-plan";
+}
+
+function restartTest() {
+    $("testResultSection").style.display = "none";
+    $("testProgressSection").style.display = "none";
+    $("testTypeSection").classList.remove("hidden");
+    $("catalogPanel").classList.remove("hidden");
+    state.activeType = null;
+}
+
+function applyServerAnalysis(data) {
+    if (!data || !data.analysis) return;
+    renderList("strengthList", data.analysis.strengths);
+    renderList("weaknessList", data.analysis.weaknesses);
+    renderList("suggestionList", data.suggestions || []);
+    const fitItems = [
+        data.analysis.fit_to_track || "测试结果会回流学习画像与学习路径模块。",
+        "错题标签可作为资源生成与精准推送的输入依据。"
+    ];
+    renderList("fitToTrackList", fitItems);
+
+    if (Array.isArray(data.analysis.difficulty_breakdown) && data.analysis.difficulty_breakdown.length) {
+        $("difficultyBreakdown").innerHTML = data.analysis.difficulty_breakdown.map(item => `
+            <div class="breakdown-item">
+                <div class="top">
+                    <span>${escapeHtml(item.difficulty)}</span>
+                    <span>${item.correct}/${item.total} · ${item.accuracy}%</span>
+                </div>
+                <div class="bar"><span style="width:${item.accuracy}%"></span></div>
+            </div>
+        `).join("");
+    }
+}
+
+function showResult() {
+    const test = testMap[state.activeType];
+    const total = test.questions.length;
+    const score = Math.round(state.correctCount / total * 100);
+    const used = Math.round((Date.now() - state.startTime) / 1000);
+    const level = getLevel(score);
+
+    $("testProgressSection").style.display = "none";
+    $("testResultSection").style.display = "block";
+    $("finalScoreDisplay").textContent = `${score}%`;
+    $("levelBadgeText").textContent = level;
+    $("correctNum").textContent = state.correctCount;
+    $("wrongNum").textContent = total - state.correctCount;
+    $("timeUsed").textContent = formatTime(used);
+    $("resultSummaryText").textContent = getLevelSummary(score, test.name);
+
+    renderDifficultyBreakdown(state.answers);
+    renderList("strengthList", buildLocalStrengths(score, state.answers));
+    renderList("weaknessList", buildLocalWeaknesses(state.answers));
+    renderList("suggestionList", buildLocalSuggestions(test));
+    renderReviewList(state.answers);
+
+    saveHistory({
+        name: test.name,
+        category: categoryMap[test.category].label,
+        score,
+        level,
+        time: new Date().toLocaleString()
+    });
+
+    fetch("/test/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            type: state.activeType,
+            answers: state.answers.map(item => ({
+                question: item.question,
+                selected_option: item.selectedOption,
+                correct_option: item.correctOption,
+                is_correct: item.isCorrect,
+                difficulty: item.difficulty,
+                tag: item.tag,
+                explanation: item.explanation
+            }))
+        })
+    })
+    .then(response => response.ok ? response.json() : null)
+    .then(data => applyServerAnalysis(data))
+    .catch(error => console.error("submit assessment failed:", error));
+}
+
+renderCategoryChips();
+renderCatalog();
+renderHistory();
+</script>
+</body>
+</html>

@@ -1,0 +1,1934 @@
+{% extends "base.html" %}
+
+{% block title %}高级分析 - 学智画像：教育大数据赋能高校学情可视分析系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card fade-in gradient-header">
+            <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-circle gradient-purple">
+                                <i class="fas fa-chart-line"></i>
+                </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4 class="card-title mb-1">高级分析</h4>
+                            <p class="text-muted mb-0 small">深入分析答题数据，发现学习规律</p>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>返回数据分析
+                        </a>
+                    </div>
+                </div>
+            </div>
+                    </div>
+                </div>
+            </div>
+
+    <!-- 数据概览卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+        <div class="stat-card p-3 rounded bg-light gradient-blue-hover">
+                    <div class="d-flex align-items-center">
+                <div class="stat-icon me-3 text-primary">
+                    <i class="fas fa-users fa-2x"></i>
+                        </div>
+                <div class="stat-content">
+                    <h6 class="mb-1">总参与人数</h6>
+                    <p class="stat-value fs-4 mb-0">{{ stats.get('total_students', 0) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+        <div class="stat-card p-3 rounded bg-light gradient-green-hover">
+                    <div class="d-flex align-items-center">
+                <div class="stat-icon me-3 text-success">
+                    <i class="fas fa-clipboard-check fa-2x"></i>
+                        </div>
+                <div class="stat-content">
+                    <h6 class="mb-1">总答题次数</h6>
+                    <p class="stat-value fs-4 mb-0">{{ stats.get('total_submissions', 0) }}</p>
+                        </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+        <div class="stat-card p-3 rounded bg-light gradient-purple-hover">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon me-3 text-purple">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="mb-1">平均正确率</h6>
+                    <p class="stat-value fs-4 mb-0">{{ "%.1f"|format(stats.get('average_accuracy', 0.0)) }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 mb-md-0">
+        <div class="stat-card p-3 rounded bg-light gradient-orange-hover">
+                    <div class="d-flex align-items-center">
+                <div class="stat-icon me-3 text-warning">
+                    <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                <div class="stat-content">
+                    <h6 class="mb-1">平均用时</h6>
+                    <p class="stat-value fs-4 mb-0">{{ "%.1f"|format(stats.get('average_time', 0.0)) }}秒</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- 学习行为分析 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card fade-in" style="animation-delay: 0.1s;">
+            <div class="card-header gradient-blue-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>学习行为分析
+                    </h5>
+                    <div class="chart-actions">
+                        <div class="btn-group me-2">
+                            <button class="btn btn-sm btn-outline-primary active" id="view-weekly">周视图</button>
+                            <button class="btn btn-sm btn-outline-primary" id="view-daily">日视图</button>
+                            <button class="btn btn-sm btn-outline-primary rounded-circle" onclick="downloadChart('learningBehaviorChart', '学习行为分析')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="learningBehaviorChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 知识点掌握度和答题频次分布 -->
+<div class="row mb-4">
+    <div class="col-md-8 mb-4 mb-md-0">
+        <div class="card fade-in" style="animation-delay: 0.2s;">
+            <div class="card-header gradient-green-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>知识点掌握度
+                    </h5>
+                    <button class="btn btn-sm btn-outline-success rounded-circle" onclick="downloadChart('topicMasteryChart', '知识点掌握度')">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-5">
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="topicMasteryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="topic-mastery-list" style="max-height: 300px; overflow-y: auto;">
+                            {% for topic in topic_mastery %}
+                            <div class="topic-mastery-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-medium">{{ topic['name'] }}</span>
+                                    <span class="badge rounded-pill {% if topic['mastery'] >= 80 %}bg-success{% elif topic['mastery'] >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ "%.1f"|format(topic['mastery']) }}%
+                                    </span>
+                                </div>
+                                <div class="progress rounded-pill" style="height: 6px;">
+                                    <div class="progress-bar {% if topic['mastery'] >= 80 %}bg-success{% elif topic['mastery'] >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                        role="progressbar" 
+                                        style="width: {{ topic['mastery'] }}%">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card fade-in" style="animation-delay: 0.2s;">
+            <div class="card-header gradient-purple-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>答题频次分布
+                    </h5>
+                    <button class="btn btn-sm btn-outline-purple rounded-circle" onclick="downloadChart('submissionDistributionChart', '答题频次分布')">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 230px;">
+                    <canvas id="submissionDistributionChart"></canvas>
+                </div>
+                <div class="mt-3">
+                    <div class="row text-center small">
+                        <div class="col-6 col-md-3 mb-2">
+                            <span class="d-inline-block me-2" style="width:10px;height:10px;background-color:#4361ee;border-radius:50%"></span>
+                            0-149次
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <span class="d-inline-block me-2" style="width:10px;height:10px;background-color:#2ec4b6;border-radius:50%"></span>
+                            149-199次
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <span class="d-inline-block me-2" style="width:10px;height:10px;background-color:#ff9f1c;border-radius:50%"></span>
+                            200-249次
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <span class="d-inline-block me-2" style="width:10px;height:10px;background-color:#e63946;border-radius:50%"></span>
+                            250次以上
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 学习效果分析 -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+        <div class="card fade-in" style="animation-delay: 0.3s;">
+            <div class="card-header gradient-info-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>答题时间分布
+                    </h5>
+                    <button class="btn btn-sm btn-outline-info rounded-circle" onclick="downloadChart('timeDistributionChart', '答题时间分布')">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="timeDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4 mb-lg-0">
+        <div class="card fade-in" style="animation-delay: 0.3s;">
+            <div class="card-header gradient-warning-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>学习进步趋势
+                    </h5>
+                    <button class="btn btn-sm btn-outline-warning rounded-circle" onclick="downloadChart('progressTrendChart', '学习进步趋势')">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="progressTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 学生表现分析 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card fade-in" style="animation-delay: 0.4s;">
+            <div class="card-header gradient-primary-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-graduate me-2"></i>学生表现分析
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <div class="input-group input-group-sm" style="width: 200px;">
+                            <input type="text" id="student-search" class="form-control" placeholder="搜索学生...">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i>筛选
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item filter-item" data-filter="all" href="#">全部</a></li>
+                                <li><a class="dropdown-item filter-item" data-filter="卓越" href="#">卓越</a></li>
+                                <li><a class="dropdown-item filter-item" data-filter="优秀" href="#">优秀</a></li>
+                                <li><a class="dropdown-item filter-item" data-filter="良好" href="#">良好</a></li>
+                                <li><a class="dropdown-item filter-item" data-filter="一般" href="#">一般</a></li>
+                                <li><a class="dropdown-item filter-item" data-filter="待提高" href="#">待提高</a></li>
+                                <li><a class="dropdown-item filter-item" data-filter="需要帮助" href="#">需要帮助</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>学生ID</th>
+                                <th>姓名</th>
+                                <th>答题次数</th>
+                                <th>平均正确率</th>
+                                <th>平均用时</th>
+                                <th>知识点掌握度</th>
+                                <th>学习状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-performance-table">
+                            {% for student in student_performance %}
+                            <tr class="student-row" data-status="{{ student['learning_status'] }}">
+                                <td>{{ student['id'] }}</td>
+                                <td>{{ student['name'] }}</td>
+                                <td>{{ student['submission_count'] }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">{{ "%.1f"|format(student['accuracy_rate'] * 100) }}%</span>
+                                        <div class="progress flex-grow-1 rounded-pill" style="height: 4px;">
+                                            <div class="progress-bar {% if student['accuracy_rate'] >= 0.8 %}bg-success{% elif student['accuracy_rate'] >= 0.6 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ student['accuracy_rate'] * 100 }}%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ "%.1f"|format(student['avg_time']) }}秒</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">{{ "%.1f"|format(student['mastery_rate'] * 100) }}%</span>
+                                        <div class="progress flex-grow-1 rounded-pill" style="height: 4px;">
+                                            <div class="progress-bar {% if student['mastery_rate'] >= 0.8 %}bg-success{% elif student['mastery_rate'] >= 0.6 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ student['mastery_rate'] * 100 }}%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill {% if student['learning_status'] == '卓越' %}bg-primary{% elif student['learning_status'] == '优秀' %}bg-success{% elif student['learning_status'] == '良好' %}bg-info{% elif student['learning_status'] == '一般' %}bg-warning{% elif student['learning_status'] == '待提高' %}bg-orange{% else %}bg-danger{% endif %}">
+                                        {{ student['learning_status'] }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- 分页控件 -->
+                <div class="d-flex justify-content-between align-items-center p-3">
+                    <div>
+                        显示 <span id="start-item">1</span> 到 <span id="end-item">{% if student_performance|length < 10 %}{{ student_performance|length }}{% else %}10{% endif %}</span> 条，共 <span id="total-items">{{ student_performance|length }}</span> 条
+                    </div>
+                    <div>
+                        <nav aria-label="Student performance pagination">
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item disabled" id="prev-page">
+                                    <a class="page-link" href="#" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#" data-page="1">1</a></li>
+                                {% set total_pages = (student_performance|length / 10)|round(0, 'ceil')|int %}
+                                {% for i in range(2, total_pages + 1) %}
+                                <li class="page-item"><a class="page-link" href="#" data-page="{{ i }}">{{ i }}</a></li>
+                                {% endfor %}
+                                <li class="page-item {% if total_pages <= 1 %}disabled{% endif %}" id="next-page">
+                                    <a class="page-link" href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div>
+                        <select class="form-select form-select-sm" id="items-per-page">
+                            <option value="10" selected>10条/页</option>
+                            <option value="20">20条/页</option>
+                            <option value="50">50条/页</option>
+                            <option value="100">100条/页</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增：学生聚类分析 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card fade-in" style="animation-delay: 0.5s;">
+            <div class="card-header gradient-info-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users-cog me-2"></i>学生聚类分析
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <span class="input-group-text">聚类组数</span>
+                            <select class="form-select" id="cluster-count">
+                                <option value="3" selected>3组</option>
+                                <option value="4">4组</option>
+                                <option value="5">5组</option>
+                                <option value="6">6组</option>
+                                <option value="7">7组</option>
+                                <option value="8">8组</option>
+                                <option value="9">9组</option>
+                                <option value="10">10组</option>
+                            </select>
+                            <button class="btn btn-outline-primary" id="run-clustering">
+                                <i class="fas fa-play me-1"></i>运行聚类
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="alert alert-info" id="cluster-info">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="alert-heading mb-1">基于多维特征的学生群体智能聚类分析</h6>
+                                <p class="mb-0">该功能将学生按照多维性能特征(正确率、答题速度、知识点掌握度、学习进度等)进行智能聚类，识别具有相似学习模式的学生群体。点击"运行聚类"开始分析。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="cluster-results" class="d-none">
+                    <div class="row mb-4">
+                        <div class="col-md-5">
+                            <div class="chart-container" style="height: 300px">
+                                <canvas id="clusterDistributionChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-primary h-100">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title d-flex justify-content-between">
+                                                <span>特征重要性分析</span>
+                                                <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" title="展示各项特征对聚类的影响程度，帮助教师了解哪些因素更能区分学生群体"></i>
+                                            </h6>
+                                            <div class="feature-importance-container">
+                                                <div class="feature-importance-item d-flex justify-content-between mb-2">
+                                                    <span>正确率</span>
+                                                    <div class="progress flex-grow-1 mx-2 mt-1" style="height: 6px;">
+                                                        <div class="progress-bar bg-primary feature-imp-accuracy" style="width: 0%;"></div>
+                                                    </div>
+                                                    <span class="feature-imp-accuracy-val">0%</span>
+                                                </div>
+                                                <div class="feature-importance-item d-flex justify-content-between mb-2">
+                                                    <span>答题量</span>
+                                                    <div class="progress flex-grow-1 mx-2 mt-1" style="height: 6px;">
+                                                        <div class="progress-bar bg-primary feature-imp-submission" style="width: 0%;"></div>
+                                                    </div>
+                                                    <span class="feature-imp-submission-val">0%</span>
+                                                </div>
+                                                <div class="feature-importance-item d-flex justify-content-between mb-2">
+                                                    <span>掌握度</span>
+                                                    <div class="progress flex-grow-1 mx-2 mt-1" style="height: 6px;">
+                                                        <div class="progress-bar bg-primary feature-imp-mastery" style="width: 0%;"></div>
+                                                    </div>
+                                                    <span class="feature-imp-mastery-val">0%</span>
+                                                </div>
+                                                <div class="feature-importance-item d-flex justify-content-between">
+                                                    <span>用时</span>
+                                                    <div class="progress flex-grow-1 mx-2 mt-1" style="height: 6px;">
+                                                        <div class="progress-bar bg-primary feature-imp-time" style="width: 0%;"></div>
+                                                    </div>
+                                                    <span class="feature-imp-time-val">0%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-success h-100">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title d-flex justify-content-between">
+                                                <span>聚类质量评估</span>
+                                                <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" title="聚类结果评估指标，帮助教师了解聚类的可靠性与有效性"></i>
+                                            </h6>
+                                            <div class="cluster-metrics">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span>聚类紧密度:</span>
+                                                    <span class="fw-bold text-success cluster-cohesion">-</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span>聚类分离度:</span>
+                                                    <span class="fw-bold text-success cluster-separation">-</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span>聚类稳定性:</span>
+                                                    <span class="fw-bold text-success cluster-stability">-</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>最佳聚类数:</span>
+                                                    <span class="fw-bold cluster-optimal-k">-</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cluster-tabs">
+                        <ul class="nav nav-tabs" id="clusterTabs" role="tablist">
+                            <!-- 标签页由JS生成 -->
+                        </ul>
+                        <div class="tab-content p-3 border border-top-0 rounded-bottom" id="clusterTabsContent">
+                            <!-- 标签内容由JS生成 -->
+                        </div>
+                    </div>
+                </div>
+                <div id="cluster-loading" class="text-center py-5 d-none">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mb-0">正在进行学生聚类分析，请稍候...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-color: #4361ee;
+    --primary-light: #4361ee20;
+    --success-color: #2ec4b6;
+    --success-light: #2ec4b620;
+    --warning-color: #ff9f1c;
+    --warning-light: #ff9f1c20;
+    --info-color: #4cc9f0;
+    --info-light: #4cc9f020;
+    --danger-color: #e63946;
+    --danger-light: #e6394620;
+    --orange-color: #fd7e14;
+    --orange-light: #fd7e1420;
+    --border-radius: 16px;
+}
+
+body {
+    background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #1C2128 100%);
+    font-family: 'Noto Sans SC', sans-serif;
+    color: #E6EDF3;
+    min-height: 100vh;
+}
+
+.advanced-analysis-container {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.bg-primary-subtle {
+    background-color: var(--primary-light) !important;
+}
+
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+.bg-success-subtle {
+    background-color: var(--success-light) !important;
+}
+
+.text-warning {
+    color: var(--warning-color) !important;
+}
+
+.bg-warning {
+    background-color: var(--warning-color) !important;
+}
+
+.bg-warning-subtle {
+    background-color: var(--warning-light) !important;
+}
+
+.text-info {
+    color: var(--info-color) !important;
+}
+
+.bg-info {
+    background-color: var(--info-color) !important;
+}
+
+.bg-info-subtle {
+    background-color: var(--info-light) !important;
+}
+
+.rounded-4 {
+    border-radius: var(--border-radius) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.stat-card-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-icon-container {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    background: rgba(28, 33, 40, 0.9);
+    border: 1px solid rgba(240, 246, 252, 0.1);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chart-container canvas {
+    max-width: 100%;
+}
+
+.topic-mastery-list {
+    padding-right: 1rem;
+    background: rgba(28, 33, 40, 0.9);
+    border: 1px solid rgba(240, 246, 252, 0.1);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.topic-mastery-item {
+    transition: all 0.3s ease;
+    padding: 0.75rem;
+    border-radius: 12px;
+    background: rgba(37, 43, 53, 0.8);
+    margin-bottom: 0.75rem;
+    color: #F0F6FC;
+}
+
+.topic-mastery-item:hover {
+    transform: translateX(5px);
+    background: rgba(37, 43, 53, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.topic-mastery-item .badge {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+}
+
+.topic-mastery-item .progress {
+    height: 6px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.topic-mastery-item .progress-bar {
+    transition: width 0.6s ease;
+}
+
+.topic-mastery-item .fw-medium {
+    color: #F0F6FC;
+}
+
+table.table {
+    color: #E6EDF3;
+}
+
+table.table th {
+    font-weight: 600;
+    color: #E6EDF3;
+    background-color: rgba(67, 100, 247, 0.2);
+    border-color: rgba(67, 100, 247, 0.3);
+}
+
+table.table td {
+    color: #E6EDF3;
+    border-color: rgba(67, 100, 247, 0.2);
+}
+
+table.table tbody tr {
+    background-color: rgba(22, 27, 34, 0.9);
+}
+
+table.table tbody tr:hover {
+    background-color: rgba(67, 100, 247, 0.1);
+}
+
+table.table .text-muted {
+    color: #8B949E !important;
+}
+
+.card {
+    border: 1px solid rgba(67, 100, 247, 0.2);
+    background: rgba(22, 27, 34, 0.95);
+    color: #E6EDF3;
+}
+
+.card-header {
+    background: rgba(67, 100, 247, 0.15);
+    border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+    color: #E6EDF3;
+}
+
+.card-body {
+    color: #E6EDF3;
+}
+
+.card-title {
+    color: #E6EDF3 !important;
+}
+
+.card-text {
+    color: #8B949E !important;
+}
+
+h4.card-title {
+    color: #E6EDF3 !important;
+}
+
+h5.card-title {
+    color: #E6EDF3 !important;
+}
+
+p.text-muted {
+    color: #8B949E !important;
+}
+
+.stat-value {
+    color: #E6EDF3 !important;
+}
+
+.stat-content h6 {
+    color: #8B949E !important;
+}
+
+.text-white {
+    color: #FFFFFF !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.counter-animate {
+    transition: all 0.5s ease-out;
+}
+
+.bg-orange {
+    background-color: var(--orange-color) !important;
+}
+
+.bg-orange-subtle {
+    background-color: var(--orange-light) !important;
+}
+
+.gradient-header {
+    border: none;
+    background: linear-gradient(120deg, rgba(240, 244, 255, 0.8), rgba(255, 255, 255, 1));
+}
+
+.avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.gradient-green {
+    background: linear-gradient(45deg, #4CAF50, #8BC34A);
+}
+
+.gradient-blue {
+    background: linear-gradient(45deg, #2196F3, #4FC3F7);
+}
+
+.gradient-purple {
+    background: linear-gradient(45deg, #9C27B0, #BA68C8);
+}
+
+.gradient-green-light {
+    background: linear-gradient(120deg, #E8F5E9, #F1F8E9);
+    border: none;
+    color: #198754;
+}
+
+    .gradient-blue-light {
+        background: linear-gradient(120deg, #E0F7FA, #E1F5FE);
+        border: none;
+        color: #0056b3;
+    }
+
+.gradient-green-light {
+    background: linear-gradient(120deg, #E8F5E9, #E0F2F1);
+    border: none;
+    color: #198754;
+}
+
+.gradient-purple-light {
+    background: linear-gradient(120deg, #F3E5F5, #EDE7F6);
+    border: none;
+    color: #1a1a1a;
+}
+
+.gradient-orange-light {
+    background: linear-gradient(120deg, #FFF3E0, #FFF8E1);
+    border: none;
+    color: #fd7e14;
+}
+
+.gradient-info-light {
+    background: linear-gradient(120deg, #E0F7FA, #E1F5FE);
+    border: none;
+    color: #0dcaf0;
+}
+
+.gradient-warning-light {
+    background: linear-gradient(120deg, #FFF3E0, #FFF8E1);
+    border: none;
+    color: #ffc107;
+}
+
+.gradient-primary-light {
+    background: linear-gradient(120deg, #E0F7FA, #E1F5FE);
+    border: none;
+    color: #0d6efd;
+}
+
+.chart-actions .btn {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+}
+
+.chart-actions .btn-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.chart-actions .btn-group .btn {
+    width: auto;
+    min-width: 80px;
+    height: 40px;
+    padding: 0 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(120deg, rgba(67, 97, 238, 0.1), rgba(67, 97, 238, 0.05));
+    border: 1px solid rgba(67, 97, 238, 0.2);
+    color: #4361ee;
+}
+
+.chart-actions .btn-group .btn:first-child {
+    border-radius: 20px 0 0 20px;
+}
+
+.chart-actions .btn-group .btn:nth-child(2) {
+    border-radius: 0 20px 20px 0;
+}
+
+.chart-actions .btn-group .btn:hover {
+    background: linear-gradient(120deg, rgba(67, 97, 238, 0.2), rgba(67, 97, 238, 0.1));
+    transform: translateY(-2px);
+}
+
+.chart-actions .btn-group .btn.active {
+    background: linear-gradient(120deg, #4361ee, #3a0ca3);
+    border: none;
+    color: white;
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+}
+
+.chart-actions .btn-group .btn:last-child {
+    background: none;
+    border: none;
+    min-width: 40px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.chart-actions .btn-group .btn:last-child:hover {
+    background: rgba(67, 97, 238, 0.1);
+    transform: scale(1.1);
+}
+
+.topic-mastery-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.topic-mastery-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.topic-mastery-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.topic-mastery-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// 数字动画效果
+function animateCounter(element) {
+    const target = parseFloat(element.textContent);
+    let current = 0;
+    const duration = 1000; // 动画持续1秒
+    const step = target / (duration / 16); // 每帧增加的值
+    
+    function update() {
+        current += step;
+        if (current < target) {
+            element.textContent = current.toFixed(1);
+            requestAnimationFrame(update);
+        } else {
+            element.textContent = target.toFixed(1);
+        }
+    }
+    
+    update();
+}
+
+// 初始化所有计数器动画
+document.querySelectorAll('.counter-animate').forEach(animateCounter);
+
+// 学习行为分析图表
+const learningBehaviorCtx = document.getElementById('learningBehaviorChart').getContext('2d');
+let learningBehaviorChart = new Chart(learningBehaviorCtx, {
+    type: 'line',
+    data: {
+        labels: {{ weekly_labels|tojson }},
+        datasets: [
+            {
+                label: '答题次数',
+                data: {{ weekly_submissions|tojson }},
+                borderColor: '#4361ee',
+                backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y',
+                fill: true
+            },
+            {
+                label: '正确率 (%)',
+                data: {{ weekly_accuracy|tojson }},
+                borderColor: '#2ec4b6',
+                backgroundColor: 'rgba(46, 196, 182, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y1',
+                fill: false
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+            title: {
+                    display: true,
+                    text: '答题次数'
+                },
+                beginAtZero: true
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: '正确率 (%)'
+            },
+            grid: {
+                    drawOnChartArea: false
+                },
+                beginAtZero: true,
+                max: 100
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top'
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            }
+        }
+    }
+});
+
+// 知识点掌握度图表
+const topicMasteryCtx = document.getElementById('topicMasteryChart').getContext('2d');
+const topicMasteryChart = new Chart(topicMasteryCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ topic_names|tojson }},
+        datasets: [{
+            data: {{ topic_accuracy_rates|tojson }},
+            backgroundColor: [
+                '#4361ee',
+                '#2ec4b6',
+                '#ff9f1c',
+                '#e63946',
+                '#3a0ca3',
+                '#4cc9f0',
+                '#f72585',
+                '#7209b7'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.raw;
+                        return `${label}: ${value.toFixed(1)}%`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 答题频次分布图表
+const submissionDistributionCtx = document.getElementById('submissionDistributionChart').getContext('2d');
+const submissionDistributionChart = new Chart(submissionDistributionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['0-149次', '149-199次', '200-249', '250次以上'],
+        datasets: [{
+            data: [
+                {{ student_performance|selectattr('submission_count', 'le', 50)|list|length }},
+                {{ student_performance|selectattr('submission_count', 'gt', 100)|selectattr('submission_count', 'le', 200)|list|length }},
+                {{ student_performance|selectattr('submission_count', 'gt', 200)|selectattr('submission_count', 'le', 300)|list|length }},
+                {{ student_performance|selectattr('submission_count', 'gt', 300)|list|length }}
+            ],
+            backgroundColor: [
+                '#4361ee',
+                '#2ec4b6',
+                '#ff9f1c',
+                '#e63946'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.raw;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = Math.round((value / total) * 100);
+                        return `${label}: ${value}人 (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 答题时间分布图表
+const timeDistributionCtx = document.getElementById('timeDistributionChart').getContext('2d');
+new Chart(timeDistributionCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ time_regions|tojson }},
+        datasets: [
+            {
+                label: '答题次数',
+                data: {{ time_counts|tojson }},
+                backgroundColor: '#4361ee',
+                yAxisID: 'y'
+            },
+            {
+                label: '正确率 (%)',
+                data: {{ time_scores|tojson }},
+                backgroundColor: '#2ec4b6',
+                    type: 'line',
+                tension: 0.4,
+                yAxisID: 'y1'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: '答题次数'
+                }
+            },
+            y1: {
+                beginAtZero: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: '正确率 (%)'
+                },
+                grid: {
+                    drawOnChartArea: false
+                }
+            }
+        }
+    }
+});
+
+// 学习进步趋势图表
+const progressTrendCtx = document.getElementById('progressTrendChart').getContext('2d');
+new Chart(progressTrendCtx, {
+    type: 'line',
+    data: {
+        labels: {{ progress_labels|tojson }},
+        datasets: [
+            {
+                label: '正确率 (%)',
+                data: {{ progress_scores|tojson }},
+                borderColor: '#4361ee',
+                backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y',
+                fill: true
+            },
+            {
+                label: '答题次数',
+                data: {{ progress_attempts|tojson }},
+                borderColor: '#2ec4b6',
+                backgroundColor: 'rgba(46, 196, 182, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y1',
+                fill: false
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: '正确率 (%)'
+                },
+                max: 100
+            },
+            y1: {
+                beginAtZero: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: '答题次数'
+                },
+                grid: {
+                    drawOnChartArea: false
+                }
+            }
+        }
+    }
+});
+
+// 图表下载功能
+function downloadChart(canvasId, filename) {
+    const canvas = document.getElementById(canvasId);
+    const link = document.createElement('a');
+    link.download = `${filename}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+
+// 周视图和日视图切换
+document.getElementById('view-weekly').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('view-daily').classList.remove('active');
+    
+    // 更新图表数据为周视图
+    learningBehaviorChart.data.labels = {{ weekly_labels|tojson }};
+    learningBehaviorChart.data.datasets[0].data = {{ weekly_submissions|tojson }};
+    learningBehaviorChart.data.datasets[1].data = {{ weekly_accuracy|tojson }};
+    learningBehaviorChart.update();
+});
+
+document.getElementById('view-daily').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('view-weekly').classList.remove('active');
+    
+    // 创建假日视图数据用于演示
+    // 实际项目中应该从后端获取日视图数据
+    const dailyLabels = [];
+    const dailySubmissions = [];
+    const dailyAccuracy = [];
+    
+    // 基于周数据生成更详细的日数据
+    for (let i = 0; i < {{ weekly_labels|tojson }}.length; i++) {
+        const weekLabel = {{ weekly_labels|tojson }}[i];
+        const weekParts = weekLabel.split('-');
+        const startDate = weekParts[0];
+        
+        // 为每周生成7天的数据点
+        for (let j = 0; j < 7; j++) {
+            const day = parseInt(startDate.split('.')[1]) + j;
+            const month = startDate.split('.')[0];
+            dailyLabels.push(`${month}.${day}`);
+            
+            // 生成随机数据或基于周数据的平均值
+            const baseSubmission = {{ weekly_submissions|tojson }}[i] ? {{ weekly_submissions|tojson }}[i] / 7 : 0;
+            const baseAccuracy = {{ weekly_accuracy|tojson }}[i] || 0;
+            
+            dailySubmissions.push(Math.max(0, Math.round(baseSubmission + (Math.random() - 0.5) * baseSubmission)));
+            dailyAccuracy.push(Math.min(100, Math.max(0, baseAccuracy + (Math.random() - 0.5) * 10)));
+        }
+    }
+    
+    // 更新图表数据为日视图
+    learningBehaviorChart.data.labels = dailyLabels;
+    learningBehaviorChart.data.datasets[0].data = dailySubmissions;
+    learningBehaviorChart.data.datasets[1].data = dailyAccuracy;
+    learningBehaviorChart.update();
+});
+
+// 学生表现分析 - 分页和筛选功能
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取所有学生数据
+    const allStudents = Array.from(document.querySelectorAll('#student-performance-table tr'));
+    const totalStudents = allStudents.length;
+    document.getElementById('total-items').textContent = totalStudents;
+    
+    // 分页设置
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let filteredStudents = allStudents;
+    let currentFilter = 'all';
+    
+    // 初始化分页
+    function initPagination() {
+        // 计算总页数
+        const totalPages = Math.max(1, Math.ceil(filteredStudents.length / itemsPerPage));
+        
+        // 更新分页控件
+        const paginationElement = document.querySelector('.pagination');
+        let paginationHTML = `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}" id="prev-page">
+                <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+                </li>
+            `;
+        
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+        
+        paginationHTML += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}" id="next-page">
+                <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        `;
+        
+        paginationElement.innerHTML = paginationHTML;
+        
+        // 添加页码点击事件
+        document.querySelectorAll('.page-link[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = parseInt(this.getAttribute('data-page'));
+                renderStudents();
+            });
+        });
+        
+        // 上一页按钮
+        document.getElementById('prev-page').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                renderStudents();
+            }
+        });
+        
+        // 下一页按钮
+        document.getElementById('next-page').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderStudents();
+            }
+        });
+    }
+    
+    // 渲染学生列表
+    function renderStudents() {
+        // 计算当前页的起始和结束索引
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, filteredStudents.length);
+        
+        // 更新显示信息
+        document.getElementById('start-item').textContent = filteredStudents.length === 0 ? 0 : startIndex + 1;
+        document.getElementById('end-item').textContent = endIndex;
+        document.getElementById('total-items').textContent = filteredStudents.length;
+        
+        // 隐藏所有学生
+        allStudents.forEach(student => {
+            student.style.display = 'none';
+        });
+        
+        // 显示当前页的学生
+        for (let i = startIndex; i < endIndex; i++) {
+            filteredStudents[i].style.display = '';
+        }
+        
+        // 更新分页控件
+        const paginationItems = document.querySelectorAll('.page-item');
+        paginationItems.forEach(item => {
+            if (item.querySelector(`[data-page="${currentPage}"]`)) {
+                item.classList.add('active');
+            } else if (item.querySelector('[data-page]')) {
+                item.classList.remove('active');
+            }
+        });
+        
+        // 更新上一页和下一页按钮状态
+        const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+        document.getElementById('prev-page').classList.toggle('disabled', currentPage === 1);
+        document.getElementById('next-page').classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+    }
+    
+    // 应用筛选器
+    function applyFilter(status) {
+        currentFilter = status;
+        
+        if (status === 'all') {
+            filteredStudents = allStudents;
+        } else {
+            filteredStudents = allStudents.filter(student => 
+                student.getAttribute('data-status') === status
+            );
+        }
+        
+        currentPage = 1;
+        initPagination();
+        renderStudents();
+    }
+    
+    // 初始化
+    initPagination();
+    renderStudents();
+    
+    // 每页显示数量变化
+    document.getElementById('items-per-page').addEventListener('change', function() {
+        itemsPerPage = parseInt(this.value);
+        currentPage = 1;
+        initPagination();
+        renderStudents();
+    });
+    
+    // 搜索功能
+    document.getElementById('student-search').addEventListener('input', function() {
+        const searchText = this.value.toLowerCase();
+        
+        if (currentFilter === 'all') {
+            filteredStudents = allStudents.filter(student => {
+                const id = student.cells[0].textContent.toLowerCase();
+                const name = student.cells[1].textContent.toLowerCase();
+                return id.includes(searchText) || name.includes(searchText);
+            });
+        } else {
+            filteredStudents = allStudents.filter(student => {
+                const id = student.cells[0].textContent.toLowerCase();
+                const name = student.cells[1].textContent.toLowerCase();
+                const status = student.getAttribute('data-status');
+                return (id.includes(searchText) || name.includes(searchText)) && status === currentFilter;
+            });
+        }
+        
+        currentPage = 1;
+        initPagination();
+        renderStudents();
+    });
+    
+    // 筛选器按钮
+    document.querySelectorAll('.filter-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            applyFilter(this.getAttribute('data-filter'));
+            
+            // 更新筛选按钮文本
+            const filterText = this.textContent;
+            document.getElementById('filterDropdown').innerHTML = `<i class="fas fa-filter me-1"></i>${filterText}`;
+        });
+    });
+});
+
+// K-means聚类分析 - 前端部分，调用后端API
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化提示框
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
+    // 运行聚类分析
+    function runClustering() {
+        // 显示加载动画
+        document.getElementById('cluster-info').classList.add('d-none');
+        document.getElementById('cluster-loading').classList.remove('d-none');
+        document.getElementById('cluster-results').classList.add('d-none');
+        
+        // 获取聚类组数
+        const k = parseInt(document.getElementById('cluster-count').value);
+        
+        // 获取CSRF令牌（如果存在）
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        // 准备请求头
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        
+        // 如果有CSRF令牌，添加到请求头
+        if (csrfToken) {
+            headers['X-CSRFToken'] = csrfToken;
+        }
+        
+        // 获取API端点完整URL
+        const baseUrl = window.location.href.split('/analysis/')[0];
+        const apiUrl = `${baseUrl}/analysis/api/analysis/clustering`;
+        
+        console.log("API请求URL:", apiUrl); // 调试信息：显示完整请求URL
+        
+        // 调用后端API进行聚类分析
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                cluster_count: k
+            }),
+            credentials: 'same-origin' // 包含cookies和认证信息
+        })
+        .then(response => {
+            console.log("API响应状态:", response.status); // 调试信息：显示响应状态码
+            
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.log("错误响应内容:", text); // 调试信息：输出错误响应文本
+                    try {
+                        // 尝试将响应解析为JSON
+                        const data = JSON.parse(text);
+                        throw new Error(data.error || '聚类分析请求失败');
+                    } catch (e) {
+                        // 如果不是JSON，则显示原始错误
+                        throw new Error(`聚类分析请求失败 (${response.status}): ${text.substring(0, 100)}...`);
+                    }
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('聚类分析结果:', data); // 添加调试日志
+            
+            // 隐藏加载动画
+            document.getElementById('cluster-loading').classList.add('d-none');
+            document.getElementById('cluster-results').classList.remove('d-none');
+            
+            // 处理聚类结果
+            processClusteringResults(data);
+        })
+        .catch(error => {
+            console.error('聚类分析错误:', error);
+            
+            // 显示错误信息
+            document.getElementById('cluster-loading').classList.add('d-none');
+            document.getElementById('cluster-info').classList.remove('d-none');
+            document.getElementById('cluster-info').innerHTML = `
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-exclamation-circle fa-2x text-danger"></i>
+                    </div>
+                    <div>
+                        <h6 class="alert-heading mb-1">聚类分析失败</h6>
+                        <p class="mb-0">很抱歉，聚类分析过程中发生错误: ${error.message}</p>
+                        <p class="mb-0 small text-muted mt-2">技术原因: ${error}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    // 处理聚类结果
+    function processClusteringResults(data) {
+        // 更新聚类质量指标
+        document.querySelector('.cluster-cohesion').textContent = data.metrics.cohesion;
+        document.querySelector('.cluster-separation').textContent = data.metrics.separation;
+        document.querySelector('.cluster-stability').textContent = data.metrics.stability;
+        document.querySelector('.cluster-optimal-k').textContent = data.metrics.optimal_k;
+        
+        // 更新特征重要性
+        updateFeatureImportance(data.feature_importance);
+        
+        // 更新聚类分布图表
+        updateClusterDistributionChart(data.clusters);
+        
+        // 生成聚类标签页
+        generateClusterTabs(data.clusters, data.cluster_descriptions);
+    }
+    
+    // 更新特征重要性
+    function updateFeatureImportance(featureImportance) {
+        document.querySelector('.feature-imp-accuracy').style.width = featureImportance.accuracy + '%';
+        document.querySelector('.feature-imp-accuracy-val').textContent = featureImportance.accuracy + '%';
+        
+        document.querySelector('.feature-imp-submission').style.width = featureImportance.submission + '%';
+        document.querySelector('.feature-imp-submission-val').textContent = featureImportance.submission + '%';
+        
+        document.querySelector('.feature-imp-mastery').style.width = featureImportance.mastery + '%';
+        document.querySelector('.feature-imp-mastery-val').textContent = featureImportance.mastery + '%';
+        
+        document.querySelector('.feature-imp-time').style.width = featureImportance.time + '%';
+        document.querySelector('.feature-imp-time-val').textContent = featureImportance.time + '%';
+    }
+    
+    // 更新聚类分布图表
+    function updateClusterDistributionChart(clusters) {
+        const ctx = document.getElementById('clusterDistributionChart').getContext('2d');
+        
+        // 准备数据
+        const labels = clusters.map(cluster => cluster.name || `聚类组 ${cluster.id}`);
+        const data = clusters.map(cluster => cluster.student_count);
+        const backgroundColors = ['#4361ee', '#2ec4b6', '#ff9f1c', '#e63946', '#3a0ca3', '#4cc9f0'];
+        
+        // 创建图表
+        if (window.clusterChart) {
+            window.clusterChart.destroy();
+        }
+        
+        window.clusterChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: backgroundColors.slice(0, labels.length)
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value}人 (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 生成聚类标签页
+    function generateClusterTabs(clusters, clusterDescriptions) {
+        const tabsContainer = document.getElementById('clusterTabs');
+        const tabsContent = document.getElementById('clusterTabsContent');
+        
+        // 清空现有内容
+        tabsContainer.innerHTML = '';
+        tabsContent.innerHTML = '';
+        
+        // 生成标签页
+        clusters.forEach((cluster, index) => {
+            const isFirst = index === 0;
+            const description = clusterDescriptions[index];
+            
+            // 添加标签
+            const tabId = `cluster-tab-${index}`;
+            const tabContentId = `cluster-content-${index}`;
+            
+            const tabItem = document.createElement('li');
+            tabItem.className = 'nav-item';
+            tabItem.innerHTML = `
+                <button class="nav-link ${isFirst ? 'active' : ''}" 
+                        id="${tabId}" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#${tabContentId}" 
+                        type="button" 
+                        role="tab" 
+                        aria-controls="${tabContentId}" 
+                        aria-selected="${isFirst ? 'true' : 'false'}">
+                    ${cluster.name || `聚类组 ${index + 1}`} (${cluster.student_count}人)
+                </button>
+            `;
+            tabsContainer.appendChild(tabItem);
+            
+            // 添加内容
+            const tabContent = document.createElement('div');
+            tabContent.className = `tab-pane fade ${isFirst ? 'show active' : ''}`;
+            tabContent.id = tabContentId;
+            tabContent.setAttribute('role', 'tabpanel');
+            tabContent.setAttribute('aria-labelledby', tabId);
+            
+            // 生成组特征描述卡片
+            const clusterCard = `
+                <div class="cluster-description mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">组特征与教学建议分析</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h5 class="card-title text-primary">${description.group_type}</h5>
+                                    <h6 class="card-subtitle mb-3 text-muted">共${cluster.student_count}位学生</h6>
+                                    <div class="mt-3">
+                                        <strong>群体特点：</strong>
+                                        <ul class="mb-0">
+                                            ${description.characteristics.map(c => `<li>${c}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <strong>群体指标：</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>平均正确率：</span>
+                                        <span class="fw-bold">${description.stats.accuracy}%</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>平均答题量：</span>
+                                        <span class="fw-bold">${description.stats.submissions}次</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>平均掌握度：</span>
+                                        <span class="fw-bold">${description.stats.mastery}%</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>平均用时：</span>
+                                        <span class="fw-bold">${description.stats.time}秒</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <strong>教学建议：</strong>
+                                    </div>
+                                    <ul class="mb-0">
+                                        ${description.suggestions.map(s => `<li>${s}</li>`).join('')}
+                                    </ul>
+                                    <div class="mt-3">
+                                        <strong>学习问题诊断：</strong>
+                                        <p class="mb-0 small text-muted">${description.diagnostics || '暂无深度诊断'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 生成知识点掌握情况热图
+            const heatmapCard = `
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">知识点掌握情况热图</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container" style="height: 200px">
+                                    <canvas id="knowledgeHeatmap-${index}"></canvas>
+                                </div>
+                                <div class="mt-3 small text-muted">
+                                    <p class="mb-0">该热图展示了该群体在各知识点上的掌握情况，帮助教师识别重点教学方向</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 生成学生列表表格
+            const studentsTable = `
+                <div class="card">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">学生列表</h6>
+                        <div class="input-group input-group-sm" style="width: 200px;">
+                            <input type="text" class="form-control cluster-student-search" placeholder="搜索学生...">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>学生ID</th>
+                                        <th>姓名</th>
+                                        <th>答题次数</th>
+                                        <th>正确率</th>
+                                        <th>平均用时</th>
+                                        <th>知识点掌握度</th>
+                                        <th>学习状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${cluster.students.map(student => `
+                                        <tr>
+                                            <td>${student.id}</td>
+                                            <td>${student.name}</td>
+                                            <td>${student.submission_count}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">                                                    
+                                                    <span class="me-2">${student.accuracy_rate.toFixed(1)}%</span>
+                                                    <div class="progress flex-grow-1 rounded-pill" style="height: 4px;">
+                                                        <div class="progress-bar ${getProgressBarClass(student.accuracy_rate)}" 
+                                                            role="progressbar" 
+                                                            style="width: ${student.accuracy_rate.toFixed(1)}%">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>${student.avg_time.toFixed(1)}秒</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="me-2">${student.mastery_rate.toFixed(1)}%</span>
+                                                    <div class="progress flex-grow-1 rounded-pill" style="height: 4px;">
+                                                        <div class="progress-bar ${getProgressBarClass(student.mastery_rate)}" 
+                                                            role="progressbar" 
+                                                            style="width: ${student.mastery_rate.toFixed(1)}%">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge rounded-pill ${getStatusBadgeClass(student.learning_status)}">
+                                                    ${student.learning_status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            tabContent.innerHTML = clusterCard + heatmapCard + studentsTable;
+            tabsContent.appendChild(tabContent);
+            
+            // 延迟加载知识点热图，确保DOM已准备好
+            setTimeout(() => {
+                if (cluster.knowledge_heatmap) {
+                    renderKnowledgeHeatmap(`knowledgeHeatmap-${index}`, cluster.knowledge_heatmap);
+                }
+            }, 100);
+        });
+        
+        // 绑定学生搜索功能
+        document.querySelectorAll('.cluster-student-search').forEach(input => {
+            input.addEventListener('input', function() {
+                const searchText = this.value.toLowerCase();
+                const tableBody = this.closest('.card').querySelector('tbody');
+                const rows = tableBody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    const id = row.cells[0].textContent.toLowerCase();
+                    const name = row.cells[1].textContent.toLowerCase();
+                    row.style.display = id.includes(searchText) || name.includes(searchText) ? '' : 'none';
+                });
+            });
+        });
+    }
+    
+    // 辅助函数：获取进度条样式类
+    function getProgressBarClass(value) {
+        if (value >= 80) return 'bg-success';
+        if (value >= 60) return 'bg-warning';
+        return 'bg-danger';
+    }
+    
+    // 辅助函数：获取状态徽章样式类
+    function getStatusBadgeClass(status) {
+        switch(status) {
+            case '卓越': return 'bg-primary';
+            case '优秀': return 'bg-success';
+            case '良好': return 'bg-info';
+            case '一般': return 'bg-warning';
+            case '待提高': return 'bg-orange';
+            default: return 'bg-danger';
+        }
+    }
+    
+    // 渲染知识点热图
+    function renderKnowledgeHeatmap(canvasId, heatmapData) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: heatmapData.topics,
+                datasets: [{
+                    label: '掌握度',
+                    data: heatmapData.values,
+                    backgroundColor: heatmapData.values.map(value => {
+                        if (value >= 80) return 'rgba(46, 196, 182, 0.7)';
+                        if (value >= 60) return 'rgba(255, 159, 28, 0.7)';
+                        return 'rgba(230, 57, 70, 0.7)';
+                    })
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `掌握度: ${context.raw}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '掌握度 (%)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 绑定运行聚类按钮事件
+    document.getElementById('run-clustering').addEventListener('click', runClustering);
+});
+</script>
+{% endblock %} 

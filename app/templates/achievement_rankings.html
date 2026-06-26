@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成就排行榜 - 学习画像系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4364F7;
+            --secondary: #6FB1FC;
+            --accent: #00D9FF;
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+            --bg-dark: #0A0E27;
+            --bg-card: rgba(30, 41, 99, 0.7);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B4B4B4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(67, 100, 247, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(111, 177, 252, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .navbar {
+            background: rgba(10, 14, 39, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary) !important;
+            font-weight: 700;
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+        }
+
+        .nav-link:hover {
+            color: var(--accent) !important;
+        }
+
+        .main-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+        }
+
+        /* 排行榜表格 */
+        .rankings-table {
+            background: var(--bg-card);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 100px 100px;
+            padding: 1rem 1.5rem;
+            background: rgba(67, 100, 247, 0.1);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .rank-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 100px 100px;
+            padding: 1rem 1.5rem;
+            align-items: center;
+            border-bottom: 1px solid rgba(67, 100, 247, 0.1);
+            transition: all 0.3s;
+        }
+
+        .rank-row:hover {
+            background: rgba(67, 100, 247, 0.05);
+        }
+
+        .rank-row:last-child {
+            border-bottom: none;
+        }
+
+        .rank-row.top-3 {
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .rank-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rank-1 { color: var(--gold); }
+        .rank-2 { color: var(--silver); }
+        .rank-3 { color: var(--bronze); }
+
+        .rank-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .icon-gold { background: linear-gradient(135deg, var(--gold), #FFA500); color: white; }
+        .icon-silver { background: linear-gradient(135deg, var(--silver), #A8A8A8); color: white; }
+        .icon-bronze { background: linear-gradient(135deg, var(--bronze), #8B5A2B); color: white; }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .user-stats {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .points-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .accuracy-value {
+            color: #2ED573;
+            font-weight: 500;
+        }
+
+        .achievement-count {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .table-header, .rank-row {
+                grid-template-columns: 60px 1fr 80px;
+            }
+
+            .table-header > *:nth-child(4),
+            .table-header > *:nth-child(5),
+            .rank-row > *:nth-child(4),
+            .rank-row > *:nth-child(5) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
+                <i class="fas fa-brain me-2"></i>学习画像系统
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <a href="{{ url_for('features.achievement_center') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            返回成就中心
+        </a>
+
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-crown me-2"></i>成就排行榜
+            </h1>
+            <p class="page-subtitle">看看谁是最努力的学习者</p>
+        </div>
+
+        <div class="rankings-table">
+            <div class="table-header">
+                <div>排名</div>
+                <div>用户</div>
+                <div>积分</div>
+                <div>准确率</div>
+                <div>成就数</div>
+            </div>
+
+            {% for rank in rankings %}
+            <div class="rank-row {{ 'top-3' if rank.rank <= 3 else '' }}">
+                <div class="rank-number rank-{{ rank.rank }}">
+                    {% if rank.rank <= 3 %}
+                    <div class="rank-icon icon-{{ 'gold' if rank.rank == 1 else ('silver' if rank.rank == 2 else 'bronze') }}">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    {% else %}
+                    {{ rank.rank }}
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <div>
+                        <div class="user-name">{{ rank.username }}</div>
+                    </div>
+                </div>
+                <div class="points-value">
+                    <i class="fas fa-coins"></i>
+                    {{ rank.total_points }}
+                </div>
+                <div class="accuracy-value">{{ rank.accuracy }}%</div>
+                <div class="achievement-count">
+                    <i class="fas fa-trophy me-1"></i>{{ rank.earned_count }}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if not rankings %}
+            <div class="text-center py-5">
+                <div style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    <i class="fas fa-users-slash"></i>
+                </div>
+                <p style="color: var(--text-secondary);">暂无排行数据</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,806 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 学智画像{% endblock %}
+
+{% block styles %}
+<style>
+    /* ========== Hero 区域 ========== */
+    .hero-section {
+        position: relative;
+        padding: 5rem 0 4rem;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .hero-bg-grid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+        background-size: 60px 60px;
+        pointer-events: none;
+    }
+
+    .hero-bg-glow {
+        position: absolute;
+        top: -30%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, rgba(67, 100, 247, 0.15) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(67, 100, 247, 0.1);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 50px;
+        font-size: 0.85rem;
+        color: var(--info-color);
+        margin-bottom: 1.75rem;
+        font-weight: 500;
+    }
+
+    .hero-badge i {
+        font-size: 0.9rem;
+    }
+
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1.25rem;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-end) 50%, var(--primary-mid) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-title span {
+        background: linear-gradient(135deg, var(--info-color) 0%, var(--primary-end) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 750px;
+        margin: 0 auto 2.5rem;
+        line-height: 1.8;
+        font-weight: 400;
+    }
+
+    .hero-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .hero-stats {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin-top: 4rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .hero-stat {
+        text-align: center;
+    }
+
+    .hero-stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-stat-label {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    /* ========== 功能模块 ========== */
+    .features-section {
+        margin: 4rem 0;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: 50px;
+        font-size: 0.8rem;
+        color: var(--info-color);
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+
+    .section-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.02em;
+    }
+
+    .section-desc {
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+
+    .feature-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        transition: all var(--transition-normal);
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transition: transform var(--transition-fast);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(67, 100, 247, 0.3);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .feature-icon-wrap {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: white;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .feature-icon-wrap::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: inherit;
+        filter: blur(20px);
+        opacity: 0.4;
+        z-index: -1;
+    }
+
+    .feature-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+    }
+
+    .feature-desc {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        flex: 1;
+    }
+
+    .feature-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1.25rem;
+        font-size: 0.9rem;
+        color: var(--info-color);
+        font-weight: 600;
+        transition: all var(--transition-fast);
+    }
+
+    .feature-card:hover .feature-link {
+        gap: 0.75rem;
+    }
+
+    /* ========== 特色展示 ========== */
+    .showcase-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin: 5rem 0;
+    }
+
+    .showcase-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all var(--transition-normal);
+    }
+
+    .showcase-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .showcase-accent {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .showcase-card.blue .showcase-accent {
+        background: var(--gradient-primary);
+    }
+
+    .showcase-card.green .showcase-accent {
+        background: var(--gradient-secondary);
+    }
+
+    .showcase-header {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .showcase-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .showcase-icon.blue {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.15) 0%, rgba(67, 100, 247, 0.05) 100%);
+        color: var(--info-color);
+    }
+
+    .showcase-icon.green {
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.15) 0%, rgba(46, 160, 67, 0.05) 100%);
+        color: var(--success-color);
+    }
+
+    .showcase-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .showcase-desc {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.8;
+        margin-bottom: 1.5rem;
+    }
+
+    .showcase-features {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .showcase-feature {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+    }
+
+    .showcase-feature i {
+        width: 24px;
+        height: 24px;
+        background: rgba(46, 160, 67, 0.15);
+        color: var(--success-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .showcase-feature span {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    /* ========== CTA 区域 ========== */
+    .cta-section {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.08) 0%, rgba(67, 100, 247, 0.03) 100%);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: var(--radius-2xl);
+        padding: 4rem;
+        text-align: center;
+        margin: 4rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 30% 30%, rgba(67, 100, 247, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .cta-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--gradient-primary);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        margin: 0 auto 2rem;
+        box-shadow: 0 8px 32px rgba(67, 100, 247, 0.3);
+    }
+
+    .cta-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .cta-desc {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-bottom: 2.5rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+    }
+
+    .cta-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        position: relative;
+    }
+
+    /* ========== 合作伙伴 ========== */
+    .partners-section {
+        margin: 4rem 0;
+        text-align: center;
+    }
+
+    .partners-title {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .partners-grid {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .partner-logo {
+        width: 120px;
+        height: 40px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all var(--transition-fast);
+    }
+
+    .partner-logo:hover {
+        border-color: var(--border-hover);
+        color: var(--text-secondary);
+    }
+
+    /* 响应式 */
+    @media (max-width: 1200px) {
+        .features-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .hero-title {
+            font-size: 3rem;
+        }
+
+        .showcase-section {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-stats {
+            gap: 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 3rem 0 2rem;
+        }
+
+        .hero-title {
+            font-size: 2.25rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+
+        .hero-stats {
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .hero-stat {
+            flex: 1 1 40%;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+        }
+
+        .cta-section {
+            padding: 2.5rem 1.5rem;
+        }
+
+        .cta-title {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero 区域 -->
+<section class="hero-section">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-bg-glow"></div>
+    <div class="hero-content">
+        <div class="hero-badge">
+            <i class="fas fa-graduation-cap"></i>
+            <span>中国大学生计算机设计大赛 · 多智能体个性化学习</span>
+        </div>
+        
+        <h1 class="hero-title">
+            <span>学智画像</span><br>
+            基于大模型的学习多智能体系统
+        </h1>
+        <p class="hero-subtitle">
+            融合对话式画像、知识库 RAG、个性化资源生成与学习路径规划，<br>
+            构建教师 - 学生 - AI 协同的可信智能学习生态
+        </p>
+        
+        <div class="hero-buttons">
+            <a href="{{ url_for('auth.login') }}" class="btn-pro btn-pro-primary btn-pro-lg">
+                <i class="fas fa-rocket"></i>
+                立即体验
+            </a>
+            <a href="#features" class="btn-pro btn-pro-secondary btn-pro-lg">
+                <i class="fas fa-play-circle"></i>
+                了解更多
+            </a>
+
+        </div>
+
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-value" id="statStudents">0</div>
+                <div class="hero-stat-label">注册学生</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value" id="statQuestions">0</div>
+                <div class="hero-stat-label">题库资源</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value" id="statAccuracy">0%</div>
+                <div class="hero-stat-label">平均正确率</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value" id="statAI">6+</div>
+                <div class="hero-stat-label">智能体协同</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 功能特性 -->
+<section class="features-section" id="features">
+    <div class="section-header fade-in">
+        <div class="section-tag">
+            <i class="fas fa-star"></i>
+            核心功能
+        </div>
+        <h2 class="section-title">全流程多智能体学习解决方案</h2>
+        <p class="section-desc">七大核心模块，覆盖画像构建、知识检索、资源生成、路径规划与效果评估</p>
+    </div>
+    
+    <div class="features-grid">
+        <a href="{{ url_for('agent_system.index') }}" class="feature-card fade-in">
+            <div class="feature-icon-wrap" style="background: linear-gradient(135deg, #0052D4 0%, #4364F7 100%);">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h3 class="feature-title">多智能体学习中心</h3>
+            <p class="feature-desc">Profile、Resource、Planner、Tutor、Evaluator、Knowledge 多 Agent 协同，覆盖学习完整生命周期。</p>
+            <span class="feature-link">
+                开始使用 <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <a href="{{ url_for('agent_system.index') }}" class="feature-card fade-in">
+            <div class="feature-icon-wrap" style="background: linear-gradient(135deg, #06B6D4 0%, #58A6FF 100%);">
+                <i class="fas fa-database"></i>
+            </div>
+            <h3 class="feature-title">知识库 RAG 可信问答</h3>
+            <p class="feature-desc">支持课件、讲义、题库上传，自动解析分块与语义检索，生成带来源引用的反幻觉回答。</p>
+            <span class="feature-link">
+                上传资料 <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <a href="{{ url_for('test.assessment') }}" class="feature-card fade-in">
+            <div class="feature-icon-wrap" style="background: linear-gradient(135deg, #2EA043 0%, #3FB950 100%);">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            <h3 class="feature-title">能力测试中心</h3>
+            <p class="feature-desc">多维度基础能力评估，包括编程逻辑、数学思维、英语水平等，全面了解能力水平。</p>
+            <span class="feature-link">
+                开始测试 <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <a href="{{ url_for('analysis.learning_report') }}" class="feature-card fade-in">
+            <div class="feature-icon-wrap" style="background: linear-gradient(135deg, #D29922 0%, #E5A50A 100%);">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <h3 class="feature-title">学习报告分析</h3>
+            <p class="feature-desc">详细的学习数据分析报告，学习趋势、能力雷达图、知识点掌握度一网打尽。</p>
+            <span class="feature-link">
+                查看报告 <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <a href="{{ url_for('student.learning_plan') }}" class="feature-card fade-in">
+            <div class="feature-icon-wrap" style="background: linear-gradient(135deg, #A371F7 0%, #BF94FF 100%);">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <h3 class="feature-title">智能学习计划</h3>
+            <p class="feature-desc">个性化学习路径规划，根据目标与现状智能推荐最优学习方案和时间安排。</p>
+            <span class="feature-link">
+                制定计划 <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <a href="{{ url_for('quiz.index') }}" class="feature-card fade-in">
+            <div class="feature-icon-wrap" style="background: linear-gradient(135deg, #F85149 0%, #FF7B72 100%);">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <h3 class="feature-title">海量测验题库</h3>
+            <p class="feature-desc">丰富的测验题库资源，覆盖多学科领域，支持在线测验与即时反馈。</p>
+            <span class="feature-link">
+                开始测验 <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+        <a href="{{ url_for('analysis.student_portrait') }}" class="feature-card fade-in">
+            <div class="feature-icon-wrap" style="background: linear-gradient(135deg, #58A6FF 0%, #79C0FF 100%);">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 class="feature-title">群体学情分析</h3>
+            <p class="feature-desc">班级和群体的学习画像分析，识别学习模式与行为特征，支持教学优化。</p>
+            <span class="feature-link">
+                查看分析 <i class="fas fa-arrow-right"></i>
+            </span>
+        </a>
+
+
+    </div>
+</section>
+
+<!-- 特色展示 -->
+<section class="showcase-section">
+    <div class="showcase-card blue fade-in">
+        <div class="showcase-accent"></div>
+        <div class="showcase-header">
+            <div class="showcase-icon blue">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h3 class="showcase-title">AI智能分析引擎</h3>
+        </div>
+        <p class="showcase-desc">
+            基于深度学习与自然语言处理技术，深度分析学习行为数据，精准评估知识掌握程度，
+            预测学习趋势，为个性化教学提供科学依据。
+        </p>
+        <div class="showcase-features">
+            <div class="showcase-feature">
+                <i class="fas fa-check"></i>
+                <span>知识点掌握度精准分析</span>
+            </div>
+            <div class="showcase-feature">
+                <i class="fas fa-check"></i>
+                <span>学习效果预测与预警</span>
+            </div>
+            <div class="showcase-feature">
+                <i class="fas fa-check"></i>
+                <span>个性化学习路径推荐</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="showcase-card green fade-in">
+        <div class="showcase-accent"></div>
+        <div class="showcase-header">
+            <div class="showcase-icon green">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <h3 class="showcase-title">数据可视化大屏</h3>
+        </div>
+        <p class="showcase-desc">
+            丰富的可视化图表与交互体验，直观展示学习数据。多维度数据对比分析，
+            支持一键导出报告，让复杂数据变得简单易懂。
+        </p>
+        <div class="showcase-features">
+            <div class="showcase-feature">
+                <i class="fas fa-check"></i>
+                <span>实时数据更新与展示</span>
+            </div>
+            <div class="showcase-feature">
+                <i class="fas fa-check"></i>
+                <span>多维度数据对比分析</span>
+            </div>
+            <div class="showcase-feature">
+                <i class="fas fa-check"></i>
+                <span>一键导出数据报告</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA 区域 -->
+<section class="cta-section fade-in">
+    <div class="cta-icon">
+        <i class="fas fa-rocket"></i>
+    </div>
+    <h2 class="cta-title">开启您的智能学习之旅</h2>
+    <p class="cta-desc">
+        加入学智画像，让AI成为您的学习助手，让数据成为您的进步阶梯
+    </p>
+    <div class="cta-buttons">
+        <a href="{{ url_for('auth.register') }}" class="btn-pro btn-pro-primary btn-pro-lg">
+            <i class="fas fa-user-plus"></i>
+            免费注册
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn-pro btn-pro-secondary btn-pro-lg">
+            <i class="fas fa-sign-in-alt"></i>
+            立即登录
+        </a>
+    </div>
+</section>
+
+<!-- 合作伙伴 -->
+<section class="partners-section">
+    <p class="partners-title">合作伙伴</p>
+    <div class="partners-grid">
+        <div class="partner-logo">高校合作</div>
+        <div class="partner-logo">教育研究院</div>
+        <div class="partner-logo">在线教育平台</div>
+        <div class="partner-logo">科技企业</div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function animateNumber(element, target, duration, suffix = '') {
+        let start = 0;
+        const increment = target / (duration / 16);
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= target) {
+                element.textContent = target.toLocaleString() + suffix;
+                clearInterval(timer);
+            } else {
+                element.textContent = Math.floor(start).toLocaleString() + suffix;
+            }
+        }, 16);
+    }
+
+    setTimeout(() => {
+        animateNumber(document.getElementById('statStudents'), 1523, 2000);
+        animateNumber(document.getElementById('statQuestions'), 3867, 2000);
+        animateNumber(document.getElementById('statAccuracy'), 78, 1500, '%');
+    }, 300);
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

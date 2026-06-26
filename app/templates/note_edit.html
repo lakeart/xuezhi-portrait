@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑笔记 - 学习画像系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4364F7;
+            --secondary: #6FB1FC;
+            --accent: #00D9FF;
+            --bg-dark: #0A0E27;
+            --bg-card: rgba(30, 41, 99, 0.7);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B4B4B4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(67, 100, 247, 0.15) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        .edit-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            background: rgba(67, 100, 247, 0.1);
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            color: var(--text-primary);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(67, 100, 247, 0.1);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(67, 100, 247, 0.2);
+        }
+
+        textarea.form-control {
+            min-height: 300px;
+            font-family: inherit;
+            line-height: 1.8;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(67, 100, 247, 0.4);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: rgba(67, 100, 247, 0.1);
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            color: var(--text-secondary);
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(67, 100, 247, 0.2);
+            color: var(--text-primary);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <div class="main-container">
+        <a href="{{ url_for('extra.notes') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            返回笔记列表
+        </a>
+
+        <div class="edit-card">
+            <h2 class="page-title">
+                <i class="fas fa-edit me-2"></i>编辑笔记
+            </h2>
+
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">笔记标题 *</label>
+                    <input type="text" name="title" class="form-control" required value="{{ note.title }}">
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">分类</label>
+                        <select name="category" class="form-select">
+                            {% set categories = ['通用', '数学', '英语', '编程', '物理', '化学', '历史', '其他'] %}
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {{ 'selected' if note.category == cat else '' }}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">关联知识点</label>
+                        <input type="text" name="related_topic" class="form-control" value="{{ note.related_topic or '' }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">标签</label>
+                    <input type="text" name="tags" class="form-control" placeholder="多个标签用逗号分隔" value="{{ note.tags or '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">笔记内容</label>
+                    <textarea name="content" class="form-control">{{ note.content or '' }}</textarea>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" name="is_public" id="isPublic" {{ 'checked' if note.is_public else '' }}>
+                    <label for="isPublic">公开笔记（其他用户可见）</label>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" name="is_pinned" id="isPinned" {{ 'checked' if note.is_pinned else '' }}>
+                    <label for="isPinned">置顶笔记</label>
+                </div>
+
+                <div class="d-flex gap-3 mt-4">
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save me-2"></i>保存更改
+                    </button>
+                    <a href="{{ url_for('extra.view_note', id=note.id) }}" class="btn-cancel">
+                        取消
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

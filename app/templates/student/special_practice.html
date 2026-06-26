@@ -1,0 +1,379 @@
+{% extends 'base.html' %}
+
+{% block title %}专项练习 - {{ student.username }}{% endblock %}
+
+{% block styles %}
+<style>
+    .practice-container {
+        min-height: calc(100vh - 72px);
+        background: linear-gradient(135deg, #0D1117 0%, #161B22 100%);
+    }
+    
+    .weak-topic-card {
+        background: rgba(248, 81, 73, 0.08);
+        border: 1px solid rgba(248, 81, 73, 0.2);
+        border-radius: 12px;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .weak-topic-card:hover {
+        background: rgba(248, 81, 73, 0.15);
+        border-color: rgba(248, 81, 73, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    .weak-topic-card.selected {
+        background: rgba(248, 81, 73, 0.2);
+        border-color: rgba(248, 81, 73, 0.6);
+    }
+    
+    .mastery-bar {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .mastery-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.5s ease;
+    }
+    
+    .mastery-fill.danger {
+        background: linear-gradient(90deg, #F85149, #FF7B72);
+    }
+    
+    .mastery-fill.warning {
+        background: linear-gradient(90deg, #D29922, #F0C78A);
+    }
+    
+    .mastery-fill.success {
+        background: linear-gradient(90deg, #2EA043, #56D364);
+    }
+    
+    .practice-btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #F85149 0%, #FF7B72 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(248, 81, 73, 0.3);
+    }
+    
+    .practice-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(248, 81, 73, 0.4);
+    }
+    
+    .practice-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        background: rgba(28, 33, 40, 0.9);
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #F0F6FC;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #8B949E;
+        margin-top: 0.25rem;
+    }
+    
+    .topic-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(67, 100, 247, 0.1);
+        border: 1px solid rgba(67, 100, 247, 0.3);
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="practice-container py-6">
+    <div class="container max-w-5xl mx-auto">
+        <!-- 页面标题 -->
+        <div class="text-center mb-8 fade-in">
+            <h1 class="text-3xl font-bold text-white mb-3">
+                <i class="fas fa-target text-danger me-3"></i>
+                专项练习
+            </h1>
+            <p class="text-gray-400">针对薄弱知识点进行强化训练，提升掌握度</p>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="stats-grid mb-6 fade-in" style="animation-delay: 0.1s;">
+            <div class="stat-item">
+                <div class="stat-value text-danger">{{ weak_topics_count }}</div>
+                <div class="stat-label">薄弱知识点</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value text-warning">{{ total_practiced }}</div>
+                <div class="stat-label">已练习次数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value text-success">{{ improved_topics }}</div>
+                <div class="stat-label">已提升知识点</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value text-info">{{ avg_improvement }}%</div>
+                <div class="stat-label">平均提升幅度</div>
+            </div>
+        </div>
+
+        <!-- 薄弱知识点列表 -->
+        <div class="bg-card rounded-xl p-6 mb-6 fade-in" style="animation-delay: 0.2s;">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                需要加强的知识点
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="weakTopicsGrid">
+                {% for topic in weak_topics %}
+                <div 
+                    class="weak-topic-card {% if topic.selected %}selected{% endif %}"
+                    data-topic="{{ topic.name }}"
+                    onclick="toggleTopic('{{ topic.name }}')"
+                >
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-semibold text-white">{{ topic.name }}</span>
+                        <span class="text-sm text-gray-400">{{ topic.question_count }}题</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-400">当前掌握度</span>
+                        <span class="font-bold {% if topic.mastery < 30 %}text-danger{% elif topic.mastery < 60 %}text-warning{% else %}text-success{% endif %}">
+                            {{ topic.mastery }}%
+                        </span>
+                    </div>
+                    <div class="mastery-bar">
+                        <div 
+                            class="mastery-fill {% if topic.mastery < 30 %}danger{% elif topic.mastery < 60 %}warning{% else %}success{% endif %}"
+                            style="width: {{ topic.mastery }}%"
+                        ></div>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between">
+                        <span class="text-xs text-gray-500">{{ topic.suggestion }}</span>
+                        <i class="fas {% if topic.selected %}fa-check-circle text-success{% else %}fa-circle-o text-gray-400{% endif %}"></i>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 练习模式选择 -->
+        <div class="bg-card rounded-xl p-6 mb-6 fade-in" style="animation-delay: 0.3s;">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                <i class="fas fa-sliders-h me-2 text-primary"></i>
+                练习设置
+            </h3>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <label class="form-label text-gray-300 mb-2">题目数量</label>
+                    <select class="form-select bg-dark border border-gray-700 text-white rounded-lg p-2" id="questionCount">
+                        <option value="5">5 题</option>
+                        <option value="10" selected>10 题</option>
+                        <option value="15">15 题</option>
+                        <option value="20">20 题</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-gray-300 mb-2">难度侧重</label>
+                    <select class="form-select bg-dark border border-gray-700 text-white rounded-lg p-2" id="difficultyFocus">
+                        <option value="focused" selected>侧重薄弱难度</option>
+                        <option value="mixed">混合难度</option>
+                        <option value="progressive">渐进式难度</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-gray-300 mb-2">练习模式</label>
+                    <select class="form-select bg-dark border border-gray-700 text-white rounded-lg p-2" id="practiceMode">
+                        <option value="practice" selected>练习模式</option>
+                        <option value="timed">限时模式</option>
+                        <option value="challenge">挑战模式</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 开始练习按钮 -->
+        <div class="text-center fade-in" style="animation-delay: 0.4s;">
+            <button 
+                class="practice-btn" 
+                id="startPracticeBtn"
+                onclick="startPractice()"
+            >
+                <i class="fas fa-play-circle me-2"></i>
+                开始专项练习
+            </button>
+            <p class="text-gray-500 text-sm mt-3">
+                已选择 <span id="selectedCount">0</span> 个知识点，预计练习时长: <span id="estimatedTime">0</span>分钟
+            </p>
+        </div>
+
+        <!-- 练习记录 -->
+        {% if practice_history %}
+        <div class="bg-card rounded-xl p-6 mt-6 fade-in" style="animation-delay: 0.5s;">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                <i class="fas fa-history me-2 text-info"></i>
+                最近练习记录
+            </h3>
+            
+            <div class="table-responsive">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left text-gray-400 text-sm font-semibold pb-3">知识点</th>
+                            <th class="text-center text-gray-400 text-sm font-semibold pb-3">题目数</th>
+                            <th class="text-center text-gray-400 text-sm font-semibold pb-3">正确率</th>
+                            <th class="text-center text-gray-400 text-sm font-semibold pb-3">用时</th>
+                            <th class="text-right text-gray-400 text-sm font-semibold pb-3">时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in practice_history %}
+                        <tr class="border-t border-gray-700">
+                            <td class="py-3">
+                                <span class="topic-tag">{{ record.topic }}</span>
+                            </td>
+                            <td class="text-center py-3 text-gray-300">{{ record.question_count }}</td>
+                            <td class="text-center py-3">
+                                <span class="{% if record.accuracy >= 80 %}text-success{% elif record.accuracy >= 60 %}text-warning{% else %}text-danger{% endif %} font-semibold">
+                                    {{ record.accuracy }}%
+                                </span>
+                            </td>
+                            <td class="text-center py-3 text-gray-300">{{ record.time_used }}分钟</td>
+                            <td class="text-right py-3 text-gray-400 text-sm">{{ record.date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<input type="hidden" id="selectedTopicsInput" value='{{ selected_topics | tojson }}'>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let selectedTopics = {{ selected_topics | tojson | safe }} || [];
+    
+    // 切换知识点选择
+    function toggleTopic(topicName) {
+        const index = selectedTopics.indexOf(topicName);
+        const card = document.querySelector(`[data-topic="${topicName}"]`);
+        
+        if (index > -1) {
+            selectedTopics.splice(index, 1);
+            card.classList.remove('selected');
+            card.querySelector('i').className = 'fas fa-circle-o text-gray-400';
+        } else {
+            if (selectedTopics.length >= 5) {
+                showToast('最多选择5个知识点', 'warning');
+                return;
+            }
+            selectedTopics.push(topicName);
+            card.classList.add('selected');
+            card.querySelector('i').className = 'fas fa-check-circle text-success';
+        }
+        
+        updateSelectedCount();
+    }
+    
+    // 更新选择数量
+    function updateSelectedCount() {
+        const countEl = document.getElementById('selectedCount');
+        const timeEl = document.getElementById('estimatedTime');
+        
+        if (countEl) {
+            countEl.textContent = selectedTopics.length;
+        }
+        
+        if (timeEl) {
+            const questionsPerTopic = parseInt(document.getElementById('questionCount').value) || 10;
+            const estimatedMinutes = selectedTopics.length * questionsPerTopic * 2;
+            timeEl.textContent = estimatedMinutes;
+        }
+    }
+    
+    // 开始练习
+    function startPractice() {
+        if (selectedTopics.length === 0) {
+            showToast('请至少选择一个薄弱知识点', 'warning');
+            return;
+        }
+        
+        const btn = document.getElementById('startPracticeBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>准备中...';
+        
+        const data = {
+            topics: selectedTopics,
+            questionCount: document.getElementById('questionCount').value,
+            difficultyFocus: document.getElementById('difficultyFocus').value,
+            practiceMode: document.getElementById('practiceMode').value
+        };
+        
+        fetch('/student/api/special-practice', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                window.location.href = '/quiz/practice?session_id=' + result.session_id;
+            } else {
+                showToast(result.message || '开始练习失败', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play-circle me-2"></i>开始专项练习';
+            }
+        })
+        .catch(error => {
+            console.error('开始练习失败:', error);
+            showToast('网络错误，请重试', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-play-circle me-2"></i>开始专项练习';
+        });
+    }
+    
+    // 监听变化
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('questionCount').addEventListener('change', updateSelectedCount);
+        updateSelectedCount();
+    });
+</script>
+{% endblock %}

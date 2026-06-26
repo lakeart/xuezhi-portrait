@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复习错题 - 学习画像系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4364F7;
+            --secondary: #6FB1FC;
+            --accent: #00D9FF;
+            --bg-dark: #0A0E27;
+            --bg-card: rgba(30, 41, 99, 0.7);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B4B4B4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(67, 100, 247, 0.15) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .review-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .review-count {
+            color: var(--text-secondary);
+        }
+
+        .question-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .question-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .tag-topic { background: rgba(67, 100, 247, 0.2); color: var(--primary); }
+        .tag-style { background: rgba(111, 177, 252, 0.2); color: var(--secondary); }
+        .tag-error { background: rgba(255, 107, 107, 0.2); color: #FF6B6B; }
+
+        .question-content {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .options-list {
+            background: rgba(67, 100, 247, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-item {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .option-item:hover {
+            background: rgba(67, 100, 247, 0.1);
+        }
+
+        .option-item.selected {
+            background: rgba(67, 100, 247, 0.2);
+            border-color: var(--primary);
+        }
+
+        .option-item.correct {
+            background: rgba(46, 213, 115, 0.2);
+            border-color: #2ED573;
+        }
+
+        .option-item.wrong {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: #FF6B6B;
+        }
+
+        /* 答案区域 */
+        .answer-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(67, 100, 247, 0.2);
+        }
+
+        .answer-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .answer-box {
+            background: rgba(67, 100, 247, 0.1);
+            border-radius: 12px;
+            padding: 1.2rem;
+        }
+
+        .answer-box.wrong-answer {
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .answer-box.correct-answer {
+            border: 1px solid rgba(46, 213, 115, 0.3);
+        }
+
+        .answer-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .answer-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .answer-value.wrong { color: #FF6B6B; }
+        .answer-value.correct { color: #2ED573; }
+
+        /* 错因分析 */
+        .error-analysis {
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .error-type-label {
+            font-size: 0.85rem;
+            color: #FFC107;
+            margin-bottom: 0.5rem;
+        }
+
+        .error-note {
+            width: 100%;
+            background: rgba(67, 100, 247, 0.1);
+            border: 1px solid rgba(67, 100, 247, 0.3);
+            border-radius: 8px;
+            padding: 0.8rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .error-note:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* 按钮组 */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn-action {
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-master {
+            background: linear-gradient(135deg, #2ED573, #7BED9F);
+            color: white;
+        }
+
+        .btn-master:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(46, 213, 115, 0.3);
+        }
+
+        .btn-back {
+            background: rgba(67, 100, 247, 0.2);
+            color: var(--primary);
+            border: 1px solid rgba(67, 100, 247, 0.3);
+        }
+
+        .btn-back:hover {
+            background: rgba(67, 100, 247, 0.3);
+        }
+
+        /* 复习进度 */
+        .review-info {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .review-info span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .answer-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <div class="main-container">
+        <a href="{{ url_for('features.wrong_questions') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            返回错题本
+        </a>
+
+        <div class="review-header">
+            <h1 class="review-title">复习错题</h1>
+        </div>
+
+        <div class="review-info">
+            <span><i class="fas fa-redo"></i>复习次数: {{ wrong_q.review_count }}</span>
+            <span><i class="fas fa-clock"></i>收录时间: {{ wrong_q.created_at.strftime('%Y-%m-%d') if wrong_q.created_at else '' }}</span>
+            {% if wrong_q.is_mastered %}
+            <span style="color: #2ED573;"><i class="fas fa-check-circle"></i>已掌握</span>
+            {% endif %}
+        </div>
+
+        <div class="question-card">
+            <div class="question-tags">
+                <span class="tag tag-topic">{{ wrong_q.question_topic or '未分类' }}</span>
+                <span class="tag tag-style">{{ wrong_q.question_style }}</span>
+                <span class="tag tag-error">{{ wrong_q.error_type or '未知错误' }}</span>
+            </div>
+
+            <div class="question-content">
+                {{ wrong_q.question_content }}
+            </div>
+
+            {% if wrong_q.question_options %}
+            <div class="options-list">
+                {% for key, val in wrong_q.question_options|from_json.items() %}
+                <div class="option-item" data-option="{{ key }}">
+                    <strong>{{ key }}.</strong> {{ val }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="answer-section">
+                <div class="answer-comparison">
+                    <div class="answer-box wrong-answer">
+                        <div class="answer-label">你的答案</div>
+                        <div class="answer-value wrong">{{ wrong_q.student_answer or '未作答' }}</div>
+                    </div>
+                    <div class="answer-box correct-answer">
+                        <div class="answer-label">正确答案</div>
+                        <div class="answer-value correct">{{ wrong_q.correct_answer }}</div>
+                    </div>
+                </div>
+
+                <div class="error-analysis">
+                    <div class="error-type-label">
+                        <i class="fas fa-lightbulb me-1"></i>错因分析（可选填写）
+                    </div>
+                    <textarea class="error-note" id="errorNote" placeholder="分析一下错误原因，帮助加深理解...">{{ wrong_q.error_note or '' }}</textarea>
+                </div>
+
+                <div class="action-buttons">
+                    {% if not wrong_q.is_mastered %}
+                    <button class="btn-action btn-master" onclick="markAsMastered()">
+                        <i class="fas fa-check"></i>
+                        标记为已掌握
+                    </button>
+                    {% endif %}
+                    <a href="{{ url_for('features.wrong_questions') }}" class="btn-action btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        返回列表
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 高亮正确答案和错误答案
+        document.addEventListener('DOMContentLoaded', function() {
+            const correctAnswer = '{{ wrong_q.correct_answer }}';
+            const studentAnswer = '{{ wrong_q.student_answer }}';
+            
+            document.querySelectorAll('.option-item').forEach(item => {
+                const option = item.dataset.option;
+                if (option === correctAnswer) {
+                    item.classList.add('correct');
+                } else if (option === studentAnswer && option !== correctAnswer) {
+                    item.classList.add('wrong');
+                }
+            });
+        });
+
+        function markAsMastered() {
+            const errorNote = document.getElementById('errorNote').value;
+            
+            fetch(`/features/wrong_questions/{{ wrong_q.id }}/update`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    is_mastered: true,
+                    error_note: errorNote
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('恭喜！已掌握该题目！');
+                    location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

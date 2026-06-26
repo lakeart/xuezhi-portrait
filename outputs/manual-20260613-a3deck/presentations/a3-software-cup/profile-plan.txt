@@ -1,0 +1,23 @@
+task mode: create
+primary deck-profile: engineering-platform
+secondary profile gates: product-platform
+required proof objects:
+- learning multi-agent closed-loop workflow
+- system architecture map
+- product proof with real UI screenshots
+- assessment-to-plan feedback loop proof
+- roadmap and deliverable status proof
+source/asset requirements:
+- use real project screenshots from d:\桌面\1(1)\1\screenshots
+- use local docs as factual source of claims and capability inventory
+- avoid invented metrics beyond screenshots and docs
+brand authenticity constraints:
+- preserve project name 学智画像 and existing UI color direction
+- no fabricated logos or pseudo-official badges
+profile-specific QA gates:
+- architecture labels must stay concrete and technically specific
+- loop arrows must encode real sequence and feedback
+- screenshot callouts must match visible UI functions
+known missing inputs:
+- no Figma/Canva brand deck provided
+- Presentations artifact runtime unavailable locally, fallback build path required for this draft

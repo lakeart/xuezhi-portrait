@@ -1,0 +1,614 @@
+{% extends "base.html" %}
+
+{% block title %}学生排名 - 学智画像：教育大数据赋能高校学情可视分析系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card fade-in gradient-header">
+            <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-circle gradient-blue">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4 class="card-title mb-1">学生排名</h4>
+                            <p class="text-muted mb-0 small">根据学生答题表现生成的综合排名</p>
+                        </div>
+                        </div>
+                        <div>
+                        <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>返回数据分析
+                        </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- 筛选条件 -->
+    <div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card fade-in" style="animation-delay: 0.1s;">
+            <div class="card-header gradient-blue-light">
+                <h5 class="card-title mb-0"><i class="fas fa-filter me-2"></i>排名筛选</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{{ url_for('analysis.student_ranking') }}">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="form-group">
+                                <label class="form-label">时间范围</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-calendar"></i>
+                                    </span>
+                                    <select class="form-select" name="time_range">
+                                        <option value="last_week" {% if time_range == 'last_week' %}selected{% endif %}>最近一周</option>
+                                        <option value="last_month" {% if time_range == 'last_month' %}selected{% endif %}>最近一个月</option>
+                                        <option value="last_three_months" {% if time_range == 'last_three_months' %}selected{% endif %}>最近三个月</option>
+                                        <option value="all_time" {% if time_range == 'all_time' %}selected{% endif %}>全部时间</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-group">
+                                <label class="form-label">知识点</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-book"></i>
+                                    </span>
+                                    <select class="form-select" name="topic">
+                                        <option value="all" {% if topic == 'all' %}selected{% endif %}>全部知识点</option>
+                                        {% for t in topics %}
+                                        <option value="{{ t }}" {% if topic == t %}selected{% endif %}>{{ t }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-group">
+                                <label class="form-label">题目难度</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-bolt"></i>
+                                    </span>
+                                    <select class="form-select" name="difficulty">
+                                        <option value="all" {% if difficulty == 'all' %}selected{% endif %}>全部难度</option>
+                                        <option value="简单" {% if difficulty == '简单' %}selected{% endif %}>简单</option>
+                                        <option value="中等" {% if difficulty == '中等' %}selected{% endif %}>中等</option>
+                                        <option value="困难" {% if difficulty == '困难' %}selected{% endif %}>困难</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-group">
+                                <label class="form-label">排序方式</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-sort"></i>
+                                    </span>
+                                    <select class="form-select" name="sort_by">
+                                        <option value="score" {% if sort_by == 'score' %}selected{% endif %}>平均得分</option>
+                                        <option value="accuracy" {% if sort_by == 'accuracy' %}selected{% endif %}>正确率</option>
+                                        <option value="submissions" {% if sort_by == 'submissions' %}selected{% endif %}>提交数量</option>
+                                        <option value="time" {% if sort_by == 'time' %}selected{% endif %}>平均用时</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <button type="submit" class="btn btn-gradient-blue">
+                            <i class="fas fa-search me-2"></i>应用筛选
+                        </button>
+                        <a href="{{ url_for('analysis.student_ranking') }}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-undo me-2"></i>重置
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 排名统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card fade-in" style="animation-delay: 0.2s;">
+            <div class="card-body text-center">
+                <div class="stat-icon rounded-circle mx-auto mb-3 gradient-blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h5 class="card-title mb-0">参与学生</h5>
+                <p class="stat-value display-6 mb-0">{{ stats.student_count }}</p>
+            </div>
+        </div>
+                    </div>
+    <div class="col-md-3">
+        <div class="card fade-in" style="animation-delay: 0.25s;">
+            <div class="card-body text-center">
+                <div class="stat-icon rounded-circle mx-auto mb-3 gradient-green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h5 class="card-title mb-0">平均满分率</h5>
+                <p class="stat-value display-6 mb-0">{{ "%.1f"|format(stats.avg_accuracy) }}%</p>
+            </div>
+        </div>
+                    </div>
+    <div class="col-md-3">
+        <div class="card fade-in" style="animation-delay: 0.3s;">
+            <div class="card-body text-center">
+                <div class="stat-icon rounded-circle mx-auto mb-3 gradient-purple">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h5 class="card-title mb-0">平均分数</h5>
+                <p class="stat-value display-6 mb-0">{{ "%.1f"|format(stats.avg_score) }}</p>
+            </div>
+        </div>
+                    </div>
+    <div class="col-md-3">
+        <div class="card fade-in" style="animation-delay: 0.35s;">
+            <div class="card-body text-center">
+                <div class="stat-icon rounded-circle mx-auto mb-3 gradient-orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h5 class="card-title mb-0">平均用时</h5>
+                <p class="stat-value display-6 mb-0">{{ "%.1f"|format(stats.avg_time) }}秒</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- 排名表格 -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card fade-in" style="animation-delay: 0.4s;">
+            <div class="card-header gradient-blue-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-list-ol me-2"></i>学生排名列表</h5>
+                    <div class="input-group" style="width: 250px;">
+                        <input type="text" class="form-control" id="searchInput" placeholder="搜索学生...">
+                        <span class="input-group-text bg-light">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                    <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                <th class="text-center" width="80px">排名</th>
+                                <th>学生</th>
+                                <th class="text-center">提交数量</th>
+                                <th class="text-center">正确率</th>
+                                <th class="text-center">平均得分</th>
+                                <th class="text-center">平均用时</th>
+                                <th class="text-center">详情</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% if students %}
+                            {% for student in students %}
+                            <tr>
+                                <td class="text-center">
+                                    {% if loop.index <= 3 %}
+                                    <div class="rank-badge rank-{{ loop.index }}">{{ loop.index }}</div>
+                                        {% else %}
+                                    <div class="rank-badge">{{ loop.index }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                        <div class="avatar-circle avatar-sm bg-light me-2 text-primary">
+                                            {{ student.student_name[0] if student.student_name else '' }}
+                                            </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ student.student_name }}</h6>
+                                            <small class="text-muted">{{ student.student_id }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">{{ student.submission_count }}</td>
+                                <td class="text-center">
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {% if student.accuracy %}{{ student.accuracy }}{% else %}0{% endif %}%"></div>
+                                    </div>
+                                    <small class="mt-1 d-block">{{ "%.1f"|format(student.accuracy) }}%<br><span class="text-muted x-small">满分率</span></small>
+                                </td>
+                                <td class="text-center">{{ "%.1f"|format(student.avg_score) }}</td>
+                                <td class="text-center">{{ "%.1f"|format(student.avg_time) }}秒</td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('analysis.student_to_details', student_id=student.student_id) }}" class="btn btn-sm btn-gradient-blue" target="_blank">
+                                        <i class="fas fa-eye me-1"></i>详情
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <div class="icon-container mb-3">
+                                            <i class="fas fa-search text-muted" style="font-size: 3rem;"></i>
+                                        </div>
+                                        <h5>未找到符合条件的学生数据</h5>
+                                        <p class="text-muted">请尝试调整筛选条件后再次查询</p>
+                                        <a href="{{ url_for('analysis.student_ranking') }}" class="btn btn-outline-primary mt-3">
+                                            <i class="fas fa-undo me-2"></i>重置筛选条件
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 分页控件 -->
+                {% if pagination.total_pages > 1 %}
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted small">
+                        显示 {{ pagination.total_items }} 条记录中的第 {{ (pagination.page - 1) * pagination.per_page + 1 }} 到 
+                        {% if pagination.page == pagination.total_pages %}
+                                    {{ pagination.total_items }}
+                                {% else %}
+                                    {{ pagination.page * pagination.per_page }}
+                        {% endif %} 条
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <!-- 每页显示条数选择器 -->
+                        <div class="me-3">
+                            <div class="input-group">
+                                <select id="per_page_selector" class="form-select form-select-sm" style="width: 80px;">
+                                    <option value="10" {% if pagination.per_page == 10 %}selected{% endif %}>10条/页</option>
+                                    <option value="20" {% if pagination.per_page == 20 %}selected{% endif %}>20条/页</option>
+                                    <option value="50" {% if pagination.per_page == 50 %}selected{% endif %}>50条/页</option>
+                                    <option value="100" {% if pagination.per_page == 100 %}selected{% endif %}>100条/页</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- 页码导航 -->
+                        <nav aria-label="页面导航">
+                            <ul class="pagination pagination-sm mb-0">
+                                <!-- 首页按钮 -->
+                                <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('analysis.student_ranking', page=1, time_range=time_range, topic=topic, difficulty=difficulty, sort_by=sort_by, per_page=pagination.per_page) }}" aria-label="首页">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+                                <!-- 上一页按钮 -->
+                                <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('analysis.student_ranking', page=pagination.page-1, time_range=time_range, topic=topic, difficulty=difficulty, sort_by=sort_by, per_page=pagination.per_page) }}" aria-label="上一页">
+                                        <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                    
+                                {# 计算分页起始和结束位置 #}
+                                {% set start_page = pagination.page - 2 if pagination.page - 2 > 0 else 1 %}
+                                {% set end_page = pagination.page + 2 if pagination.page + 2 <= pagination.total_pages else pagination.total_pages %}
+                                
+                                {% if start_page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('analysis.student_ranking', page=1, time_range=time_range, topic=topic, difficulty=difficulty, sort_by=sort_by, per_page=pagination.per_page) }}">1</a>
+                                </li>
+                                {% if start_page > 2 %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#">...</a>
+                                </li>
+                                {% endif %}
+                                {% endif %}
+                                    
+                                    {% for p in range(start_page, end_page + 1) %}
+                                <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('analysis.student_ranking', page=p, time_range=time_range, topic=topic, difficulty=difficulty, sort_by=sort_by, per_page=pagination.per_page) }}">{{ p }}</a>
+                                    </li>
+                                    {% endfor %}
+                                    
+                                {% if end_page < pagination.total_pages %}
+                                {% if end_page < pagination.total_pages - 1 %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#">...</a>
+                                </li>
+                                {% endif %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('analysis.student_ranking', page=pagination.total_pages, time_range=time_range, topic=topic, difficulty=difficulty, sort_by=sort_by, per_page=pagination.per_page) }}">{{ pagination.total_pages }}</a>
+                                </li>
+                                {% endif %}
+                                
+                                <!-- 下一页按钮 -->
+                                <li class="page-item {% if pagination.page == pagination.total_pages %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('analysis.student_ranking', page=pagination.page+1, time_range=time_range, topic=topic, difficulty=difficulty, sort_by=sort_by, per_page=pagination.per_page) }}" aria-label="下一页">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <!-- 末页按钮 -->
+                                <li class="page-item {% if pagination.page == pagination.total_pages %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('analysis.student_ranking', page=pagination.total_pages, time_range=time_range, topic=topic, difficulty=difficulty, sort_by=sort_by, per_page=pagination.per_page) }}" aria-label="末页">
+                                        <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        <!-- 页码跳转 -->
+                        <div class="ms-3">
+                            <div class="input-group input-group-sm">
+                                <input type="number" min="1" max="{{ pagination.total_pages }}" id="page_jump_input" class="form-control" placeholder="页码" style="width: 60px;">
+                                <button class="btn btn-outline-secondary" type="button" id="page_jump_btn">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .gradient-header {
+        border: none;
+        background: rgba(28, 33, 40, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+    }
+    
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .avatar-sm {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .gradient-blue {
+        background: linear-gradient(45deg, #2196F3, #4FC3F7);
+    }
+    
+    .gradient-green {
+        background: linear-gradient(45deg, #4CAF50, #8BC34A);
+    }
+    
+    .gradient-purple {
+        background: linear-gradient(45deg, #9C27B0, #BA68C8);
+    }
+    
+    .gradient-orange {
+        background: linear-gradient(45deg, #FF9800, #FFC107);
+}
+
+.fade-in {
+    opacity: 0;
+        animation: fadeInUp 0.5s ease forwards;
+    }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .gradient-blue-light {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.15), rgba(111, 177, 252, 0.1));
+        border: none;
+        color: #6FB1FC;
+    }
+    
+    .btn-gradient-blue {
+        background: linear-gradient(45deg, #2196F3, #4FC3F7);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-gradient-blue:hover {
+        background: linear-gradient(45deg, #1E88E5, #29B6F6);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: white;
+        transform: translateY(-3px);
+    }
+    
+    .stat-icon {
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    color: white;
+}
+
+    .rank-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        background-color: var(--bg-elevated);
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+    
+    .rank-1 {
+        background: linear-gradient(45deg, #FFD700, #FFC107);
+    color: white;
+        box-shadow: 0 2px 5px rgba(255, 193, 7, 0.5);
+}
+
+    .rank-2 {
+        background: linear-gradient(45deg, #C0C0C0, #BDBDBD);
+    color: white;
+        box-shadow: 0 2px 5px rgba(189, 189, 189, 0.5);
+}
+
+    .rank-3 {
+        background: linear-gradient(45deg, #CD7F32, #BF6C37);
+    color: white;
+        box-shadow: 0 2px 5px rgba(205, 127, 50, 0.5);
+}
+
+.progress {
+    border-radius: 10px;
+        background-color: var(--bg-secondary);
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 1s ease-in-out;
+}
+
+    .x-small {
+        font-size: 0.7rem;
+    }
+    
+    /* 空数据状态样式 */
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+        color: var(--text-secondary);
+    }
+    
+    .empty-state .icon-container {
+        background-color: rgba(67, 100, 247, 0.1);
+        width: 80px;
+        height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+        margin: 0 auto 1.5rem;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 搜索功能
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            const studentName = row.querySelector('h6').textContent.toLowerCase();
+            const studentId = row.querySelector('small').textContent.toLowerCase();
+            
+            if (studentName.includes(searchTerm) || studentId.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // 每页显示条数选择器
+    const perPageSelector = document.getElementById('per_page_selector');
+    if (perPageSelector) {
+        perPageSelector.addEventListener('change', function() {
+            const perPage = this.value;
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('per_page', perPage);
+            currentUrl.searchParams.set('page', 1); // 切换每页显示条数时，重置为第一页
+            window.location.href = currentUrl.toString();
+        });
+    }
+    
+    // 页码跳转功能
+    const pageJumpInput = document.getElementById('page_jump_input');
+    const pageJumpBtn = document.getElementById('page_jump_btn');
+    
+    if (pageJumpInput && pageJumpBtn) {
+        // 输入框按回车键也能跳转
+        pageJumpInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                jumpToPage();
+            }
+        });
+        
+        pageJumpBtn.addEventListener('click', jumpToPage);
+        
+        function jumpToPage() {
+            const pageNum = parseInt(pageJumpInput.value, 10);
+            const maxPage = parseInt(pageJumpInput.getAttribute('max'), 10);
+            
+            if (pageNum && pageNum > 0 && pageNum <= maxPage) {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('page', pageNum);
+                window.location.href = currentUrl.toString();
+            } else {
+                // 输入无效页码时轻微抖动输入框
+                pageJumpInput.classList.add('is-invalid');
+                setTimeout(() => {
+                    pageJumpInput.classList.remove('is-invalid');
+                }, 1000);
+            }
+        }
+    }
+    
+    // 进度条动画
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 100);
+    });
+    
+    // 统计数值动画
+    const statValues = document.querySelectorAll('.stat-value');
+    statValues.forEach(value => {
+        const finalValue = parseFloat(value.textContent);
+        const suffix = value.textContent.replace(/[\d.]/g, '');
+        let startValue = 0;
+        
+        const duration = 1500;
+        const frameRate = 30;
+        const totalFrames = Math.round(duration / (1000 / frameRate));
+        const increment = finalValue / totalFrames;
+        
+        let currentFrame = 0;
+        
+        const counter = setInterval(() => {
+            currentFrame++;
+            startValue += increment;
+            
+            if (currentFrame === totalFrames) {
+                clearInterval(counter);
+                startValue = finalValue;
+            }
+            
+            value.textContent = startValue.toFixed(1) + suffix;
+        }, 1000 / frameRate);
+    });
+});
+</script>
+{% endblock %} 

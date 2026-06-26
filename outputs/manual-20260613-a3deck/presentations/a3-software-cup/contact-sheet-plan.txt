@@ -1,0 +1,15 @@
+11-slide deck, 7 macro-layout families:
+- cover hero with screenshot rail
+- three-column problem framing
+- circular loop workflow
+- layered architecture stack
+- screenshot + annotation
+- process strip + proof box
+- dual screenshot comparison
+- readiness dashboard + mapping list
+- roadmap lane slide
+hard gates:
+- no three consecutive slides share same macro layout
+- no repeated feature-card grid rhythm beyond one slide
+- screenshots always framed with 1px light border and soft shadow block
+- claims remain conclusion-led, not topic-led

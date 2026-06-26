@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的笔记 - 学习画像系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4364F7;
+            --secondary: #6FB1FC;
+            --accent: #00D9FF;
+            --bg-dark: #0A0E27;
+            --bg-card: rgba(30, 41, 99, 0.7);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B4B4B4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(67, 100, 247, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(111, 177, 252, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .navbar {
+            background: rgba(10, 14, 39, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary) !important;
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+            margin: 0 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent) !important;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(67, 100, 247, 0.4);
+            color: white;
+        }
+
+        .content-area {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 992px) {
+            .content-area {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            height: fit-content;
+        }
+
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .category-item {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .category-item:hover {
+            background: rgba(67, 100, 247, 0.1);
+        }
+
+        .category-item.active {
+            background: rgba(67, 100, 247, 0.2);
+            color: var(--primary);
+        }
+
+        .category-count {
+            background: rgba(67, 100, 247, 0.2);
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: rgba(67, 100, 247, 0.1);
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            border-radius: 10px;
+            padding: 0.8rem 1rem 0.8rem 2.5rem;
+            color: var(--text-primary);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        /* 笔记列表 */
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .note-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .note-card:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .note-card.pinned {
+            border-left: 3px solid var(--accent);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+
+        .note-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .note-title:hover {
+            color: var(--primary);
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .note-actions button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.3rem;
+            transition: color 0.3s;
+        }
+
+        .note-actions button:hover {
+            color: var(--primary);
+        }
+
+        .note-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+        }
+
+        .tag {
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+
+        .tag-category {
+            background: rgba(67, 100, 247, 0.2);
+            color: var(--primary);
+        }
+
+        .tag-topic {
+            background: rgba(111, 177, 252, 0.2);
+            color: var(--secondary);
+        }
+
+        .note-preview {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .note-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(67, 100, 247, 0.1);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .note-stats {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .note-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 模态框 */
+        .modal-content {
+            background: var(--bg-dark);
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            border-radius: 16px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(67, 100, 247, 0.2);
+        }
+
+        .form-control, .form-select {
+            background: rgba(67, 100, 247, 0.1);
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            color: var(--text-primary);
+            border-radius: 10px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(67, 100, 247, 0.1);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(67, 100, 247, 0.2);
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.home') }}">
+                <i class="fas fa-brain me-2"></i>学习画像系统
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.home') }}">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('quiz.index') }}">
+                            <i class="fas fa-pen me-1"></i>答题中心
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('extra.notes') }}">
+                            <i class="fas fa-book me-1"></i>笔记
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('extra.notification_center') }}">
+                            <i class="fas fa-bell me-1"></i>通知
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('extra.profile_settings') }}">
+                            <i class="fas fa-cog me-1"></i>设置
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-book me-2"></i>我的笔记
+            </h1>
+            <button class="btn btn-primary-gradient" data-bs-toggle="modal" data-bs-target="#createNoteModal">
+                <i class="fas fa-plus me-2"></i>新建笔记
+            </button>
+        </div>
+
+        <div class="content-area">
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="搜索笔记..." id="searchInput">
+                </div>
+
+                <div class="sidebar-title">分类</div>
+                <ul class="category-list">
+                    <li class="category-item {{ 'active' if not current_category else '' }}" 
+                        onclick="filterByCategory('')">
+                        <span><i class="fas fa-layer-group me-2"></i>全部笔记</span>
+                        <span class="category-count">{{ notes|length if notes else 0 }}</span>
+                    </li>
+                    {% for cat, count in categories %}
+                    <li class="category-item {{ 'active' if current_category == cat else '' }}"
+                        onclick="filterByCategory('{{ cat }}')">
+                        <span>{{ cat }}</span>
+                        <span class="category-count">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                {% if topics %}
+                <div class="sidebar-title mt-4">关联知识点</div>
+                <div class="note-tags">
+                    {% for topic in topics[:8] %}
+                    <span class="tag tag-topic">{{ topic }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 笔记列表 -->
+            <div class="notes-list">
+                {% if notes %}
+                    {% for note in notes %}
+                    <div class="note-card {{ 'pinned' if note.is_pinned else '' }}">
+                        <div class="note-header">
+                            <a href="{{ url_for('extra.view_note', id=note.id) }}" class="note-title">
+                                {% if note.is_pinned %}<i class="fas fa-thumbtack text-warning me-1"></i>{% endif %}
+                                {{ note.title }}
+                            </a>
+                            <div class="note-actions">
+                                <button onclick="pinNote({{ note.id }}, this)" title="置顶">
+                                    <i class="fas fa-thumbtack"></i>
+                                </button>
+                                <a href="{{ url_for('extra.edit_note', id=note.id) }}" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button onclick="deleteNote({{ note.id }})" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="note-tags">
+                            <span class="tag tag-category">{{ note.category or '通用' }}</span>
+                            {% if note.related_topic %}
+                            <span class="tag tag-topic">{{ note.related_topic }}</span>
+                            {% endif %}
+                            {% if note.tags %}
+                                {% for tag in note.tags.split(',')[:3] %}
+                                <span class="tag" style="background: rgba(0, 217, 255, 0.1); color: var(--accent);">{{ tag }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="note-preview">
+                            {{ note.content[:150] }}{% if note.content|length > 150 %}...{% endif %}
+                        </div>
+                        
+                        <div class="note-footer">
+                            <div class="note-stats">
+                                <span class="note-stat">
+                                    <i class="fas fa-eye"></i> {{ note.view_count }}
+                                </span>
+                                <span class="note-stat">
+                                    <i class="fas fa-clock"></i> {{ note.updated_at.strftime('%m-%d %H:%M') if note.updated_at else '' }}
+                                </span>
+                            </div>
+                            {% if note.is_public %}
+                            <span style="color: var(--accent);">
+                                <i class="fas fa-globe me-1"></i>已公开
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                    <h3 class="empty-title">暂无笔记</h3>
+                    <p class="text-muted mb-4">开始记录你的学习笔记吧！</p>
+                    <button class="btn btn-primary-gradient" data-bs-toggle="modal" data-bs-target="#createNoteModal">
+                        <i class="fas fa-plus me-2"></i>创建第一篇笔记
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建笔记模态框 -->
+    <div class="modal fade" id="createNoteModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>新建笔记
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('extra.create_note') }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">笔记标题 *</label>
+                            <input type="text" name="title" class="form-control" required placeholder="输入笔记标题">
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">分类</label>
+                                <select name="category" class="form-select">
+                                    <option value="通用">通用</option>
+                                    <option value="数学">数学</option>
+                                    <option value="英语">英语</option>
+                                    <option value="编程">编程</option>
+                                    <option value="物理">物理</option>
+                                    <option value="化学">化学</option>
+                                    <option value="历史">历史</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">关联知识点</label>
+                                <input type="text" name="related_topic" class="form-control" placeholder="如：三角函数">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">标签</label>
+                            <input type="text" name="tags" class="form-control" placeholder="多个标签用逗号分隔，如：重点,难点">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">笔记内容</label>
+                            <textarea name="content" class="form-control" rows="10" placeholder="输入笔记内容..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary-gradient">
+                            <i class="fas fa-save me-2"></i>保存笔记
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterByCategory(category) {
+            const url = category 
+                ? `{{ url_for('extra.notes') }}?category=${encodeURIComponent(category)}`
+                : `{{ url_for('extra.notes') }}`;
+            window.location.href = url;
+        }
+
+        function pinNote(id, btn) {
+            fetch(`/extra/notes/${id}/pin`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+        }
+
+        function deleteNote(id) {
+            if (confirm('确定要删除这篇笔记吗？')) {
+                fetch(`/extra/notes/${id}/delete`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    });
+            }
+        }
+
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchText = e.target.value.toLowerCase();
+            document.querySelectorAll('.note-card').forEach(card => {
+                const title = card.querySelector('.note-title').textContent.toLowerCase();
+                const preview = card.querySelector('.note-preview').textContent.toLowerCase();
+                card.style.display = (title.includes(searchText) || preview.includes(searchText)) 
+                    ? 'block' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

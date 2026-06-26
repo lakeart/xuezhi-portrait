@@ -1,0 +1,47 @@
+slide size: 16:9 widescreen
+background system:
+- base background #0F172A
+- secondary surface #111827
+- panel fill #1F2937
+- subtle blue glow blocks using #1D4ED8 at 10-20 percent tint
+typography:
+- Chinese titles: Microsoft YaHei Bold
+- Chinese body: Microsoft YaHei
+- numeric emphasis: Segoe UI Bold
+color palette:
+- title/body main #F0F0F0
+- secondary text #94A3B8
+- accent blue #3B82F6
+- accent green #10B981
+- accent amber #F59E0B
+chart grammar:
+- dark panels with direct labels
+- use blue/green/amber only when they encode meaning
+diagram grammar:
+- rounded rectangles, glow lines, loop arrows
+connector grammar:
+- 2.25pt lines in accent blue or green
+container grammar:
+- 14-18pt radius cards with soft outline #334155
+source/footer grammar:
+- bottom-right source tag in small muted text
+page marker grammar:
+- top-right slide number chip
+title/kicker grammar:
+- kicker chip in blue outline with short category label
+brand asset policy:
+- only use local UI screenshots and project name mark from screenshots
+allowed layout families:
+- cover hero
+- pain triptych
+- loop diagram
+- layer architecture
+- screenshot-led proof slide
+- dual screenshot comparison
+- readiness map
+- roadmap lane
+banned motifs:
+- pure black background
+- rainbow palette
+- default office theme cards
+- crowded bullet walls

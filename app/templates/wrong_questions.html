@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题本 - 学习画像系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4364F7;
+            --secondary: #6FB1FC;
+            --accent: #00D9FF;
+            --bg-dark: #0A0E27;
+            --bg-card: rgba(30, 41, 99, 0.7);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B4B4B4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 背景动画 */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(67, 100, 247, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(111, 177, 252, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(10, 14, 39, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            color: var(--primary) !important;
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+            margin: 0 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent) !important;
+        }
+
+        /* 主容器 */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* 统计卡片 */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 40px rgba(67, 100, 247, 0.2);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon.warning { background: rgba(255, 107, 107, 0.2); color: #FF6B6B; }
+        .stat-icon.success { background: rgba(46, 213, 115, 0.2); color: #2ED573; }
+        .stat-icon.info { background: rgba(67, 100, 247, 0.2); color: var(--primary); }
+        .stat-icon.primary { background: rgba(111, 177, 252, 0.2); color: var(--secondary); }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 筛选栏 */
+        .filter-bar {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-bar select, .filter-bar input {
+            background: rgba(67, 100, 247, 0.1);
+            border: 1px solid rgba(67, 100, 247, 0.3);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 0.6rem 1rem;
+            min-width: 150px;
+        }
+
+        .filter-bar select:focus, .filter-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 100, 247, 0.2);
+        }
+
+        /* 错题卡片 */
+        .wrong-question-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(67, 100, 247, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wrong-question-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(180deg, #FF6B6B, #FF8E53);
+        }
+
+        .wrong-question-card.mastered::before {
+            background: linear-gradient(180deg, #2ED573, #7BED9F);
+        }
+
+        .wrong-question-card:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .wrong-question-card.mastered {
+            opacity: 0.7;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .question-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .tag-topic { background: rgba(67, 100, 247, 0.2); color: var(--primary); }
+        .tag-style { background: rgba(111, 177, 252, 0.2); color: var(--secondary); }
+        .tag-error { background: rgba(255, 107, 107, 0.2); color: #FF6B6B; }
+        .tag-mastered { background: rgba(46, 213, 115, 0.2); color: #2ED573; }
+
+        .question-content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .answer-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .answer-box {
+            background: rgba(67, 100, 247, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .answer-box.wrong {
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .answer-box.correct {
+            border: 1px solid rgba(46, 213, 115, 0.3);
+        }
+
+        .answer-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+        }
+
+        .answer-value {
+            font-weight: 500;
+        }
+
+        .answer-value.wrong { color: #FF6B6B; }
+        .answer-value.correct { color: #2ED573; }
+
+        .question-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-review {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-review:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(67, 100, 247, 0.4);
+        }
+
+        .btn-master {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ED573;
+            border: 1px solid rgba(46, 213, 115, 0.3);
+        }
+
+        .btn-master:hover {
+            background: rgba(46, 213, 115, 0.3);
+        }
+
+        .btn-delete {
+            background: rgba(255, 107, 107, 0.2);
+            color: #FF6B6B;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-desc {
+            color: var(--text-secondary);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .answer-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+            }
+            
+            .filter-bar select, .filter-bar input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
+                <i class="fas fa-brain me-2"></i>学习画像系统
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('quiz.index') }}">
+                            <i class="fas fa-pen me-1"></i>答题中心
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('features.wrong_questions') }}">
+                            <i class="fas fa-exclamation-circle me-1"></i>错题本
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('features.achievement_center') }}">
+                            <i class="fas fa-trophy me-1"></i>成就中心
+                        </a>
+                    </li>
+                    {% if current_user.is_teacher() %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('analysis.index') }}">
+                            <i class="fas fa-chart-line me-1"></i>数据分析
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i>退出
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <div class="main-container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-book-open me-2"></i>错题本
+            </h1>
+            <p class="page-subtitle">记录每一次错误，迈向每一次进步</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-value">{{ total }}</div>
+                <div class="stat-label">错题总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">{{ mastered_count }}</div>
+                <div class="stat-label">已掌握</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon info">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-value">{{ ((total - mastered_count) / total * 100)|round|int if total > 0 else 0 }}%</div>
+                <div class="stat-label">待复习</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <i class="fas fa-redo"></i>
+                </div>
+                <div class="stat-value">{{ wrong_questions|sum(attribute='review_count') if wrong_questions else 0 }}</div>
+                <div class="stat-label">总复习次数</div>
+            </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar">
+            <form method="get" class="d-flex flex-wrap gap-2" style="flex: 1;">
+                <select name="topic" onchange="this.form.submit()">
+                    <option value="">全部知识点</option>
+                    {% for t in topics %}
+                    <option value="{{ t }}" {{ 'selected' if current_topic == t else '' }}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                <select name="style" onchange="this.form.submit()">
+                    <option value="">全部题型</option>
+                    <option value="选择题" {{ 'selected' if current_style == '选择题' else '' }}>选择题</option>
+                    <option value="填空题" {{ 'selected' if current_style == '填空题' else '' }}>填空题</option>
+                    <option value="判断题" {{ 'selected' if current_style == '判断题' else '' }}>判断题</option>
+                    <option value="解答题" {{ 'selected' if current_style == '解答题' else '' }}>解答题</option>
+                </select>
+                <select name="mastered" onchange="this.form.submit()">
+                    <option value="">全部状态</option>
+                    <option value="false" {{ 'selected' if current_mastered == 'false' else '' }}>未掌握</option>
+                    <option value="true" {{ 'selected' if current_mastered == 'true' else '' }}>已掌握</option>
+                </select>
+                {% if current_topic or current_style or current_mastered %}
+                <a href="{{ url_for('features.wrong_questions') }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-times"></i> 清除筛选
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- 错题列表 -->
+        {% if wrong_questions %}
+        <div class="wrong-list">
+            {% for wq in wrong_questions %}
+            <div class="wrong-question-card {{ 'mastered' if wq.is_mastered else '' }}">
+                <div class="question-header">
+                    <div class="question-tags">
+                        <span class="tag tag-topic">{{ wq.question_topic or '未分类' }}</span>
+                        <span class="tag tag-style">{{ wq.question_style }}</span>
+                        <span class="tag tag-error">{{ wq.error_type or '未知错误' }}</span>
+                        {% if wq.is_mastered %}
+                        <span class="tag tag-mastered">
+                            <i class="fas fa-check me-1"></i>已掌握
+                        </span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">{{ wq.created_at.strftime('%Y-%m-%d') if wq.created_at else '' }}</small>
+                </div>
+                
+                <div class="question-content">
+                    {{ wq.question_content[:200] }}{% if wq.question_content|length > 200 %}...{% endif %}
+                </div>
+
+                {% if wq.question_options %}
+                <div style="background: rgba(67, 100, 247, 0.05); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div class="answer-label">选项</div>
+                    {% for key, val in wq.question_options|from_json.items() %}
+                    <div class="mb-1">{{ key }}. {{ val }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="answer-section">
+                    <div class="answer-box wrong">
+                        <div class="answer-label">你的答案</div>
+                        <div class="answer-value wrong">{{ wq.student_answer or '未作答' }}</div>
+                    </div>
+                    <div class="answer-box correct">
+                        <div class="answer-label">正确答案</div>
+                        <div class="answer-value correct">{{ wq.correct_answer }}</div>
+                    </div>
+                </div>
+
+                {% if wq.error_note %}
+                <div style="background: rgba(255, 193, 7, 0.1); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
+                    <div class="answer-label"><i class="fas fa-sticky-note me-1"></i>错因备注</div>
+                    <div>{{ wq.error_note }}</div>
+                </div>
+                {% endif %}
+
+                <div class="question-actions">
+                    <button class="btn-action btn-review" onclick="reviewQuestion({{ wq.id }})">
+                        <i class="fas fa-redo"></i>复习
+                    </button>
+                    {% if not wq.is_mastered %}
+                    <button class="btn-action btn-master" onclick="markMastered({{ wq.id }}, this)">
+                        <i class="fas fa-check"></i>标记掌握
+                    </button>
+                    {% endif %}
+                    <button class="btn-action btn-delete" onclick="deleteQuestion({{ wq.id }})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-check-double"></i>
+            </div>
+            <h3 class="empty-title">暂无错题记录</h3>
+            <p class="empty-desc">太棒了！你的答题正确率很高，继续保持！</p>
+            <a href="{{ url_for('quiz.index') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-pen me-2"></i>去答题
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function reviewQuestion(id) {
+            window.location.href = `/features/wrong_questions/review/${id}`;
+        }
+
+        function markMastered(id, btn) {
+            fetch(`/features/wrong_questions/${id}/update`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({is_mastered: true})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+
+        function deleteQuestion(id) {
+            if (confirm('确定要删除这条错题记录吗？')) {
+                fetch(`/features/wrong_questions/${id}/delete`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

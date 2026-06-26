@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学智画像 - 教育大数据赋能高校学情可视分析系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark-bg: #0a0a0f;
+            --card-bg: rgba(17, 17, 25, 0.85);
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* 粒子背景 */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        /* 主容器 */
+        .main-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+        
+        .nav-logo {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .nav-title {
+            font-size: 22px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .nav-item {
+            padding: 12px 18px;
+            color: #9ca3af;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.15);
+        }
+        
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
+        /* 内容区 */
+        .page-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+        
+        /* 英雄区 */
+        .hero-section {
+            text-align: center;
+            padding: 60px 20px;
+            margin-bottom: 50px;
+        }
+        
+        .hero-title {
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 20px;
+            color: #9ca3af;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            line-height: 1.8;
+        }
+        
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 32px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(102, 126, 234, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 16px;
+        }
+        
+        .stat-value {
+            font-size: 42px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 15px;
+            color: #9ca3af;
+        }
+        
+        /* 功能卡片 */
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 5px;
+            height: 32px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+        
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 28px;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+        }
+        
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .feature-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .feature-desc {
+            font-size: 15px;
+            color: #9ca3af;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        
+        .feature-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .feature-tag {
+            padding: 6px 14px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--primary);
+        }
+        
+        /* 图表区 */
+        .charts-section {
+            margin-bottom: 50px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+        }
+        
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 0;
+        }
+        
+        .chart-container {
+            height: 320px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        
+        /* AI助手 */
+        .ai-assistant {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        .ai-trigger {
+            width: 65px;
+            height: 65px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 30px;
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ai-trigger:hover {
+            transform: scale(1.1);
+        }
+        
+        .ai-panel {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 380px;
+            background: rgba(17, 17, 25, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
+            display: none;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .ai-panel.active {
+            display: block;
+        }
+        
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .ai-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .ai-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .ai-btn {
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .ai-btn:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.4);
+        }
+        
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .hero-title {
+                font-size: 40px;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 20px;
+            }
+            
+            .nav-menu {
+                display: none;
+            }
+            
+            .hero-title {
+                font-size: 32px;
+            }
+            
+            .hero-subtitle {
+                font-size: 16px;
+            }
+            
+            .page-content {
+                padding: 24px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 粒子背景 -->
+    <canvas id="particles"></canvas>
+    
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <div class="nav-logo"><i class="fas fa-graduation-cap"></i></div>
+            <div class="nav-title">学智画像</div>
+        </a>
+        
+        <div class="nav-menu">
+            <a href="/" class="nav-item active"><i class="fas fa-home"></i> 首页</a>
+            {% if current_user.is_authenticated %}
+                <a href="/intelligent-assistant" class="nav-item"><i class="fas fa-robot"></i> 智能问答</a>
+                <a href="/test/assessment" class="nav-item"><i class="fas fa-clipboard-list"></i> 能力测试</a>
+                <a href="/analysis/report" class="nav-item"><i class="fas fa-chart-line"></i> 学习报告</a>
+                <a href="/student/learning-plan" class="nav-item"><i class="fas fa-tasks"></i> 学习计划</a>
+                {% if current_user.is_teacher() %}
+                    <a href="/analysis/pro" class="nav-item"><i class="fas fa-chart-bar"></i> 数据分析</a>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <div class="nav-user">
+            {% if current_user.is_authenticated %}
+                <span style="color: #9ca3af; font-size: 14px;">{{ current_user.username }}</span>
+                <a href="/auth/logout" class="btn btn-secondary" style="padding: 10px 20px; font-size: 14px;"><i class="fas fa-sign-out-alt"></i> 退出</a>
+            {% else %}
+                <a href="/auth/login" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px;"><i class="fas fa-sign-in-alt"></i> 登录</a>
+            {% endif %}
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <main class="main-wrapper">
+        <div class="page-content">
+            <!-- 英雄区 -->
+            <section class="hero-section">
+                <h1 class="hero-title">学智画像<br>教育大数据赋能高校学情可视分析系统</h1>
+                <p class="hero-subtitle">
+                    基于大数据技术的智能学习分析平台，为高校学生提供个性化学习规划、知识点掌握分析、学习效果预测等服务，助力精准教育决策。
+                </p>
+                <div class="hero-actions">
+                    {% if current_user.is_authenticated %}
+                        <a href="/intelligent-assistant" class="btn btn-primary"><i class="fas fa-robot"></i> 开始智能问答</a>
+                        <a href="/test/assessment" class="btn btn-secondary"><i class="fas fa-clipboard-list"></i> 进行能力测试</a>
+                    {% else %}
+                        <a href="/auth/login" class="btn btn-primary"><i class="fas fa-rocket"></i> 立即体验</a>
+                        <a href="#features" class="btn btn-secondary">了解更多</a>
+                    {% endif %}
+                </div>
+            </section>
+            
+            <!-- 统计卡片 -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-book"></i></div>
+                    <div class="stat-value">1000+</div>
+                    <div class="stat-label">学习资源</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-value">500+</div>
+                    <div class="stat-label">活跃用户</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-value">95%</div>
+                    <div class="stat-label">分析准确率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-value">5000+</div>
+                    <div class="stat-label">完成测试</div>
+                </div>
+            </section>
+            
+            <!-- 功能卡片 -->
+            <section id="features">
+                <h2 class="section-title">核心功能</h2>
+                <div class="features-grid">
+                    <a href="/intelligent-assistant" class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                        <h3 class="feature-title">AI智能问答</h3>
+                        <p class="feature-desc">基于大语言模型的智能学习助手，为您解答学习中的各类问题，提供个性化的学习建议和规划。</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag">7×24在线</span>
+                            <span class="feature-tag">即时响应</span>
+                            <span class="feature-tag">智能推荐</span>
+                        </div>
+                    </a>
+                    
+                    <a href="/test/assessment" class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-clipboard-list"></i></div>
+                        <h3 class="feature-title">基础能力测试</h3>
+                        <p class="feature-desc">涵盖编程、数学、英语、算法等多学科的能力测试系统，智能评估您的知识掌握程度。</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag">多学科</span>
+                            <span class="feature-tag">即时评分</span>
+                            <span class="feature-tag">详细报告</span>
+                        </div>
+                    </a>
+                    
+                    <a href="/analysis/report" class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3 class="feature-title">学习分析报告</h3>
+                        <p class="feature-desc">多维度数据可视化分析，追踪学习趋势，识别优势领域和薄弱环节，生成个性化改进建议。</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag">数据可视化</span>
+                            <span class="feature-tag">趋势分析</span>
+                            <span class="feature-tag">智能洞察</span>
+                        </div>
+                    </a>
+                    
+                    <a href="/student/learning-plan" class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-tasks"></i></div>
+                        <h3 class="feature-title">智能学习计划</h3>
+                        <p class="feature-desc">根据您的学习目标和知识点掌握情况，智能生成个性化的学习计划，支持灵活调整和跟踪。</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag">个性规划</span>
+                            <span class="feature-tag">灵活调整</span>
+                            <span class="feature-tag">进度追踪</span>
+                        </div>
+                    </a>
+                    
+                    {% if current_user.is_teacher() %}
+                    <a href="/analysis/pro" class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                        <h3 class="feature-title">教师数据分析</h3>
+                        <p class="feature-desc">班级学情全景分析，学生学习行为追踪，知识点掌握度对比，助力教学决策优化。</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag">班级管理</span>
+                            <span class="feature-tag">学情对比</span>
+                            <span class="feature-tag">决策支持</span>
+                        </div>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+            
+            <!-- 图表区 -->
+            <section class="charts-section">
+                <h2 class="section-title">数据概览</h2>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">学习趋势</h3>
+                        </div>
+                        <div class="chart-container" id="trendChart"></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">知识点掌握度</h3>
+                        </div>
+                        <div class="chart-container" id="radarChart"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- AI助手 -->
+    <div class="ai-assistant">
+        <div class="ai-panel" id="aiPanel">
+            <div class="ai-header">
+                <div class="ai-avatar"><i class="fas fa-robot"></i></div>
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 4px;">智学助手</h3>
+                    <p style="font-size: 12px; color: #10b981;">在线服务</p>
+                </div>
+            </div>
+            <div class="ai-actions">
+                <a href="/intelligent-assistant" class="ai-btn">
+                    <span style="font-size: 24px;"><i class="fas fa-comment-dots"></i></span>
+                    <span>智能问答</span>
+                </a>
+                <a href="/test/assessment" class="ai-btn">
+                    <span style="font-size: 24px;"><i class="fas fa-clipboard-list"></i></span>
+                    <span>能力测试</span>
+                </a>
+                <a href="/analysis/report" class="ai-btn">
+                    <span style="font-size: 24px;"><i class="fas fa-chart-line"></i></span>
+                    <span>学习报告</span>
+                </a>
+                <a href="/student/learning-plan" class="ai-btn">
+                    <span style="font-size: 24px;"><i class="fas fa-tasks"></i></span>
+                    <span>学习计划</span>
+                </a>
+            </div>
+        </div>
+        <button class="ai-trigger" onclick="toggleAI()"><i class="fas fa-robot"></i></button>
+    </div>
+    
+    <script>
+        // 粒子背景
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const particles = [];
+        for (let i = 0; i < 100; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.6,
+                vy: (Math.random() - 0.5) * 0.6,
+                radius: Math.random() * 2 + 1,
+                opacity: Math.random() * 0.5 + 0.2
+            });
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(102, 126, 234, ${p.opacity})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // AI面板
+        function toggleAI() {
+            document.getElementById('aiPanel').classList.toggle('active');
+        }
+        
+        // 图表
+        const trendChart = echarts.init(document.getElementById('trendChart'));
+        trendChart.setOption({
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['学习时长'], textStyle: { color: '#9ca3af' } },
+            xAxis: {
+                type: 'category',
+                data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                axisLine: { lineStyle: { color: '#333' } },
+                axisLabel: { color: '#9ca3af' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLine: { lineStyle: { color: '#333' } },
+                axisLabel: { color: '#9ca3af', formatter: '{value}h' },
+                splitLine: { lineStyle: { color: '#222' } }
+            },
+            series: [{
+                name: '学习时长',
+                type: 'line',
+                smooth: true,
+                data: [3.5, 4.2, 3.8, 4.5, 3.2, 5.0, 4.3],
+                lineStyle: { color: '#667eea', width: 3 },
+                itemStyle: { color: '#667eea' },
+                areaStyle: {
+                    color: {
+                        type: 'linear',
+                        x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [
+                            { offset: 0, color: 'rgba(102, 126, 234, 0.5)' },
+                            { offset: 1, color: 'rgba(102, 126, 234, 0.1)' }
+                        ]
+                    }
+                }
+            }]
+        });
+        
+        const radarChart = echarts.init(document.getElementById('radarChart'));
+        radarChart.setOption({
+            tooltip: {},
+            radar: {
+                indicator: [
+                    { name: '编程能力', max: 100 },
+                    { name: '算法思维', max: 100 },
+                    { name: '数学基础', max: 100 },
+                    { name: '英语水平', max: 100 },
+                    { name: 'AI素养', max: 100 }
+                ],
+                axisName: { color: '#9ca3af' },
+                splitArea: { areaStyle: { color: ['rgba(102, 126, 234, 0.05)', 'rgba(102, 126, 234, 0.1)'] } },
+                axisLine: { lineStyle: { color: '#333' } },
+                splitLine: { lineStyle: { color: '#333' } }
+            },
+            series: [{
+                type: 'radar',
+                data: [{
+                    value: [85, 78, 82, 75, 72],
+                    name: '能力分布',
+                    areaStyle: { color: 'rgba(102, 126, 234, 0.3)' },
+                    lineStyle: { color: '#667eea', width: 2 },
+                    itemStyle: { color: '#667eea' }
+                }]
+            }]
+        });
+        
+        window.addEventListener('resize', () => {
+            trendChart.resize();
+            radarChart.resize();
+        });
+        
+        // 入场动画
+        anime.timeline()
+            .add({
+                targets: '.hero-section',
+                opacity: [0, 1],
+                translateY: [40, 0],
+                duration: 1000,
+                easing: 'easeOutQuad'
+            })
+            .add({
+                targets: '.stat-card',
+                opacity: [0, 1],
+                translateY: [30, 0],
+                delay: anime.stagger(100),
+                duration: 800,
+                easing: 'easeOutQuad'
+            }, '-=600')
+            .add({
+                targets: '.feature-card',
+                opacity: [0, 1],
+                translateY: [30, 0],
+                delay: anime.stagger(100),
+                duration: 800,
+                easing: 'easeOutQuad'
+            }, '-=600');
+    </script>
+</body>
+</html>

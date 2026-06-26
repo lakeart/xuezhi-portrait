@@ -1,0 +1,158 @@
+[
+  {
+    "file": "01_课程导学.md",
+    "status_code": 200,
+    "body": {
+      "chunks": 1,
+      "deduplicated": false,
+      "document": {
+        "chunk_count": 1,
+        "content_hash": "79bf491768b33f9bf9f2f38d652a9627bcb803dcb4dcc35f0c3a3f20f1654454",
+        "created_at": "2026-06-13T08:38:56.450160",
+        "document_id": "d52bfcd1-a9df-4df6-a67b-9a6d06981515",
+        "file_size": 1729,
+        "file_type": "md",
+        "id": 1,
+        "original_filename": "01_课程导学.md",
+        "status": "indexed",
+        "stored_filename": "1781339936_1fb6c2ed_01_.md",
+        "summary": "# 计算机组成原理课程导学 ## 一、课程目标 计算机组成原理课程主要帮助学生理解“计算机为什么能运行程序、如何高效运行程序、系统性能为什么会受到硬件结构影响”。完成本课程后，学生应具备以下能力： 1. 能解释计算机系统的基本组成与层次结构。 2. 能说明运算器、控制器、存储器、输入输出系统之间的关系。 3. 能分析一条指令从取指到执行完成的基本过程。 4. 能理解流水线、Cache、中断、总线等机制对系统性能的影响。 5. 能把硬件结...",
+        "title": "01_课程导学",
+        "updated_at": "2026-06-13T08:38:56.450160",
+        "user_id": 1
+      },
+      "message": "文档已完成解析、分块与语义索引",
+      "ok": true
+    }
+  },
+  {
+    "file": "02_核心知识讲义.md",
+    "status_code": 200,
+    "body": {
+      "chunks": 2,
+      "deduplicated": false,
+      "document": {
+        "chunk_count": 2,
+        "content_hash": "9628216253583167714f3d4e4867eed720bd5502a4643d75190fa0b972dfdf83",
+        "created_at": "2026-06-13T08:38:56.511075",
+        "document_id": "25a87198-6171-4385-8de4-31d22decfc27",
+        "file_size": 3803,
+        "file_type": "md",
+        "id": 2,
+        "original_filename": "02_核心知识讲义.md",
+        "status": "indexed",
+        "stored_filename": "1781339936_77eeac43_02_.md",
+        "summary": "# 计算机组成原理核心知识讲义 ## 1. 冯诺依曼结构 冯诺依曼结构是现代通用计算机的经典结构模型，其核心思想是“存储程序”和“程序控制”。它通常由运算器、控制器、存储器、输入设备和输出设备五大部分组成。 冯诺依曼结构的关键特征包括： 1. 指令和数据以二进制形式统一存放在存储器中。 2. 程序按地址顺序执行，遇到转移指令时再改变执行顺序。 3. 控制器负责取指、译码和发出控制信号，协调各部件工作。 冯诺依曼结构的优点是结构清晰、通用...",
+        "title": "02_核心知识讲义",
+        "updated_at": "2026-06-13T08:38:56.511075",
+        "user_id": 1
+      },
+      "message": "文档已完成解析、分块与语义索引",
+      "ok": true
+    }
+  },
+  {
+    "file": "03_实验指导.md",
+    "status_code": 200,
+    "body": {
+      "chunks": 1,
+      "deduplicated": false,
+      "document": {
+        "chunk_count": 1,
+        "content_hash": "6c86f16b4d98c8b44d16840f32a7c852c8f2acc65f29db4bfd17adee5c24c383",
+        "created_at": "2026-06-13T08:38:56.551839",
+        "document_id": "5e1d18ed-68ee-4840-9cdc-96d0d237860d",
+        "file_size": 1721,
+        "file_type": "md",
+        "id": 3,
+        "original_filename": "03_实验指导.md",
+        "status": "indexed",
+        "stored_filename": "1781339936_ca24e478_03_.md",
+        "summary": "# 计算机组成原理实验指导 ## 实验主题一：指令执行过程观察 ### 实验目标 1. 观察一条加法指令的取指、译码、执行和写回过程。 2. 理解程序计数器、指令寄存器、通用寄存器在执行过程中的作用。 ### 实验步骤 1. 装载实验程序并初始化寄存器。 2. 单步执行指令，记录 PC、IR、ACC 或通用寄存器的变化。 3. 对比实验现象与理论上的指令周期阶段是否一致。 ### 常见错误 1. 没有区分“当前正在执行的指令”和“下一条...",
+        "title": "03_实验指导",
+        "updated_at": "2026-06-13T08:38:56.551839",
+        "user_id": 1
+      },
+      "message": "文档已完成解析、分块与语义索引",
+      "ok": true
+    }
+  },
+  {
+    "file": "04_章节题库.csv",
+    "status_code": 200,
+    "body": {
+      "chunks": 1,
+      "deduplicated": false,
+      "document": {
+        "chunk_count": 1,
+        "content_hash": "48d532bc9c231af6a9f1ce41ba8b3366b22868f1a1011357206acdc2d7320975",
+        "created_at": "2026-06-13T08:38:56.600137",
+        "document_id": "aa68502c-13ad-41fc-8d29-4c70df30d885",
+        "file_size": 1503,
+        "file_type": "csv",
+        "id": 4,
+        "original_filename": "04_章节题库.csv",
+        "status": "indexed",
+        "stored_filename": "1781339936_dc22355b_04_.csv",
+        "summary": "question,answer,difficulty,tag \"什么是冯诺依曼结构？\",\"冯诺依曼结构是把程序和数据统一存储在存储器中，并由控制器按地址顺序取指执行的经典计算机结构模型。\",\"基础\",\"体系结构\" \"指令周期一般包括哪几个阶段？\",\"典型阶段包括取指、译码、执行和写回，不同机器中还可进一步细分为机器周期和时钟周期。\",\"基础\",\"CPU\" \"流水线技术的主要目标是什么？\",\"主要目标是提高处理器吞吐率，让多条指令在不同阶...",
+        "title": "04_章节题库",
+        "updated_at": "2026-06-13T08:38:56.600137",
+        "user_id": 1
+      },
+      "message": "文档已完成解析、分块与语义索引",
+      "ok": true
+    }
+  },
+  {
+    "file": "05_术语表.json",
+    "status_code": 200,
+    "body": {
+      "chunks": 1,
+      "deduplicated": false,
+      "document": {
+        "chunk_count": 1,
+        "content_hash": "64c04a29d7ef4456645a5b988108b7ab5753346bc61d39af39b7db5542444582",
+        "created_at": "2026-06-13T08:38:56.645820",
+        "document_id": "91193cde-9550-4f6d-b046-b98bfa30bed9",
+        "file_size": 1001,
+        "file_type": "json",
+        "id": 5,
+        "original_filename": "05_术语表.json",
+        "status": "indexed",
+        "stored_filename": "1781339936_7aad12dc_05_.json",
+        "summary": "[ { \"term\": \"冯诺依曼结构\", \"definition\": \"以存储程序和程序控制为核心思想的经典计算机结构，通常包含运算器、控制器、存储器、输入设备和输出设备。\" }, { \"term\": \"指令周期\", \"definition\": \"一条指令从开始取出到执行完成所经历的完整过程，通常包括取指、译码、执行和写回。\" }, { \"term\": \"流水线\", \"definition\": \"把指令执行划分为多个阶段，使多条指令在...",
+        "title": "05_术语表",
+        "updated_at": "2026-06-13T08:38:56.645820",
+        "user_id": 1
+      },
+      "message": "文档已完成解析、分块与语义索引",
+      "ok": true
+    }
+  },
+  {
+    "file": "06_复习提纲.txt",
+    "status_code": 200,
+    "body": {
+      "chunks": 1,
+      "deduplicated": false,
+      "document": {
+        "chunk_count": 1,
+        "content_hash": "7f7f5f3fde2e4b0ca6c7fa5e15e5311b3414dc227699c0425463819c78f28803",
+        "created_at": "2026-06-13T08:38:56.692615",
+        "document_id": "23d731fc-e815-4040-8996-9bf0338659b3",
+        "file_size": 549,
+        "file_type": "txt",
+        "id": 6,
+        "original_filename": "06_复习提纲.txt",
+        "status": "indexed",
+        "stored_filename": "1781339936_dd214650_06_.txt",
+        "summary": "计算机组成原理复习提纲 1. 冯诺依曼结构 - 五大部件 - 存储程序思想 - 程序控制方式 2. 指令执行过程 - 取指 - 译码 - 执行 - 写回 3. 流水线 - 吞吐率与延迟 - 结构冒险 - 数据冒险 - 控制冒险 - 前递与分支预测 4. Cache - 时间局部性 - 空间局部性 - 命中率 - 平均访存时间 5. 中断系统 - 中断请求 - 中断响应 - 现场保护 - 中断返回 6. 做题提醒 - 定义题要答出核心特征...",
+        "title": "06_复习提纲",
+        "updated_at": "2026-06-13T08:38:56.692615",
+        "user_id": 1
+      },
+      "message": "文档已完成解析、分块与语义索引",
+      "ok": true
+    }
+  }
+]

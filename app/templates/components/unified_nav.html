@@ -1,0 +1,367 @@
+<!-- 统一导航栏组件 -->
+<style>
+    /* 统一导航样式 */
+    .unified-navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        background: rgba(10, 10, 15, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+        z-index: 1000;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+    }
+    
+    .nav-logo {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        box-shadow: 0 4px 20px rgba(67, 100, 247, 0.4);
+        transition: all 0.3s ease;
+    }
+    
+    .nav-brand:hover .nav-logo {
+        transform: scale(1.05);
+        box-shadow: 0 6px 25px rgba(67, 100, 247, 0.5);
+    }
+    
+    .nav-title-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .nav-title {
+        font-size: 22px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.5px;
+    }
+    
+    .nav-subtitle {
+        font-size: 11px;
+        color: #6b7280;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+    
+    .nav-menu {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+    
+    .nav-item {
+        position: relative;
+        padding: 12px 18px;
+        color: #9ca3af;
+        text-decoration: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .nav-item:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .nav-item.active {
+        color: #4364F7;
+        background: rgba(67, 100, 247, 0.15);
+    }
+    
+    .nav-item.active::after {
+        content: '';
+        position: absolute;
+        bottom: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 3px;
+        background: linear-gradient(135deg, #0052D4 0%, #4364F7 100%);
+        border-radius: 2px;
+    }
+    
+    .nav-icon {
+        font-size: 18px;
+    }
+    
+    .nav-badge {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #fff;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+    
+    .nav-user {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .nav-user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    
+    .nav-username {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+    }
+    
+    .nav-role {
+        font-size: 11px;
+        color: #6b7280;
+    }
+    
+    .nav-avatar {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #0052D4 0%, #4364F7 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(67, 100, 247, 0.3);
+    }
+    
+    .nav-avatar:hover {
+        transform: scale(1.05);
+        border-color: rgba(67, 100, 247, 0.6);
+    }
+    
+    .nav-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 10px;
+        background: rgba(17, 17, 25, 0.98);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 10px;
+        min-width: 180px;
+        display: none;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .nav-avatar:hover .nav-dropdown {
+        display: block;
+    }
+    
+    .nav-dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 15px;
+        color: #9ca3af;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .nav-dropdown-item:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .nav-dropdown-item.danger:hover {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+    }
+    
+    /* 响应式 */
+    @media (max-width: 1024px) {
+        .nav-subtitle {
+            display: none;
+        }
+        
+        .nav-item span {
+            display: none;
+        }
+        
+        .nav-item {
+            padding: 12px 14px;
+        }
+        
+        .nav-menu {
+            gap: 4px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .unified-navbar {
+            padding: 0 20px;
+        }
+        
+        .nav-user-info {
+            display: none;
+        }
+        
+        .nav-menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 15, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 10px 20px;
+            justify-content: space-around;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item span {
+            display: block;
+            font-size: 11px;
+        }
+        
+        .nav-item {
+            flex-direction: column;
+            padding: 8px 12px;
+            gap: 4px;
+        }
+    }
+</style>
+
+<nav class="unified-navbar">
+    <!-- 品牌标识 -->
+    <a href="{{ url_for('main.home') }}" class="nav-brand">
+        <div class="nav-logo">
+            <i class="fas fa-graduation-cap" style="color: #fff;"></i>
+        </div>
+        <div class="nav-title-group">
+            <span class="nav-title">学智画像</span>
+            <span class="nav-subtitle">Education Intelligence</span>
+        </div>
+    </a>
+    
+    <!-- 主导航菜单 -->
+    <div class="nav-menu">
+        <a href="{{ url_for('main.home') }}" class="nav-item {% if request.endpoint == 'main.home' %}active{% endif %}">
+            <span class="nav-icon"><i class="fas fa-home"></i></span>
+            <span>首页</span>
+        </a>
+        
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('intelligent_assistant.index') }}" class="nav-item {% if 'intelligent' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-robot"></i></span>
+                <span>智能问答</span>
+            </a>
+            
+            <a href="{{ url_for('test.assessment') }}" class="nav-item {% if 'test' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>
+                <span>能力测试</span>
+            </a>
+            
+            <a href="{{ url_for('analysis.learning_report') }}" class="nav-item {% if 'report' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                <span>学习报告</span>
+            </a>
+            
+            <a href="{{ url_for('features.wrong_questions') }}" class="nav-item {% if 'wrong_questions' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-exclamation-circle"></i></span>
+                <span>错题本</span>
+            </a>
+            
+            <a href="{{ url_for('features.achievement_center') }}" class="nav-item {% if 'achievement' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-trophy"></i></span>
+                <span>成就中心</span>
+            </a>
+            
+            <a href="{{ url_for('extra.notes') }}" class="nav-item {% if 'notes' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-book"></i></span>
+                <span>笔记</span>
+            </a>
+            
+            <a href="{{ url_for('extra.notification_center') }}" class="nav-item {% if 'notification' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-bell"></i></span>
+                <span>通知</span>
+            </a>
+            
+            <a href="{{ url_for('student.learning_plan') }}" class="nav-item {% if 'learning-plan' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-tasks"></i></span>
+                <span>学习计划</span>
+            </a>
+            
+            {% if current_user.is_teacher() %}
+                <a href="{{ url_for('analysis.pro_dashboard') }}" class="nav-item {% if request.endpoint == 'analysis.pro_dashboard' %}active{% endif %}">
+                    <span class="nav-icon"><i class="fas fa-chart-bar"></i></span>
+                    <span>数据分析</span>
+                    <span class="nav-badge">教师</span>
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+    
+    <!-- 用户信息 -->
+    <div class="nav-user">
+        {% if current_user.is_authenticated %}
+            <div class="nav-user-info">
+                <span class="nav-username">{{ current_user.username }}</span>
+                <span class="nav-role">
+                    {% if current_user.is_teacher() %}教师{% else %}学生{% endif %}
+                </span>
+            </div>
+            <div class="nav-avatar">
+                {{ current_user.username[0].upper() }}
+                <div class="nav-dropdown">
+                    <a href="{{ url_for('analysis.learning_report') }}" class="nav-dropdown-item">
+                        <i class="fas fa-user-circle"></i> 个人报告
+                    </a>
+                    <a href="{{ url_for('student.learning_plan') }}" class="nav-dropdown-item">
+                        <i class="fas fa-clipboard-list"></i> 学习计划
+                    </a>
+                    {% if current_user.is_teacher() %}
+                        <a href="{{ url_for('analysis.pro_dashboard') }}" class="nav-dropdown-item">
+                            <i class="fas fa-chart-bar"></i> 教师仪表盘
+                        </a>
+                    {% endif %}
+                    <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 8px 0;">
+                    <a href="{{ url_for('auth.logout') }}" class="nav-dropdown-item danger">
+                        <i class="fas fa-sign-out-alt"></i> 退出登录
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="nav-item" style="background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%); color: #fff; padding: 10px 20px; border-radius: 8px;">
+                <span><i class="fas fa-sign-in-alt"></i></span>
+                <span>登录</span>
+            </a>
+        {% endif %}
+    </div>
+</nav>

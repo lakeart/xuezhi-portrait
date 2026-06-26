@@ -1,0 +1,18 @@
+Primary textual sources:
+- README.md: project positioning, role definitions, resource types, deployment paths
+- docs/A3_document_checklist.md: completion status, deliverables, next-stage priorities
+- docs/A3_system_development_manual.md: architecture, agent roles, capability descriptions, anti-hallucination notes
+- docs/A3_ppt_video_outline.md: 7-minute story arc
+Primary visual sources:
+- screenshots/homepage.png
+- screenshots/student_portrait.png
+- screenshots/intelligent_assistant_fixed.png
+- screenshots/assessment_fixed.png
+- screenshots/learning_report_fixed.png
+- screenshots/learning_plan_fixed.png
+- screenshots/homepage.png
+Reference deck used as rhythm reference only:
+- d:\桌面\设计大赛\2026088402-作品主文件夹\2026088402-01作品与答辩材料\2026088402演示PPT.pptx
+Omissions:
+- no unverified business metrics added
+- no externally sourced brand assets used

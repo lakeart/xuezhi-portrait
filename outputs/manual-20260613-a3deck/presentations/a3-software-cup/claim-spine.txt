@@ -1,0 +1,18 @@
+thesis:
+学智画像把学习画像、知识库RAG、资源生成、能力测评和学习计划串成了一个可演示、可落地的学习多智能体闭环。
+audience:
+大赛评委、指导教师、技术答辩现场听众
+one-line arc:
+先解释高校学习为什么需要个性化闭环，再展示系统如何通过多智能体协同把画像、资源、问答、评估和计划真正连起来。
+slide list:
+01 claim: 把个性化学习真正做成一个闭环 / proof: 首页主视觉+能力指标 / source: README + homepage screenshot
+02 claim: 高校学习不是缺内容，而是缺少面向个人的连续支持 / proof: 三类痛点结构图 / source: A3_system_development_manual
+03 claim: 我们不是做聊天框，而是在做学习多智能体协同系统 / proof: 闭环流程图 / source: A3_ppt_video_outline + system manual
+04 claim: 四层架构让系统既能演示也能部署 / proof: layered architecture map / source: system manual + README
+05 claim: 系统先理解学生，再决定给什么资源、怎么学 / proof: 10维画像说明 + 群像分析页面 / source: system manual + student_portrait screenshot
+06 claim: 智能问答页其实是学习资源生成中枢 / proof: 智能问答页面 + 资源入口标注 / source: intelligent assistant screenshot + README
+07 claim: 先检索再作答，让辅导更可信 / proof: RAG process map / source: system manual + checklist
+08 claim: 专业化测评让系统知道学生现在会什么、不会什么 / proof: assessment screenshot + outcome cards / source: testing spec + assessment screenshot
+09 claim: 测评结果不会停在报告里，而会继续回流到学习计划 / proof: report + learning plan dual screenshot / source: checklist + screenshots
+10 claim: 赛题要求与项目证据可以一页看清 / proof: readiness screenshot + mapping bullets / source: checklist + readiness screenshot
+11 claim: 当前核心闭环已成型，下一步重点补齐提交物与证据包 / proof: roadmap lanes / source: checklist

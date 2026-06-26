@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}数据分析详情{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-white"><i class="fas fa-chart-line me-2 text-primary"></i>数据分析详情</h3>
+        <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-light btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>返回概览
+        </a>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card bg-dark border-secondary h-100"><div class="card-body text-center">
+                <div class="text-primary fs-2 mb-1"><i class="fas fa-tasks"></i></div>
+                <h6 class="text-muted mb-0">总提交</h6>
+                <h4 class="text-white mb-0">{{ stats.total_submissions }}</h4>
+            </div></div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark border-secondary h-100"><div class="card-body text-center">
+                <div class="text-success fs-2 mb-1"><i class="fas fa-star"></i></div>
+                <h6 class="text-muted mb-0">平均分</h6>
+                <h4 class="text-white mb-0">{{ stats.avg_score }}</h4>
+            </div></div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark border-secondary h-100"><div class="card-body text-center">
+                <div class="text-warning fs-2 mb-1"><i class="fas fa-check-circle"></i></div>
+                <h6 class="text-muted mb-0">满分次数</h6>
+                <h4 class="text-white mb-0">{{ stats.perfect_count }}</h4>
+            </div></div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark border-secondary h-100"><div class="card-body text-center">
+                <div class="text-info fs-2 mb-1"><i class="fas fa-clock"></i></div>
+                <h6 class="text-muted mb-0">平均用时</h6>
+                <h4 class="text-white mb-0">{{ stats.avg_time }}s</h4>
+            </div></div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark border-secondary h-100"><div class="card-body text-center">
+                <div class="text-success fs-2 mb-1"><i class="fas fa-gem"></i></div>
+                <h6 class="text-muted mb-0">掌握知识点</h6>
+                <h4 class="text-white mb-0">{{ stats.mastered_topics }}/{{ stats.topic_count }}</h4>
+            </div></div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark border-secondary h-100"><div class="card-body text-center">
+                <div class="text-danger fs-2 mb-1"><i class="fas fa-exclamation-triangle"></i></div>
+                <h6 class="text-muted mb-0">薄弱知识点</h6>
+                <h4 class="text-white mb-0">{{ stats.weak_topics }}</h4>
+            </div></div>
+        </div>
+    </div>
+
+    <!-- 筛选条件 -->
+    <div class="card bg-dark border-secondary mb-4">
+        <div class="card-body">
+            <form class="row g-3 align-items-end" id="filterForm">
+                <div class="col-md-2"><label class="text-muted small mb-1">知识点</label>
+                    <select class="form-select form-select-sm bg-dark text-white border-secondary" name="topic">
+                        <option value="">全部</option>{% for t in topics %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2"><label class="text-muted small mb-1">题型</label>
+                    <select class="form-select form-select-sm bg-dark text-white border-secondary" name="style">
+                        <option value="">全部</option>{% for s in styles %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2"><label class="text-muted small mb-1">难度</label>
+                    <select class="form-select form-select-sm bg-dark text-white border-secondary" name="difficulty">
+                        <option value="">全部</option>{% for d in difficulties %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2"><label class="text-muted small mb-1">时段</label>
+                    <select class="form-select form-select-sm bg-dark text-white border-secondary" name="time_region">
+                        <option value="">全部</option>{% for r in time_regions %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2"><label class="text-muted small mb-1">每页</label>
+                    <select class="form-select form-select-sm bg-dark text-white border-secondary" name="per_page" onchange="this.form.submit()">
+                        {% for opt in per_page_options %}<option value="{{ opt }}" {% if opt==per_page %}selected{% endif %}>{{ opt }}条</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2"><button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-search me-1"></i>筛选</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 知识点掌握度分布 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-dark border-secondary h-100">
+                <div class="card-header bg-dark"><h5 class="mb-0 text-white"><i class="fas fa-brain me-2 text-info"></i>知识点分布</h5></div>
+                <div class="card-body">
+                    {% if topic_data %}
+                    {% for t in topic_data %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-white small" style="min-width:100px;">{{ t.topic }}</span>
+                        <div class="flex-grow-1 mx-2">
+                            <div class="progress" style="height:10px;background:rgba(255,255,255,0.1);border-radius:5px;">
+                                <div class="progress-bar" role="progressbar" style="width:{{ t.avg_score }}%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:5px;"></div>
+                            </div>
+                        </div>
+                        <span class="text-muted small" style="min-width:80px;text-align:right;">{{ t.avg_score }}分 ({{ t.count }}次)</span>
+                    </div>
+                    {% endfor %}
+                    {% else %}<p class="text-muted text-center mb-0">暂无数据</p>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-dark border-secondary h-100">
+                <div class="card-header bg-dark"><h5 class="mb-0 text-white"><i class="fas fa-chart-pie me-2 text-warning"></i>分数段分布</h5></div>
+                <div class="card-body">
+                    {% set ranges = ['0-20', '21-40', '41-60', '61-80', '81-100'] %}
+                    {% set colors = ['#ef4444', '#f97316', '#f59e0b', '#22c55e', '#6366f1'] %}
+                    {% set total = score_distribution|sum %}
+                    {% if total > 0 %}
+                    {% for i in range(5) %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-white small" style="min-width:60px;">{{ ranges[i] }}</span>
+                        <div class="flex-grow-1 mx-2">
+                            <div class="progress" style="height:12px;background:rgba(255,255,255,0.1);border-radius:6px;">
+                                <div class="progress-bar" role="progressbar" style="width:{{ (score_distribution[i]/total*100)|int }}%;background:{{ colors[i] }};border-radius:6px;"></div>
+                            </div>
+                        </div>
+                        <span class="text-muted small" style="min-width:50px;text-align:right;">{{ score_distribution[i] }}人</span>
+                    </div>
+                    {% endfor %}
+                    {% else %}<p class="text-muted text-center mb-0">暂无数据</p>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 时段分析 -->
+    <div class="card bg-dark border-secondary mb-4">
+        <div class="card-header bg-dark"><h5 class="mb-0 text-white"><i class="fas fa-clock me-2 text-success"></i>各时段学习统计</h5></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-dark table-striped align-middle mb-0">
+                    <thead><tr><th>时段</th><th>答题数</th><th>平均分</th><th>表现等级</th></tr></thead>
+                    <tbody>
+                        {% for item in time_region_data %}
+                        <tr>
+                            <td>{{ item.time_region }}</td>
+                            <td>{{ item.count }}</td>
+                            <td>{{ item.avg_score }}</td>
+                            <td>{% if item.avg_score >= 80 %}<span class="badge bg-success">优秀</span>
+                                {% elif item.avg_score >= 60 %}<span class="badge bg-info">良好</span>
+                                {% else %}<span class="badge bg-warning text-dark">一般</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-center text-muted">暂无数据</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

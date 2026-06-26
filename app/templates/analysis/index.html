@@ -1,0 +1,1889 @@
+{% extends "base.html" %}
+
+{% block title %}数据分析 - 学智画像：教育大数据赋能高校学情可视分析系统{% endblock %}
+
+{% block styles %}
+<style>
+    /* 深色科技风背景 */
+    .analysis-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #1C2128 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* 动态网格背景 */
+    .analysis-grid-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        pointer-events: none;
+    }
+
+    /* 渐变光晕 */
+    .analysis-glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.2;
+        animation: glowPulse 8s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    .glow-1 {
+        width: 400px;
+        height: 400px;
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        top: -100px;
+        right: -100px;
+    }
+
+    .glow-2 {
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(135deg, #A371F7, #6FB1FC);
+        bottom: 20%;
+        left: -50px;
+        animation-delay: -4s;
+    }
+
+    @keyframes glowPulse {
+        0%, 100% { transform: scale(1); opacity: 0.2; }
+        50% { transform: scale(1.1); opacity: 0.3; }
+    }
+
+    /* 主内容区 */
+    .analysis-content {
+        position: relative;
+        z-index: 10;
+        padding: 2rem;
+    }
+
+    /* 页面标题卡片 */
+    .page-header-card {
+        background: rgba(28, 33, 40, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #0052D4, #4364F7, #6FB1FC, #A371F7);
+        background-size: 300% 100%;
+        animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        box-shadow: 0 0 30px rgba(67, 100, 247, 0.4);
+    }
+
+    .header-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #F0F6FC;
+        margin-bottom: 0.3rem;
+    }
+
+    .header-subtitle {
+        color: #8B949E;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* 统计卡片 */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(28, 33, 40, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease backwards;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(67, 100, 247, 0.4);
+        box-shadow: 0 10px 40px rgba(67, 100, 247, 0.2);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-icon-wrapper.blue {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.2), rgba(111, 177, 252, 0.2));
+        color: #6FB1FC;
+    }
+
+    .stat-icon-wrapper.green {
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.2), rgba(72, 187, 120, 0.2));
+        color: #2EA043;
+    }
+
+    .stat-icon-wrapper.purple {
+        background: linear-gradient(135deg, rgba(163, 113, 247, 0.2), rgba(199, 125, 239, 0.2));
+        color: #A371F7;
+    }
+
+    .stat-icon-wrapper.orange {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 171, 0, 0.2));
+        color: #FFC107;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #F0F6FC;
+        margin-bottom: 0.3rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #8B949E;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 内容卡片 */
+    .content-card {
+        background: rgba(28, 33, 40, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 0.6s ease backwards;
+    }
+
+    .content-card:nth-of-type(1) { animation-delay: 0.15s; }
+    .content-card:nth-of-type(2) { animation-delay: 0.25s; }
+    .content-card:nth-of-type(3) { animation-delay: 0.35s; }
+    .content-card:nth-of-type(4) { animation-delay: 0.45s; }
+    .content-card:nth-of-type(5) { animation-delay: 0.55s; }
+
+    .card-section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(67, 100, 247, 0.1);
+    }
+
+    .section-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .section-icon.blue {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.2), rgba(111, 177, 252, 0.2));
+        color: #6FB1FC;
+    }
+
+    .section-icon.green {
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.2), rgba(72, 187, 120, 0.2));
+        color: #2EA043;
+    }
+
+    .section-icon.purple {
+        background: linear-gradient(135deg, rgba(163, 113, 247, 0.2), rgba(199, 125, 239, 0.2));
+        color: #A371F7;
+    }
+
+    .section-icon.orange {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 171, 0, 0.2));
+        color: #FFC107;
+    }
+
+    .section-icon.trophy {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 171, 0, 0.2));
+        color: #FFC107;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #F0F6FC;
+        margin: 0;
+    }
+
+    .section-subtitle {
+        font-size: 0.85rem;
+        color: #8B949E;
+        margin: 0;
+    }
+
+    /* 图表容器 */
+    .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .chart-container {
+        height: 280px;
+        position: relative;
+        width: 100%;
+    }
+
+    .chart-container-small {
+        height: 220px;
+        position: relative;
+        width: 100%;
+    }
+
+    /* 排名徽章 */
+    .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .rank-badge.rank-1 {
+        background: linear-gradient(135deg, #FFD700, #FFC107);
+        color: #1a1a1a;
+        box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+    }
+
+    .rank-badge.rank-2 {
+        background: linear-gradient(135deg, #C0C0C0, #E0E0E0);
+        color: #1a1a1a;
+        box-shadow: 0 0 15px rgba(192, 192, 192, 0.3);
+    }
+
+    .rank-badge.rank-3 {
+        background: linear-gradient(135deg, #CD7F32, #D2691E);
+        color: white;
+        box-shadow: 0 0 15px rgba(205, 127, 50, 0.3);
+    }
+
+    .rank-badge.default {
+        background: rgba(67, 100, 247, 0.1);
+        color: #6FB1FC;
+        border: 1px solid rgba(67, 100, 247, 0.2);
+    }
+
+    /* 表格样式 */
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .data-table thead th {
+        background: rgba(13, 17, 23, 0.5);
+        color: #8B949E;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(67, 100, 247, 0.2);
+    }
+
+    .data-table tbody td {
+        padding: 1rem;
+        color: #F0F6FC;
+        border-bottom: 1px solid rgba(67, 100, 247, 0.1);
+        vertical-align: middle;
+    }
+
+    .data-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .data-table tbody tr:hover {
+        background: rgba(67, 100, 247, 0.05);
+    }
+
+    /* 进度条 */
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: rgba(67, 100, 247, 0.2);
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    /* 按钮样式 */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-action.primary {
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        border: none;
+        color: white;
+    }
+
+    .btn-action.primary:hover {
+        background: linear-gradient(135deg, #4364F7, #6FB1FC);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(67, 100, 247, 0.3);
+        color: white;
+    }
+
+    .btn-action.outline {
+        background: transparent;
+        border: 1px solid rgba(67, 100, 247, 0.3);
+        color: #6FB1FC;
+    }
+
+    .btn-action.outline:hover {
+        background: rgba(67, 100, 247, 0.1);
+        border-color: rgba(67, 100, 247, 0.5);
+        color: #6FB1FC;
+    }
+
+    /* 按钮组 */
+    .btn-group-custom {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-group-custom .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        background: transparent;
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        color: #8B949E;
+        transition: all 0.3s ease;
+    }
+
+    .btn-group-custom .btn:hover {
+        background: rgba(67, 100, 247, 0.1);
+        color: #F0F6FC;
+    }
+
+    .btn-group-custom .btn.active {
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        border-color: transparent;
+        color: white;
+    }
+
+    /* 知识点卡片 */
+    .topic-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .topic-card {
+        background: rgba(13, 17, 23, 0.5);
+        border: 1px solid rgba(67, 100, 247, 0.1);
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .topic-card:hover {
+        border-color: rgba(67, 100, 247, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(67, 100, 247, 0.15);
+    }
+
+    .topic-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .topic-name {
+        font-weight: 600;
+        color: #F0F6FC;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
+    }
+
+    .topic-link {
+        color: #6FB1FC;
+        font-size: 0.85rem;
+        opacity: 0.7;
+        transition: all 0.2s ease;
+    }
+
+    .topic-link:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    .topic-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .topic-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: 6px;
+        min-width: 55px;
+    }
+
+    .topic-stat-label {
+        font-size: 0.7rem;
+        color: #8B949E;
+        margin-bottom: 0.1rem;
+    }
+
+    .topic-stat-value {
+        font-weight: 600;
+        color: #F0F6FC;
+        font-size: 0.85rem;
+    }
+
+    /* 知识点表格 */
+    .topic-accuracy-table {
+        margin-top: 1.5rem;
+    }
+
+    /* 教学建议 */
+    .teaching-suggestions {
+        margin-top: 1.5rem;
+    }
+
+    .suggestion-card {
+        background: rgba(13, 17, 23, 0.5);
+        border-radius: 12px;
+        padding: 1rem;
+        border-left: 4px solid;
+    }
+
+    .suggestion-card.danger {
+        border-color: #F85149;
+    }
+
+    .suggestion-card.warning {
+        border-color: #FFC107;
+    }
+
+    .suggestion-card.success {
+        border-color: #2EA043;
+    }
+
+    .suggestion-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .suggestion-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .suggestion-icon.danger {
+        background: rgba(248, 81, 73, 0.2);
+        color: #F85149;
+    }
+
+    .suggestion-icon.warning {
+        background: rgba(255, 193, 7, 0.2);
+        color: #FFC107;
+    }
+
+    .suggestion-icon.success {
+        background: rgba(46, 160, 67, 0.2);
+        color: #2EA043;
+    }
+
+    .suggestion-title {
+        font-weight: 600;
+        color: #F0F6FC;
+        font-size: 0.95rem;
+    }
+
+    .suggestion-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .suggestion-list li {
+        padding: 0.5rem;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        background: rgba(28, 33, 40, 0.5);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .suggestion-list li:hover {
+        background: rgba(67, 100, 247, 0.1);
+    }
+
+    .suggestion-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .suggestion-badge.danger {
+        background: rgba(248, 81, 73, 0.2);
+        color: #F85149;
+    }
+
+    .suggestion-badge.warning {
+        background: rgba(255, 193, 7, 0.2);
+        color: #FFC107;
+    }
+
+    .suggestion-badge.success {
+        background: rgba(46, 160, 67, 0.2);
+        color: #2EA043;
+    }
+
+    .teaching-recommendation {
+        background: rgba(13, 17, 23, 0.5);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border-left: 4px solid #6FB1FC;
+    }
+
+    .teaching-recommendation h6 {
+        color: #F0F6FC;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .teaching-recommendation ul {
+        color: #8B949E;
+    }
+
+    .teaching-recommendation li {
+        margin-bottom: 0.5rem;
+        line-height: 1.6;
+    }
+
+    /* 提示框 */
+    .info-alert {
+        background: rgba(67, 100, 247, 0.1);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .info-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(67, 100, 247, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6FB1FC;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+        .analysis-content {
+            padding: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+<div class="analysis-page">
+    <!-- 背景效果 -->
+    <div class="analysis-grid-bg"></div>
+    <div class="analysis-glow glow-1"></div>
+    <div class="analysis-glow glow-2"></div>
+    
+    <!-- 主内容 -->
+    <div class="analysis-content">
+        <!-- 页面标题 -->
+        <div class="page-header-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h1 class="header-title mb-1">数据分析</h1>
+                        <p class="header-subtitle mb-0">探索答题数据的分析结果</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('main.dashboard') }}" class="btn-action outline">
+                        <i class="fas fa-arrow-left"></i> 返回仪表盘
+                    </a>
+                    {% if current_user.is_teacher() %}
+                    <a href="{{ url_for('analysis.advanced_analysis') }}" class="btn-action primary">
+                        <i class="fas fa-chart-bar"></i> 高级分析
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon-wrapper blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ stats.total_students }}</div>
+                <div class="stat-label">总参与人数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrapper green">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="stat-value">{{ stats.total_submissions }}</div>
+                <div class="stat-label">总答题次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrapper purple">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">{{ "%.1f"|format(stats.average_accuracy) }}%</div>
+                <div class="stat-label">平均正确率</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrapper orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">{{ "%.1f"|format(stats.average_time) }}秒</div>
+                <div class="stat-label">平均用时</div>
+            </div>
+        </div>
+
+        <!-- 题目分布分析 -->
+        <div class="content-card">
+            <div class="card-section-header">
+                <div class="section-icon blue">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div>
+                    <h3 class="section-title mb-0">题目分布分析</h3>
+                    <p class="section-subtitle mb-0">题型与难度构成概览</p>
+                </div>
+                <div class="ms-auto">
+                    <button class="btn-action outline btn-sm" onclick="downloadChart('questionTypeChart', '题型分布')">
+                        <i class="fas fa-download"></i> 题型
+                    </button>
+                    <button class="btn-action outline btn-sm" onclick="downloadChart('difficultyChart', '难度分布')">
+                        <i class="fas fa-download"></i> 难度
+                    </button>
+                </div>
+            </div>
+            <div class="chart-grid">
+                <div>
+                    <h6 class="text-muted mb-3"><i class="fas fa-circle me-2" style="font-size: 0.5rem;"></i>题型分布</h6>
+                    <div class="chart-container">
+                        <canvas id="questionTypeChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-3"><i class="fas fa-circle me-2" style="font-size: 0.5rem;"></i>难度分布</h6>
+                    <div class="chart-container">
+                        <canvas id="difficultyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 各知识点正确率 -->
+        <div class="content-card">
+            <div class="card-section-header">
+                <div class="section-icon green">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div>
+                    <h3 class="section-title mb-0">各知识点正确率</h3>
+                    <p class="section-subtitle mb-0">学生掌握情况分析</p>
+                </div>
+                <div class="ms-auto btn-group-custom">
+                    <button class="btn active" id="viewBarChart">
+                        <i class="fas fa-bars"></i> 柱状图
+                    </button>
+                    <button class="btn" id="viewHorizontalChart">
+                        <i class="fas fa-align-left"></i> 横向图
+                    </button>
+                    <button class="btn" id="viewRadarChart">
+                        <i class="fas fa-spider"></i> 雷达图
+                    </button>
+                    <button class="btn-action outline btn-sm" onclick="downloadChart('topicAccuracyChart', '各知识点正确率')">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="topicAccuracyChart"></canvas>
+            </div>
+            
+            <div class="topic-accuracy-table">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0"><i class="fas fa-list me-2"></i>知识点列表</h6>
+                    <button class="btn-action outline btn-sm" id="toggleTopicTable">
+                        <i class="fas fa-chevron-down" id="toggleTopicIcon"></i> 展开/收起
+                    </button>
+                </div>
+                
+                <div class="table-responsive collapse show" id="topicTableContainer">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>知识点</th>
+                                <th>正确率</th>
+                                <th>答题量</th>
+                                <th>掌握情况</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topicAccuracyTableBody">
+                            <!-- 由JS动态生成内容 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {% if current_user.is_teacher() %}
+            <div class="teaching-suggestions">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2" style="color: #FFC107;"></i>教学建议</h6>
+                    <div class="d-flex gap-2">
+                        <button class="btn-action outline btn-sm" id="generateTeachingSuggestions">
+                            <i class="fas fa-sync-alt me-1"></i>生成建议
+                        </button>
+                        <button class="btn-action outline btn-sm" id="toggleSuggestions">
+                            <i class="fas fa-chevron-down" id="toggleSuggestionsIcon"></i>
+                        </button>
+                        </div>
+                    </div>
+                    
+                    <div id="teachingSuggestions" class="teaching-suggestions">
+                        <div class="info-alert">
+                            <div class="info-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1" style="color: #F0F6FC;">点击"生成建议"按钮</h6>
+                                <p class="mb-0 small" style="color: #8B949E;">系统将分析各知识点掌握情况，为您提供教学重点建议</p>
+                            </div>
+                        </div>
+                        
+                        <div id="suggestionsContent" class="d-none collapse">
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-4">
+                                    <div class="suggestion-card danger h-100">
+                                        <div class="suggestion-header">
+                                            <div class="suggestion-icon danger">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                            </div>
+                                            <span class="suggestion-title">需要加强</span>
+                                        </div>
+                                        <ul class="suggestion-list" id="weakTopics">
+                                            <!-- JS生成内容 -->
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="suggestion-card warning h-100">
+                                        <div class="suggestion-header">
+                                            <div class="suggestion-icon warning">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            </div>
+                                            <span class="suggestion-title">需要关注</span>
+                                        </div>
+                                        <ul class="suggestion-list" id="moderateTopics">
+                                            <!-- JS生成内容 -->
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="suggestion-card success h-100">
+                                        <div class="suggestion-header">
+                                            <div class="suggestion-icon success">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                            <span class="suggestion-title">掌握良好</span>
+                                        </div>
+                                        <ul class="suggestion-list" id="strongTopics">
+                                            <!-- JS生成内容 -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="teaching-recommendation">
+                                <h6><i class="fas fa-chalkboard-teacher me-2" style="color: #6FB1FC;"></i>教学重点建议</h6>
+                                <ul id="teachingRecommendations">
+                                    <!-- JS生成内容 -->
+                                </ul>
+                                <div class="mt-3 text-end">
+                                    <button class="btn-action outline btn-sm" id="exportRecommendations">
+                                        <i class="fas fa-download me-1"></i>导出建议
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="content-card">
+            <div class="card-section-header">
+                <div class="section-icon green">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <h3 class="section-title mb-0">每周答题量趋势</h3>
+                    <p class="section-subtitle mb-0">答题参与度变化</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="weeklySubmissionsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="content-card">
+            <div class="card-section-header">
+                <div class="section-icon purple">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <h3 class="section-title mb-0">每周正确率趋势</h3>
+                    <p class="section-subtitle mb-0">学习效果变化</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="weeklyAccuracyChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-section-header">
+        <div class="section-icon trophy">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <div>
+            <h3 class="section-title mb-0">优秀学生排名</h3>
+            <p class="section-subtitle mb-0">根据答题表现生成的综合排名</p>
+        </div>
+        <div class="ms-auto">
+            <a href="{{ url_for('analysis.student_ranking') }}" class="btn-action primary">
+                <i class="fas fa-list-ol me-1"></i>查看完整排名
+            </a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        {% if top_students %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>学生ID</th>
+                    <th>姓名</th>
+                    <th>答题次数</th>
+                    <th>平均正确率</th>
+                    <th>平均用时</th>
+                    <th>总分</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in top_students %}
+                <tr>
+                    <td>
+                        {% if loop.index == 1 %}
+                        <span class="rank-badge rank-1"><i class="fas fa-trophy"></i> 1</span>
+                        {% elif loop.index == 2 %}
+                        <span class="rank-badge rank-2"><i class="fas fa-trophy"></i> 2</span>
+                        {% elif loop.index == 3 %}
+                        <span class="rank-badge rank-3"><i class="fas fa-trophy"></i> 3</span>
+                        {% else %}
+                        <span class="rank-badge default">{{ loop.index }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ student.id }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.submission_count }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress-bar-custom flex-grow-1">
+                                <div class="progress-bar-fill bg-success" style="width: {{ student.accuracy_rate * 100 }}%"></div>
+                            </div>
+                            <span style="color: #F0F6FC; min-width: 50px;">{{ "%.1f"|format(student.accuracy_rate * 100) }}%</span>
+                        </div>
+                    </td>
+                    <td>{{ "%.1f"|format(student.avg_time) }}秒</td>
+                    <td style="color: #6FB1FC; font-weight: 600;">{{ "%.1f"|format(student.total_score) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="info-alert">
+            <div class="info-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div>
+                <p class="mb-0" style="color: #8B949E;">暂无学生答题数据</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card fade-in" style="animation-delay: 0.6s;">
+            <div class="card-header gradient-purple-light">
+                <div class="d-flex justify-content-between align-items-center" style="border-radius: 0px; width: 1346px; height: 24px; padding: 0px; gap: inherit;">
+                    <h5 class="card-title mb-0" style="font-size: 16px; line-height: 26px; letter-spacing: normal; color: #1a1a1a;"><i class="fas fa-brain me-2"></i>知识点分析</h5>
+                </div>
+            </div>
+            <div class="card-body py-2">
+                {% if topic_stats %}
+                <div class="row g-2">
+                    {% for topic in topic_stats %}
+                    <div class="col-md-20p col-sm-4 mb-2">
+                        <div class="topic-card h-100 rounded border">
+                            <div class="topic-header gradient-blue-light py-1 px-2">
+                                <h6 class="mb-0 text-truncate text-primary" title="{{ topic.name }}">{{ topic.name }}</h6>
+                                <a href="{{ url_for('analysis.knowledge_point_analysis', topic=topic.name) }}" class="topic-link">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                            <div class="topic-body p-2">
+                                <div class="topic-stats">
+                                    <div class="topic-stat">
+                                        <span class="stat-label small">题目</span>
+                                        <span class="stat-value">{{ topic.question_count }}</span>
+                                    </div>
+                                    <div class="topic-stat">
+                                        <span class="stat-label small">次数</span>
+                                        <span class="stat-value">{{ topic.submission_count }}</span>
+                                    </div>
+                                    <div class="topic-stat">
+                                        <span class="stat-label small">正确率</span>
+                                        <span class="stat-value">{{ "%.1f"|format(topic.accuracy_rate) }}%</span>
+                                    </div>
+                                </div>
+                                <div class="topic-progress mt-1">
+                                    <div class="progress" style="height: 4px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {{ topic.accuracy_rate }}%"
+                                             aria-valuenow="{{ topic.accuracy_rate }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>暂无知识点数据
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 题型分布饼图
+    const questionTypeCtx = document.getElementById('questionTypeChart').getContext('2d');
+    const questionTypeChart = new Chart(questionTypeCtx, {
+        type: 'pie',
+            data: {
+            labels: {{ question_types|tojson|safe }},
+                datasets: [{
+                data: {{ question_type_counts|tojson|safe }},
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(255, 99, 132, 0.7)',
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(255, 99, 132, 1)',
+                ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    }
+                }
+            }
+        });
+
+    // 难度分布饼图
+    const difficultyCtx = document.getElementById('difficultyChart').getContext('2d');
+    const difficultyChart = new Chart(difficultyCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ difficulty_levels|tojson|safe }},
+            datasets: [{
+                data: {{ difficulty_counts|tojson|safe }},
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(255, 99, 132, 0.7)',
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(255, 99, 132, 1)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // 各知识点正确率条形图
+    const topicAccuracyCtx = document.getElementById('topicAccuracyChart').getContext('2d');
+    let topicAccuracyChart;
+    const topicNames = {{ topic_names|tojson|safe }};
+    const topicAccuracyRates = {{ topic_accuracy_rates|tojson|safe }};
+    const topicSubmissionCounts = {{ topic_submission_counts|tojson|safe }};
+    
+    function createBarChart() {
+        if (topicAccuracyChart) {
+            topicAccuracyChart.destroy();
+        }
+        
+        topicAccuracyChart = new Chart(topicAccuracyCtx, {
+            type: 'bar',
+            data: {
+                labels: topicNames,
+                datasets: [{
+                label: '正确率 (%)',
+                    data: topicAccuracyRates,
+                    backgroundColor: topicAccuracyRates.map(rate => {
+                        if (rate < 30) return 'rgba(255, 99, 132, 0.7)';
+                        else if (rate < 70) return 'rgba(255, 206, 86, 0.7)';
+                        else return 'rgba(75, 192, 192, 0.7)';
+                    }),
+                    borderColor: topicAccuracyRates.map(rate => {
+                        if (rate < 30) return 'rgba(255, 99, 132, 1)';
+                        else if (rate < 70) return 'rgba(255, 206, 86, 1)';
+                        else return 'rgba(75, 192, 192, 1)';
+                    }),
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    maxBarThickness: 50
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+            }
+        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const index = context.dataIndex;
+                                return [
+                                    `正确率: ${context.parsed.y.toFixed(1)}%`,
+                                    `答题量: ${topicSubmissionCounts[index]}`
+                                ];
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+    
+    function createHorizontalBarChart() {
+        if (topicAccuracyChart) {
+            topicAccuracyChart.destroy();
+        }
+        
+        topicAccuracyChart = new Chart(topicAccuracyCtx, {
+            type: 'bar',
+            data: {
+                labels: topicNames,
+                datasets: [{
+                    label: '正确率 (%)',
+                    data: topicAccuracyRates,
+                    backgroundColor: topicAccuracyRates.map(rate => {
+                        if (rate < 30) return 'rgba(255, 99, 132, 0.7)';
+                        else if (rate < 70) return 'rgba(255, 206, 86, 0.7)';
+                        else return 'rgba(75, 192, 192, 0.7)';
+                    }),
+                    borderColor: topicAccuracyRates.map(rate => {
+                        if (rate < 30) return 'rgba(255, 99, 132, 1)';
+                        else if (rate < 70) return 'rgba(255, 206, 86, 1)';
+                        else return 'rgba(75, 192, 192, 1)';
+                    }),
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    maxBarThickness: 30
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const index = context.dataIndex;
+                                return [
+                                    `正确率: ${context.parsed.x.toFixed(1)}%`,
+                                    `答题量: ${topicSubmissionCounts[index]}`
+                                ];
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+    
+    function createRadarChart() {
+        if (topicAccuracyChart) {
+            topicAccuracyChart.destroy();
+        }
+        
+        topicAccuracyChart = new Chart(topicAccuracyCtx, {
+            type: 'radar',
+            data: {
+                labels: topicNames,
+                datasets: [{
+                    label: '正确率 (%)',
+                    data: topicAccuracyRates,
+                    backgroundColor: 'rgba(102, 126, 234, 0.3)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: topicAccuracyRates.map(rate => {
+                        if (rate < 30) return 'rgba(255, 99, 132, 1)';
+                        else if (rate < 70) return 'rgba(255, 206, 86, 1)';
+                        else return 'rgba(75, 192, 192, 1)';
+                    }),
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(102, 126, 234, 1)',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: {
+                    line: {
+                        tension: 0.2
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            backdropColor: 'transparent',
+                            font: {
+                                size: 11
+                            }
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100,
+                        pointLabels: {
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const index = context.dataIndex;
+                                return [
+                                    `正确率: ${context.raw.toFixed(1)}%`,
+                                    `答题量: ${topicSubmissionCounts[index]}`
+                                ];
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+    
+    // 初始化表格数据
+    function populateTopicTable() {
+        const tableBody = document.getElementById('topicAccuracyTableBody');
+        if (!tableBody) return;
+        
+        // 清空表格
+        tableBody.innerHTML = '';
+        
+        // 创建包含所有数据的数组
+        const topicData = topicNames.map((name, i) => ({
+            name,
+            accuracy: topicAccuracyRates[i],
+            count: topicSubmissionCounts ? topicSubmissionCounts[i] : '未知'
+        }));
+        
+        // 按正确率降序排序
+        topicData.sort((a, b) => b.accuracy - a.accuracy);
+        
+        // 填充表格
+        topicData.forEach(topic => {
+            const tr = document.createElement('tr');
+            
+            // 确定掌握情况和颜色
+            let masteryLevel, masteryClass;
+            if (topic.accuracy >= 80) {
+                masteryLevel = '优秀';
+                masteryClass = 'bg-success';
+            } else if (topic.accuracy >= 60) {
+                masteryLevel = '良好';
+                masteryClass = 'bg-primary';
+            } else if (topic.accuracy >= 40) {
+                masteryLevel = '一般';
+                masteryClass = 'bg-warning';
+            } else {
+                masteryLevel = '需加强';
+                masteryClass = 'bg-danger';
+            }
+            
+            tr.innerHTML = `
+                <td><strong>${topic.name}</strong></td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1" style="height: 8px;">
+                            <div class="progress-bar ${masteryClass}" role="progressbar" 
+                                 style="width: ${topic.accuracy}%" 
+                                 aria-valuenow="${topic.accuracy}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                        <span class="ms-2">${topic.accuracy.toFixed(1)}%</span>
+                    </div>
+                </td>
+                <td>${topic.count}</td>
+                <td><span class="badge ${masteryClass}">${masteryLevel}</span></td>
+            `;
+            
+            tableBody.appendChild(tr);
+        });
+    }
+    
+    // 初始化表格并添加折叠功能
+    createBarChart();
+    populateTopicTable();
+    
+    // 添加知识点表格的折叠功能
+    document.getElementById('toggleTopicTable').addEventListener('click', function() {
+        const tableContainer = document.getElementById('topicTableContainer');
+        const toggleIcon = document.getElementById('toggleTopicIcon');
+        
+        if (tableContainer.classList.contains('show')) {
+            tableContainer.classList.remove('show');
+            toggleIcon.classList.remove('fa-chevron-up');
+            toggleIcon.classList.add('fa-chevron-down');
+        } else {
+            tableContainer.classList.add('show');
+            toggleIcon.classList.remove('fa-chevron-down');
+            toggleIcon.classList.add('fa-chevron-up');
+        }
+    });
+    
+    // 添加按钮切换事件
+    document.getElementById('viewBarChart').addEventListener('click', function() {
+        document.getElementById('viewBarChart').classList.add('active');
+        document.getElementById('viewHorizontalChart').classList.remove('active');
+        document.getElementById('viewRadarChart').classList.remove('active');
+        createBarChart();
+    });
+    
+    document.getElementById('viewHorizontalChart').addEventListener('click', function() {
+        document.getElementById('viewBarChart').classList.remove('active');
+        document.getElementById('viewHorizontalChart').classList.add('active');
+        document.getElementById('viewRadarChart').classList.remove('active');
+        createHorizontalBarChart();
+    });
+    
+    document.getElementById('viewRadarChart').addEventListener('click', function() {
+        document.getElementById('viewBarChart').classList.remove('active');
+        document.getElementById('viewHorizontalChart').classList.remove('active');
+        document.getElementById('viewRadarChart').classList.add('active');
+        createRadarChart();
+    });
+
+    // 每周答题量趋势线图
+    const weeklySubmissionsCtx = document.getElementById('weeklySubmissionsChart').getContext('2d');
+    const weeklySubmissionsChart = new Chart(weeklySubmissionsCtx, {
+        type: 'line',
+            data: {
+            labels: {{ weekly_labels|tojson|safe }},
+                datasets: [{
+                label: '答题量',
+                data: {{ weekly_submissions|tojson|safe }},
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // 每周正确率趋势线图
+    const weeklyAccuracyCtx = document.getElementById('weeklyAccuracyChart').getContext('2d');
+    const weeklyAccuracyChart = new Chart(weeklyAccuracyCtx, {
+        type: 'line',
+            data: {
+            labels: {{ weekly_labels|tojson|safe }},
+                datasets: [{
+                label: '正确率 (%)',
+                data: {{ weekly_accuracy|tojson|safe }},
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // 图表下载功能
+    window.downloadChart = function(chartId, filename) {
+        const canvas = document.getElementById(chartId);
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `${filename}.png`;
+        link.href = image;
+        link.click();
+    };
+
+    // 添加教学建议的折叠功能
+    const toggleSuggestionsBtn = document.getElementById('toggleSuggestions');
+    if (toggleSuggestionsBtn) {
+        toggleSuggestionsBtn.addEventListener('click', function() {
+            const suggestionsContent = document.getElementById('suggestionsContent');
+            const toggleIcon = document.getElementById('toggleSuggestionsIcon');
+            
+            if (suggestionsContent.classList.contains('show')) {
+                suggestionsContent.classList.remove('show');
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+            } else {
+                suggestionsContent.classList.add('show');
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+            }
+        });
+    }
+
+    // 教学建议生成功能
+    const generateTeachingSuggestionsBtn = document.getElementById('generateTeachingSuggestions');
+    if (generateTeachingSuggestionsBtn) {
+        generateTeachingSuggestionsBtn.addEventListener('click', function() {
+            // 隐藏提示信息，显示内容区域
+            document.querySelector('.alert.alert-info').classList.add('d-none');
+            const suggestionsContent = document.getElementById('suggestionsContent');
+            suggestionsContent.classList.remove('d-none');
+            suggestionsContent.classList.add('show');
+            
+            // 更新折叠图标
+            const toggleIcon = document.getElementById('toggleSuggestionsIcon');
+            toggleIcon.classList.remove('fa-chevron-down');
+            toggleIcon.classList.add('fa-chevron-up');
+            
+            // 获取知识点数据
+            const topicNames = {{ topic_names|tojson|safe }};
+            const topicAccuracyRates = {{ topic_accuracy_rates|tojson|safe }};
+            
+            // 清空现有内容
+            document.getElementById('weakTopics').innerHTML = '';
+            document.getElementById('moderateTopics').innerHTML = '';
+            document.getElementById('strongTopics').innerHTML = '';
+            document.getElementById('teachingRecommendations').innerHTML = '';
+            
+            // 按正确率对知识点进行分类
+            const weakTopics = [];
+            const moderateTopics = [];
+            const strongTopics = [];
+            
+            for (let i = 0; i < topicNames.length; i++) {
+                const topic = {
+                    name: topicNames[i],
+                    accuracy: topicAccuracyRates[i]
+                };
+                
+                if (topic.accuracy < 30) {
+                    weakTopics.push(topic);
+                } else if (topic.accuracy < 70) {
+                    moderateTopics.push(topic);
+                } else {
+                    strongTopics.push(topic);
+                }
+            }
+            
+            // 对各类别知识点按正确率排序
+            weakTopics.sort((a, b) => a.accuracy - b.accuracy);
+            moderateTopics.sort((a, b) => a.accuracy - b.accuracy);
+            strongTopics.sort((a, b) => b.accuracy - a.accuracy);
+            
+            // 生成知识点列表
+            const weakTopicsList = document.getElementById('weakTopics');
+            weakTopics.forEach(topic => {
+                const li = document.createElement('li');
+                li.className = 'mb-2';
+                li.innerHTML = `<div class="d-flex justify-content-between align-items-center">
+                    <span>${topic.name}</span>
+                    <span class="badge bg-danger">${topic.accuracy.toFixed(1)}%</span>
+                </div>
+                <div class="progress" style="height: 5px;">
+                    <div class="progress-bar bg-danger" style="width: ${topic.accuracy}%"></div>
+                </div>`;
+                weakTopicsList.appendChild(li);
+            });
+            
+            const moderateTopicsList = document.getElementById('moderateTopics');
+            moderateTopics.forEach(topic => {
+                const li = document.createElement('li');
+                li.className = 'mb-2';
+                li.innerHTML = `<div class="d-flex justify-content-between align-items-center">
+                    <span>${topic.name}</span>
+                    <span class="badge" style="background: rgba(210, 153, 34, 0.2); color: #D29922;">${topic.accuracy.toFixed(1)}%</span>
+                </div>
+                <div class="progress" style="height: 5px;">
+                    <div class="progress-bar bg-warning" style="width: ${topic.accuracy}%"></div>
+                </div>`;
+                moderateTopicsList.appendChild(li);
+            });
+            
+            const strongTopicsList = document.getElementById('strongTopics');
+            strongTopics.forEach(topic => {
+                const li = document.createElement('li');
+                li.className = 'mb-2';
+                li.innerHTML = `<div class="d-flex justify-content-between align-items-center">
+                    <span>${topic.name}</span>
+                    <span class="badge bg-success">${topic.accuracy.toFixed(1)}%</span>
+                </div>
+                <div class="progress" style="height: 5px;">
+                    <div class="progress-bar bg-success" style="width: ${topic.accuracy}%"></div>
+                </div>`;
+                strongTopicsList.appendChild(li);
+            });
+            
+            // 生成教学建议
+            const recommendations = [];
+            
+            if (weakTopics.length > 0) {
+                recommendations.push(`<li class="mb-2">建议将教学重点放在以下知识点上：<strong>${weakTopics.map(t => t.name).join('</strong>、<strong>')}</strong>，学生对这些知识点的掌握较弱，正确率均低于60%。</li>`);
+                
+                // 针对最薄弱的知识点提供具体建议
+                if (weakTopics.length >= 2) {
+                    const mostWeakTopics = weakTopics.slice(0, 2).map(t => t.name).join('和');
+                    recommendations.push(`<li class="mb-2"><strong>${mostWeakTopics}</strong>是最需要加强的领域，建议增加这些知识点的课程讲解时间和练习题数量。</li>`);
+                }
+            }
+            
+            if (moderateTopics.length > 0) {
+                recommendations.push(`<li class="mb-2">以下知识点需要适当关注：<strong>${moderateTopics.map(t => t.name).join('</strong>、<strong>')}</strong>，学生对这些知识点的掌握程度一般，建议通过复习巩固。</li>`);
+            }
+            
+            if (weakTopics.length === 0 && moderateTopics.length === 0) {
+                recommendations.push(`<li class="mb-2">学生对所有知识点掌握情况良好，可以考虑教授更高级的内容。</li>`);
+            } else if (strongTopics.length > 0) {
+                recommendations.push(`<li class="mb-2">学生对以下知识点掌握良好：<strong>${strongTopics.map(t => t.name).join('</strong>、<strong>')}</strong>，可以减少这些知识点的教学时间。</li>`);
+            }
+            
+            // 根据整体情况给出教学策略建议
+            const overallAccuracy = topicAccuracyRates.reduce((sum, acc) => sum + acc, 0) / topicAccuracyRates.length;
+            if (overallAccuracy < 60) {
+                recommendations.push(`<li class="mb-2">整体知识点掌握情况较差（平均正确率${overallAccuracy.toFixed(1)}%），建议重新审视教学方法，增加基础知识的讲解和练习。</li>`);
+            } else if (overallAccuracy < 80) {
+                recommendations.push(`<li class="mb-2">整体知识点掌握情况一般（平均正确率${overallAccuracy.toFixed(1)}%），可以采用针对性教学，重点关注薄弱环节。</li>`);
+            } else {
+                recommendations.push(`<li class="mb-2">整体知识点掌握情况良好（平均正确率${overallAccuracy.toFixed(1)}%），可以考虑引入更有挑战性的内容。</li>`);
+            }
+            
+            // 显示教学建议
+            const teachingRecommendationsEl = document.getElementById('teachingRecommendations');
+            recommendations.forEach(recommendation => {
+                teachingRecommendationsEl.innerHTML += recommendation;
+            });
+        });
+    }
+    
+    // 导出教学建议功能
+    const exportBtn = document.getElementById('exportRecommendations');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            // 获取知识点数据
+            const topicNames = {{ topic_names|tojson|safe }};
+            const weakTopics = Array.from(document.querySelectorAll('#weakTopics li')).map(li => {
+                const name = li.querySelector('span').textContent;
+                const accuracy = li.querySelector('.badge').textContent;
+                return { name, accuracy };
+            });
+            
+            const moderateTopics = Array.from(document.querySelectorAll('#moderateTopics li')).map(li => {
+                const name = li.querySelector('span').textContent;
+                const accuracy = li.querySelector('.badge').textContent;
+                return { name, accuracy };
+            });
+            
+            const strongTopics = Array.from(document.querySelectorAll('#strongTopics li')).map(li => {
+                const name = li.querySelector('span').textContent;
+                const accuracy = li.querySelector('.badge').textContent;
+                return { name, accuracy };
+            });
+            
+            const recommendations = Array.from(document.querySelectorAll('#teachingRecommendations li')).map(li => 
+                li.textContent.trim()
+            );
+            
+            // 创建报告内容
+            let reportContent = `# 知识点掌握情况分析与教学建议\n\n`;
+            reportContent += `生成时间: ${new Date().toLocaleString()}\n\n`;
+            
+            // 添加知识点分类
+            reportContent += `## 需要加强的知识点\n\n`;
+            if (weakTopics.length > 0) {
+                weakTopics.forEach(topic => {
+                    reportContent += `- ${topic.name}: ${topic.accuracy}\n`;
+                });
+            } else {
+                reportContent += `- 无\n`;
+            }
+            
+            reportContent += `\n## 需要关注的知识点\n\n`;
+            if (moderateTopics.length > 0) {
+                moderateTopics.forEach(topic => {
+                    reportContent += `- ${topic.name}: ${topic.accuracy}\n`;
+                });
+            } else {
+                reportContent += `- 无\n`;
+            }
+            
+            reportContent += `\n## 掌握良好的知识点\n\n`;
+            if (strongTopics.length > 0) {
+                strongTopics.forEach(topic => {
+                    reportContent += `- ${topic.name}: ${topic.accuracy}\n`;
+                });
+            } else {
+                reportContent += `- 无\n`;
+            }
+            
+            // 添加教学建议
+            reportContent += `\n## 教学建议\n\n`;
+            if (recommendations.length > 0) {
+                recommendations.forEach(rec => {
+                    reportContent += `- ${rec}\n`;
+                });
+            } else {
+                reportContent += `- 暂无建议\n`;
+            }
+            
+            // 创建并下载文件
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `知识点教学建议_${new Date().toISOString().slice(0,10)}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    }
+});
+</script>
+{% endblock %} 

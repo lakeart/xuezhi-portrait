@@ -1,0 +1,5570 @@
+{% extends "base.html" %}
+
+{% block title %}智能问答 - 学智画像{% endblock %}
+
+{% block styles %}
+<style>
+    /* 页面整体布局 */
+    .ai-assistant-container {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 1.5rem;
+        height: calc(100vh - 180px);
+        min-height: 600px;
+    }
+
+    .assistant-race-panel {
+        margin-bottom: 1.25rem;
+        padding: 1.25rem;
+        border-radius: var(--radius-xl);
+        background:
+            radial-gradient(circle at top left, rgba(67, 100, 247, 0.18), transparent 34%),
+            linear-gradient(135deg, rgba(13, 17, 23, 0.92), rgba(22, 27, 34, 0.95));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: var(--shadow-card);
+    }
+
+    .assistant-race-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .assistant-race-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        color: #a5b4fc;
+        background: rgba(67, 100, 247, 0.14);
+        border: 1px solid rgba(67, 100, 247, 0.24);
+        margin-bottom: 0.75rem;
+    }
+
+    .assistant-race-title {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.45rem;
+    }
+
+    .assistant-race-desc {
+        color: var(--text-secondary);
+        font-size: 0.92rem;
+        line-height: 1.75;
+        max-width: 760px;
+        margin: 0;
+    }
+
+    .assistant-proof-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .assistant-proof-card {
+        padding: 0.95rem;
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .assistant-proof-card strong {
+        display: block;
+        font-size: 1.15rem;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .assistant-proof-card span {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+
+    .card-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(34, 211, 238, 0.12);
+        color: #a5f3fc;
+        font-size: 0.78rem;
+        border: 1px solid rgba(34, 211, 238, 0.2);
+    }
+
+    .orchestration-strip {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .orchestration-step {
+        padding: 0.9rem 0.95rem;
+        border-radius: var(--radius-lg);
+        background: rgba(13, 17, 23, 0.58);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .orchestration-step .step-label {
+        color: var(--text-muted);
+        font-size: 0.72rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 0.3rem;
+    }
+
+    .orchestration-step .step-title {
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .orchestration-step .step-desc {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        margin-top: 0.35rem;
+        line-height: 1.5;
+    }
+
+    /* ========== 模式切换 ========== */
+    .mode-switch {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .mode-btn {
+        flex: 1;
+        padding: 0.6rem 1rem;
+        border: 1px solid var(--border-color);
+        background: var(--bg-card);
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .mode-btn:hover {
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+
+    .mode-btn.active {
+        background: var(--gradient-primary);
+        border-color: transparent;
+        color: white;
+    }
+
+    .mode-btn i {
+        font-size: 0.9rem;
+    }
+
+    /* ========== 左侧功能面板 ========== */
+    .ai-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        height: 100%;
+    }
+
+    /* 新建对话按钮 */
+    .new-chat-btn {
+        width: 100%;
+        padding: 1rem;
+        background: var(--gradient-primary);
+        border: none;
+        border-radius: var(--radius-lg);
+        color: white;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        box-shadow: 0 4px 15px rgba(67, 100, 247, 0.3);
+    }
+
+    .new-chat-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 100, 247, 0.4);
+    }
+
+    .new-chat-btn i {
+        font-size: 1.1rem;
+    }
+    
+    /* ========== 多智能体功能面板 ========== */
+    .multi-agent-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+    }
+    
+    .panel-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .panel-header i {
+        color: var(--info-color);
+    }
+    
+    .panel-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    /* 学习画像卡片 */
+    .profile-card {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), rgba(156, 39, 176, 0.1));
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .profile-avatar {
+        width: 40px;
+        height: 40px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+    
+    .profile-info h4 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+    
+    .profile-info p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin: 0.2rem 0 0;
+    }
+    
+    .profile-dimensions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .dimension-tag {
+        padding: 0.25rem 0.6rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: 20px;
+        font-size: 0.7rem;
+        color: var(--info-color);
+    }
+    
+    .profile-progress {
+        margin-top: 0.75rem;
+    }
+    
+    .progress-bar {
+        height: 6px;
+        background: var(--bg-input);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: var(--gradient-primary);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.4rem;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+    }
+    
+    /* 功能卡片网格 */
+    .feature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    .feature-card {
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 0.85rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-align: center;
+    }
+    
+    .feature-card:hover {
+        border-color: var(--info-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(67, 100, 247, 0.15);
+    }
+    
+    .feature-card i {
+        font-size: 1.3rem;
+        color: var(--info-color);
+        margin-bottom: 0.4rem;
+    }
+    
+    .feature-card h5 {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 0.2rem;
+    }
+    
+    .feature-card p {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+    
+    /* 资源生成进度 */
+    .generation-progress {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        background: rgba(67, 100, 247, 0.05);
+        border-radius: var(--radius-sm);
+        display: none;
+    }
+    
+    .generation-progress.active {
+        display: block;
+    }
+    
+    .progress-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    
+    .progress-item i {
+        font-size: 0.85rem;
+    }
+    
+    .progress-item.pending i { color: var(--text-muted); }
+    .progress-item.running i { color: var(--warning-color); animation: spin 1s linear infinite; }
+    .progress-item.done i { color: var(--success-color); }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    /* 学习路径展示 */
+    .learning-path {
+        margin-top: 0.75rem;
+    }
+    
+    .path-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px dashed var(--border-color);
+    }
+    
+    .path-item:last-child {
+        border-bottom: none;
+    }
+    
+    .path-number {
+        width: 22px;
+        height: 22px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+    
+    .path-content h5 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 0.2rem;
+    }
+    
+    .path-content p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+    
+    .path-tag {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: 10px;
+        font-size: 0.65rem;
+        color: var(--info-color);
+        margin-top: 0.3rem;
+    }
+    
+    /* 隐藏默认面板 */
+    .sidebar-basic { display: block; }
+    .sidebar-multi { display: none; }
+    
+    .multi-mode .sidebar-basic { display: none; }
+    .multi-mode .sidebar-multi { display: block; }
+    
+    /* ========== 资源卡片展示 ========== */
+    .resource-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .resource-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: all var(--transition-fast);
+    }
+    
+    .resource-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-card);
+    }
+    
+    .resource-header {
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), rgba(156, 39, 176, 0.1));
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .resource-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+    
+    .resource-icon.document { background: rgba(67, 100, 247, 0.2); color: var(--info-color); }
+    .resource-icon.mindmap { background: rgba(156, 39, 176, 0.2); color: #9C27B0; }
+    .resource-icon.quiz { background: rgba(46, 125, 50, 0.2); color: var(--success-color); }
+    .resource-icon.video { background: rgba(244, 67, 54, 0.2); color: #F44336; }
+    .resource-icon.code { background: rgba(255, 152, 0, 0.2); color: #FF9800; }
+    .resource-icon.extended { background: rgba(0, 150, 136, 0.2); color: #009688; }
+    
+    .resource-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .resource-body {
+        padding: 1rem;
+    }
+    
+    .resource-preview {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        max-height: 100px;
+        overflow: hidden;
+    }
+    
+    .resource-meta {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-color);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    
+    .resource-meta i {
+        margin-right: 0.3rem;
+    }
+    
+    .resource-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+    
+    .resource-btn {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+    }
+    
+    .resource-btn:hover {
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+    
+    .resource-btn.primary {
+        background: var(--gradient-primary);
+        border-color: transparent;
+        color: white;
+    }
+    
+    .resource-btn.primary:hover {
+        transform: scale(1.02);
+    }
+    
+    /* 评估报告卡片 */
+    .assessment-card {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), rgba(46, 125, 50, 0.1));
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+    
+    .assessment-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .assessment-score {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .assessment-level {
+        padding: 0.3rem 0.8rem;
+        background: var(--success-color);
+        border-radius: 20px;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .assessment-dimensions {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .dimension-item {
+        text-align: center;
+        padding: 0.75rem;
+        background: var(--bg-input);
+        border-radius: var(--radius-md);
+    }
+    
+    .dimension-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .dimension-name {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.2rem;
+    }
+    
+    .dimension-bar {
+        height: 4px;
+        background: var(--border-color);
+        border-radius: 2px;
+        margin-top: 0.4rem;
+        overflow: hidden;
+    }
+    
+    .dimension-fill {
+        height: 100%;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+    }
+
+    /* ========== 多智能体功能面板 ========== */
+    .multi-agent-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+    }
+
+    .panel-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .panel-header i {
+        color: var(--info-color);
+    }
+
+    .panel-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    /* 学习画像卡片 */
+    .profile-card {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), rgba(156, 39, 176, 0.1));
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .profile-avatar {
+        width: 40px;
+        height: 40px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .profile-info h4 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .profile-info p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin: 0.2rem 0 0;
+    }
+
+    .profile-dimensions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .dimension-tag {
+        padding: 0.25rem 0.6rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: 20px;
+        font-size: 0.7rem;
+        color: var(--info-color);
+    }
+
+    .profile-progress {
+        margin-top: 0.75rem;
+    }
+
+    .progress-bar {
+        height: 6px;
+        background: var(--bg-input);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--gradient-primary);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.4rem;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+    }
+
+    /* 功能卡片网格 */
+    .feature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .feature-card {
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 0.85rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-align: center;
+    }
+
+    .feature-card:hover {
+        border-color: var(--info-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(67, 100, 247, 0.15);
+    }
+
+    .feature-card i {
+        font-size: 1.3rem;
+        color: var(--info-color);
+        margin-bottom: 0.4rem;
+    }
+
+    .feature-card h5 {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 0.2rem;
+    }
+
+    .feature-card p {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* 资源生成进度 */
+    .generation-progress {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        background: rgba(67, 100, 247, 0.05);
+        border-radius: var(--radius-sm);
+        display: none;
+    }
+
+    .generation-progress.active {
+        display: block;
+    }
+
+    .progress-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .progress-item i {
+        font-size: 0.85rem;
+    }
+
+    .progress-item.pending i {
+        color: var(--text-muted);
+    }
+
+    .progress-item.running i {
+        color: var(--warning-color);
+        animation: spin 1s linear infinite;
+    }
+
+    .progress-item.done i {
+        color: var(--success-color);
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* 学习路径展示 */
+    .learning-path {
+        margin-top: 0.75rem;
+    }
+
+    .path-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+    .path-item:last-child {
+        border-bottom: none;
+    }
+
+    .path-number {
+        width: 22px;
+        height: 22px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .path-content h5 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 0.2rem;
+    }
+
+    .path-content p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .path-tag {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: 10px;
+        font-size: 0.65rem;
+        color: var(--info-color);
+        margin-top: 0.3rem;
+    }
+
+    /* 隐藏默认面板 */
+    .sidebar-basic {
+        display: block;
+    }
+
+    .sidebar-multi {
+        display: none;
+    }
+
+    .multi-mode .sidebar-basic {
+        display: none;
+    }
+
+    .multi-mode .sidebar-multi {
+        display: block;
+    }
+
+    /* ========== 资源卡片展示 ========== */
+    .resource-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .resource-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: all var(--transition-fast);
+    }
+
+    .resource-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-card);
+    }
+
+    .resource-header {
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), rgba(156, 39, 176, 0.1));
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .resource-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    .resource-icon.document {
+        background: rgba(67, 100, 247, 0.2);
+        color: var(--info-color);
+    }
+
+    .resource-icon.mindmap {
+        background: rgba(156, 39, 176, 0.2);
+        color: #9C27B0;
+    }
+
+    .resource-icon.quiz {
+        background: rgba(46, 125, 50, 0.2);
+        color: var(--success-color);
+    }
+
+    .resource-icon.video {
+        background: rgba(244, 67, 54, 0.2);
+        color: #F44336;
+    }
+
+    .resource-icon.code {
+        background: rgba(255, 152, 0, 0.2);
+        color: #FF9800;
+    }
+
+    .resource-icon.extended {
+        background: rgba(0, 150, 136, 0.2);
+        color: #009688;
+    }
+
+    .resource-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .resource-body {
+        padding: 1rem;
+    }
+
+    .resource-preview {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        max-height: 100px;
+        overflow: hidden;
+    }
+
+    .resource-meta {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-color);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .resource-meta i {
+        margin-right: 0.3rem;
+    }
+
+    .resource-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .resource-btn {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+    }
+
+    .resource-btn:hover {
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+
+    .resource-btn.primary {
+        background: var(--gradient-primary);
+        border-color: transparent;
+        color: white;
+    }
+
+    .resource-btn.primary:hover {
+        transform: scale(1.02);
+    }
+
+    /* 评估报告卡片 */
+    .assessment-card {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), rgba(46, 125, 50, 0.1));
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .assessment-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .assessment-score {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .assessment-level {
+        padding: 0.3rem 0.8rem;
+        background: var(--success-color);
+        border-radius: 20px;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .assessment-dimensions {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+    }
+
+    .dimension-item {
+        text-align: center;
+        padding: 0.75rem;
+        background: var(--bg-input);
+        border-radius: var(--radius-md);
+    }
+
+    .dimension-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .dimension-name {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.2rem;
+    }
+
+    .dimension-bar {
+        height: 4px;
+        background: var(--border-color);
+        border-radius: 2px;
+        margin-top: 0.4rem;
+        overflow: hidden;
+    }
+
+    .dimension-fill {
+        height: 100%;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+    }
+
+    /* 对话历史列表 */
+    .chat-history {
+        flex: 1;
+        overflow-y: auto;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+    }
+
+    .chat-history-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .chat-history-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .history-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        margin-bottom: 0.25rem;
+    }
+
+    .history-item:hover {
+        background: rgba(67, 100, 247, 0.08);
+    }
+
+    .history-item.active {
+        background: rgba(67, 100, 247, 0.12);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+    }
+
+    .history-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--info-color);
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .history-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .history-title {
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .history-time {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+    }
+
+    /* 知识分类卡片 */
+    .knowledge-categories {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+    }
+
+    .category-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .category-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .category-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .category-chip:hover {
+        background: rgba(67, 100, 247, 0.08);
+        border-color: rgba(67, 100, 247, 0.3);
+        color: var(--text-primary);
+    }
+
+    .category-chip.active {
+        background: rgba(67, 100, 247, 0.12);
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+
+    .category-chip i {
+        font-size: 0.8rem;
+        width: 16px;
+        text-align: center;
+    }
+
+    /* ========== 主聊天区域 ========== */
+    .chat-main {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-card);
+    }
+
+    /* 聊天头部 */
+    .chat-header {
+        background: linear-gradient(135deg, var(--primary-start) 0%, var(--primary-mid) 100%);
+        padding: 1.25rem 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chat-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .chat-header-info {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .chat-avatar {
+        width: 52px;
+        height: 52px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        position: relative;
+    }
+
+    .chat-avatar::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 12px;
+        height: 12px;
+        background: #10B981;
+        border: 2px solid white;
+        border-radius: 50%;
+    }
+
+    .chat-info h4 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chat-info p {
+        margin: 0.25rem 0 0;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .model-badge {
+        padding: 0.2rem 0.6rem;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+
+    .chat-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .chat-action-btn {
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-md);
+        color: white;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chat-action-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .chat-action-btn i {
+        font-size: 0.9rem;
+    }
+
+    /* 消息区域 */
+    .chat-messages {
+        flex: 1;
+        padding: 1.5rem 2rem;
+        overflow-y: auto;
+        background: var(--bg-primary);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* 欢迎消息 */
+    .welcome-section {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+
+    .welcome-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--gradient-primary);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 8px 32px rgba(67, 100, 247, 0.3);
+    }
+
+    .welcome-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+    }
+
+    .welcome-desc {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        max-width: 500px;
+        margin: 0 auto 2rem;
+        line-height: 1.7;
+    }
+
+    .quick-prompts {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .prompt-card {
+        padding: 1rem 1.25rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-align: left;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .prompt-card:hover {
+        border-color: var(--info-color);
+        background: rgba(67, 100, 247, 0.05);
+        transform: translateY(-2px);
+    }
+
+    .prompt-icon {
+        width: 36px;
+        height: 36px;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--info-color);
+        flex-shrink: 0;
+    }
+
+    .prompt-content h5 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .prompt-content p {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* 消息气泡 */
+    .message-wrapper {
+        display: flex;
+        gap: 1rem;
+        animation: messageSlide 0.4s ease;
+    }
+
+    @keyframes messageSlide {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message-wrapper.user {
+        flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1rem;
+    }
+
+    .message-wrapper.ai .message-avatar {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: 0 4px 12px rgba(67, 100, 247, 0.3);
+    }
+
+    .message-wrapper.user .message-avatar {
+        background: linear-gradient(135deg, #2EA043 0%, #3FB950 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(46, 160, 67, 0.3);
+    }
+
+    .message-content {
+        max-width: 75%;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        position: relative;
+    }
+
+    .message-wrapper.user .message-content {
+        background: linear-gradient(135deg, var(--primary-start) 0%, var(--primary-mid) 100%);
+        border: none;
+        color: white;
+    }
+
+    .message-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .message-wrapper.user .message-header {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .message-sender {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--info-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .message-wrapper.user .message-sender {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .message-category {
+        padding: 0.15rem 0.5rem;
+        background: rgba(67, 100, 247, 0.1);
+        border-radius: 20px;
+        font-size: 0.7rem;
+        color: var(--info-color);
+        font-weight: 500;
+    }
+
+    .message-text {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        line-height: 1.8;
+    }
+
+    .message-wrapper.user .message-text {
+        color: white;
+    }
+
+    .message-text strong {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .message-wrapper.user .message-text strong {
+        color: white;
+    }
+
+    .message-text p {
+        margin: 0.5rem 0;
+    }
+
+    .message-text ul,
+    .message-text ol {
+        margin: 0.75rem 0;
+        padding-left: 1.5rem;
+    }
+
+    .message-text li {
+        margin-bottom: 0.4rem;
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.75rem;
+        text-align: right;
+    }
+
+    .message-wrapper.user .message-time {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* AI思考动画 */
+    .ai-thinking {
+        display: flex;
+        gap: 1rem;
+        animation: messageSlide 0.4s ease;
+    }
+
+    .thinking-indicator {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+    }
+
+    .thinking-dots {
+        display: flex;
+        gap: 0.35rem;
+    }
+
+    .thinking-dots span {
+        width: 8px;
+        height: 8px;
+        background: var(--info-color);
+        border-radius: 50%;
+        animation: thinking 1.4s infinite ease-in-out;
+    }
+
+    .thinking-dots span:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .thinking-dots span:nth-child(2) {
+        animation-delay: -0.16s;
+    }
+
+    @keyframes thinking {
+
+        0%,
+        80%,
+        100% {
+            transform: scale(0.6);
+            opacity: 0.5;
+        }
+
+        40% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .thinking-text {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    /* 输入区域 */
+    .chat-input-area {
+        padding: 1.25rem 1.75rem;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border-color);
+    }
+
+    .input-container {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .input-wrapper {
+        flex: 1;
+        position: relative;
+    }
+
+    .chat-input {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        resize: none;
+        min-height: 52px;
+        max-height: 150px;
+        transition: all var(--transition-fast);
+        font-family: inherit;
+    }
+
+    .chat-input:focus {
+        outline: none;
+        border-color: var(--info-color);
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+    }
+
+    .chat-input::placeholder {
+        color: var(--text-muted);
+    }
+
+    /* 资源生成按钮区域 */
+    .resource-action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-color);
+        justify-content: flex-start;
+    }
+
+    .resource-action-btn {
+        padding: 0.5rem 1.2rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .resource-action-btn:hover {
+        border-color: var(--info-color);
+        color: var(--info-color);
+        background: rgba(67, 100, 247, 0.05);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(67, 100, 247, 0.15);
+    }
+
+    .resource-action-btn:active {
+        transform: translateY(0);
+    }
+
+    .resource-action-btn i {
+        font-size: 0.9rem;
+    }
+
+    .send-btn {
+        width: 52px;
+        height: 52px;
+        background: var(--gradient-primary);
+        border: none;
+        border-radius: var(--radius-md);
+        color: white;
+        font-size: 1.25rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(67, 100, 247, 0.3);
+    }
+
+    .send-btn:hover:not(:disabled) {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(67, 100, 247, 0.4);
+    }
+
+    .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* 推荐问题 */
+    .suggested-questions {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(67, 100, 247, 0.05);
+        border: 1px solid rgba(67, 100, 247, 0.1);
+        border-radius: var(--radius-md);
+    }
+
+    .suggested-title {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .suggested-title i {
+        color: var(--warning-color);
+    }
+
+    .suggested-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .suggested-item {
+        padding: 0.4rem 0.85rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 50px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .suggested-item:hover {
+        border-color: var(--info-color);
+        color: var(--info-color);
+        background: rgba(67, 100, 247, 0.05);
+    }
+
+    /* 响应式 */
+    @media (max-width: 1200px) {
+        .ai-assistant-container {
+            grid-template-columns: 280px 1fr;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .assistant-proof-grid,
+        .orchestration-strip {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .ai-assistant-container {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+
+        .ai-sidebar {
+            display: none;
+        }
+
+        .message-content {
+            max-width: 85%;
+        }
+
+        .quick-prompts {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .assistant-proof-grid,
+        .orchestration-strip {
+            grid-template-columns: 1fr;
+        }
+
+        .chat-messages {
+            padding: 1rem;
+        }
+
+        .chat-input-area {
+            padding: 1rem;
+        }
+
+        .message-content {
+            max-width: 90%;
+        }
+
+        .chat-header {
+            padding: 1rem;
+        }
+    }
+
+    /* ========== 深色模式支持 ========== */
+    :root[data-theme="dark"] {
+        --bg-primary: #1a1a2e;
+        --bg-secondary: #16213e;
+        --bg-card: #1f2937;
+        --bg-input: #374151;
+        --text-primary: #f3f4f6;
+        --text-secondary: #d1d5db;
+        --text-muted: #9ca3af;
+        --border-color: #4b5563;
+    }
+
+    /* ========== 快捷键提示 ========== */
+    .shortcuts-hint {
+        display: flex;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        border-top: 1px dashed var(--border-color);
+        margin-top: 0.5rem;
+    }
+
+    .shortcut-key {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .shortcut-key kbd {
+        padding: 0.15rem 0.4rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-family: inherit;
+    }
+
+    /* ========== 声音提示开关 ========== */
+    .sound-toggle {
+        position: absolute;
+        bottom: 1.25rem;
+        right: 1.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .sound-toggle input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--info-color);
+    }
+
+    /* ========== 消息操作 ========== */
+    .message-actions {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: flex;
+        gap: 0.3rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .message-wrapper:hover .message-actions {
+        opacity: 1;
+    }
+
+    .msg-action-btn {
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: var(--bg-input);
+        border-radius: 6px;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .msg-action-btn:hover {
+        background: var(--info-color);
+        color: white;
+    }
+
+    /* ========== 资源详情弹窗 ========== */
+    .resource-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+    }
+
+    .resource-modal.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-content {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        width: 90%;
+        max-width: 700px;
+        max-height: 80vh;
+        overflow: hidden;
+        transform: scale(0.9);
+        transition: transform 0.3s;
+    }
+
+    .resource-modal.active .modal-content {
+        transform: scale(1);
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .modal-close {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        border-radius: 50%;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+        background: var(--bg-input);
+        color: var(--text-primary);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--border-color);
+        justify-content: flex-end;
+    }
+
+    /* ========== 学习目标 ========== */
+    .learning-goal {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), rgba(46, 125, 50, 0.1));
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .goal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .goal-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .goal-progress-ring {
+        width: 50px;
+        height: 50px;
+        position: relative;
+    }
+
+    .goal-progress-ring svg {
+        transform: rotate(-90deg);
+    }
+
+    .goal-progress-ring circle {
+        fill: none;
+        stroke-width: 4;
+    }
+
+    .goal-progress-ring .bg {
+        stroke: var(--border-color);
+    }
+
+    .goal-progress-ring .progress {
+        stroke: var(--info-color);
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.5s;
+    }
+
+    .goal-progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .goal-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .goal-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        background: var(--bg-input);
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+    }
+
+    .goal-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--success-color);
+    }
+
+    .goal-item.completed {
+        text-decoration: line-through;
+        opacity: 0.6;
+    }
+
+    /* ========== 成就徽章 ========== */
+    .achievements-bar {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: var(--bg-input);
+        border-radius: var(--radius-md);
+        margin-top: 0.75rem;
+    }
+
+    .achievement-badge {
+        width: 36px;
+        height: 36px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.9rem;
+        position: relative;
+        cursor: pointer;
+        opacity: 0.4;
+        transition: all 0.3s;
+    }
+
+    .achievement-badge.unlocked {
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(67, 100, 247, 0.4);
+    }
+
+    .achievement-badge:hover::after {
+        content: attr(data-title);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.3rem 0.6rem;
+        background: var(--text-primary);
+        color: var(--bg-card);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        z-index: 10;
+    }
+
+    /* ========== 主题切换按钮 ========== */
+    .theme-toggle {
+        position: fixed;
+        bottom: 1.5rem;
+        left: 1.5rem;
+        width: 44px;
+        height: 44px;
+        border: none;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(67, 100, 247, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        z-index: 100;
+    }
+
+    .theme-toggle:hover {
+        transform: scale(1.1);
+    }
+
+    /* ========== 动画增强 ========== */
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .slide-up {
+        animation: slideUp 0.5s ease forwards;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ========== 消息反馈 ========== */
+    .message-feedback {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px dashed var(--border-color);
+    }
+
+    .feedback-btn {
+        padding: 0.25rem 0.6rem;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        transition: all 0.2s;
+    }
+
+    .feedback-btn:hover {
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+
+    .feedback-btn.active {
+        background: var(--info-color);
+        border-color: var(--info-color);
+        color: white;
+    }
+
+    /* ========== 按钮样式 ========== */
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-md);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+    }
+
+    .btn-primary {
+        background: var(--gradient-primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 100, 247, 0.3);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-outline:hover {
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <div class="page-title-icon">
+            <i class="fas fa-robot"></i>
+        </div>
+        智能问答助手
+    </h1>
+    <div class="page-breadcrumb">
+        <a href="{{ url_for('main.index') }}">首页</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>智能问答</span>
+    </div>
+</div>
+
+<div class="assistant-race-panel">
+    <div class="assistant-race-top">
+        <div>
+            <div class="assistant-race-badge">
+                <i class="fas fa-award"></i>
+                中国大学生计算机设计大赛 能力面板
+            </div>
+            <div class="assistant-race-title">学习多智能体协同中枢</div>
+            <p class="assistant-race-desc">
+                这里将对话式学习画像、知识库 RAG、个性化资源生成、学习路径规划和学习效果评估放进同一交互界面。
+                保留原有问答与资源能力，同时让评委更容易看见“多智能体协同”和“个性化资源闭环”。
+            </p>
+        </div>
+        <div class="card-tag">
+            <i class="fas fa-shield-halved"></i>
+            RAG 引用 · 流式生成 · 反幻觉提示
+        </div>
+    </div>
+    <div class="assistant-proof-grid">
+        <div class="assistant-proof-card">
+            <strong>10 维</strong>
+            <span>对话式学习画像，动态刻画知识基础、认知风格与学习目标。</span>
+        </div>
+        <div class="assistant-proof-card">
+            <strong>8 类</strong>
+            <span>资源生成覆盖 PPT、思维导图、题库、课程文档、视频等多模态材料。</span>
+        </div>
+        <div class="assistant-proof-card">
+            <strong>RAG</strong>
+            <span>知识库问答支持上传、检索、引用回答，更适合教学场景可靠性要求。</span>
+        </div>
+        <div class="assistant-proof-card">
+            <strong>评估闭环</strong>
+            <span>答疑、测评与学习计划可以互相回流，形成持续优化的学习链路。</span>
+        </div>
+    </div>
+    <div class="orchestration-strip">
+        <div class="orchestration-step">
+            <div class="step-label">Agent 01</div>
+            <div class="step-title">画像构建</div>
+            <div class="step-desc">通过自然语言采集专业背景、短板和目标。</div>
+        </div>
+        <div class="orchestration-step">
+            <div class="step-label">Agent 02</div>
+            <div class="step-title">知识检索</div>
+            <div class="step-desc">优先调用课程知识库证据，降低回答幻觉。</div>
+        </div>
+        <div class="orchestration-step">
+            <div class="step-label">Agent 03</div>
+            <div class="step-title">资源生成</div>
+            <div class="step-desc">按课程目标输出文档、题目、图谱和视频资源。</div>
+        </div>
+        <div class="orchestration-step">
+            <div class="step-label">Agent 04</div>
+            <div class="step-title">路径规划</div>
+            <div class="step-desc">结合掌握度和偏好重排学习步骤与任务节奏。</div>
+        </div>
+        <div class="orchestration-step">
+            <div class="step-label">Agent 05</div>
+            <div class="step-title">效果评估</div>
+            <div class="step-desc">根据测评结果输出建议并回流下一轮学习。</div>
+        </div>
+    </div>
+</div>
+
+<div class="ai-assistant-container fade-in" id="mainContainer">
+    <!-- 左侧功能面板 -->
+    <div class="ai-sidebar">
+        <!-- 模式切换 -->
+        <div class="mode-switch">
+            <button class="mode-btn active" id="basicModeBtn" onclick="switchMode('basic')">
+                <i class="fas fa-comment-dots"></i>
+                知识问答
+            </button>
+            <button class="mode-btn" id="multiModeBtn" onclick="switchMode('multi')">
+                <i class="fas fa-robot"></i>
+                多智能体
+            </button>
+        </div>
+
+        <!-- 基础模式面板 -->
+        <div class="sidebar-basic" id="basicSidebar">
+            <button class="new-chat-btn" onclick="newChat()">
+                <i class="fas fa-plus"></i>
+                <span>新建对话</span>
+            </button>
+
+            <div class="chat-history">
+                <div class="chat-history-header">
+                    <span class="chat-history-title">对话历史</span>
+                    <button class="btn-pro btn-pro-sm" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                        <i class="fas fa-archive"></i>
+                    </button>
+                </div>
+                <div class="history-item active">
+                    <div class="history-icon"><i class="fas fa-comment-dots"></i></div>
+                    <div class="history-content">
+                        <div class="history-title">学习方法咨询</div>
+                        <div class="history-time">刚刚</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-icon"><i class="fas fa-clock-rotate-left"></i></div>
+                    <div class="history-content">
+                        <div class="history-title">考试技巧讨论</div>
+                        <div class="history-time">今天 14:30</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-icon"><i class="fas fa-clock-rotate-left"></i></div>
+                    <div class="history-content">
+                        <div class="history-title">知识点解析</div>
+                        <div class="history-time">昨天 20:15</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="knowledge-categories">
+                <div class="category-header">
+                    <i class="fas fa-layer-group"></i>
+                    知识分类
+                </div>
+                <div class="category-list">
+                    <button class="category-chip active" onclick="selectCategory('全部', this)">
+                        <i class="fas fa-globe"></i>
+                        <span>全部分类</span>
+                    </button>
+                    <button class="category-chip" onclick="selectCategory('学习方法', this)">
+                        <i class="fas fa-book-reader"></i>
+                        <span>学习方法</span>
+                    </button>
+                    <button class="category-chip" onclick="selectCategory('考试技巧', this)">
+                        <i class="fas fa-pencil-alt"></i>
+                        <span>考试技巧</span>
+                    </button>
+                    <button class="category-chip" onclick="selectCategory('知识点', this)">
+                        <i class="fas fa-atom"></i>
+                        <span>知识讲解</span>
+                    </button>
+                    <button class="category-chip" onclick="selectCategory('时间管理', this)">
+                        <i class="fas fa-clock"></i>
+                        <span>时间管理</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 多智能体模式面板 -->
+        <div class="sidebar-multi" id="multiSidebar">
+            <!-- 学习画像卡片 -->
+            <div class="multi-agent-panel">
+                <div class="panel-header">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="panel-title">学习画像</span>
+                </div>
+                <div class="profile-card" id="profileCard">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h4 id="profileName">{{ current_user.username }}</h4>
+                            <p id="profileStatus">点击开始构建画像</p>
+                        </div>
+                    </div>
+                    <div class="profile-dimensions" id="profileDimensions">
+                        <span class="dimension-tag">待构建</span>
+                    </div>
+                    <div class="profile-progress" id="profileProgress" style="display:none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="profileProgressBar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-label">
+                            <span>构建进度</span>
+                            <span id="profileProgressText">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 核心功能 -->
+            <div class="multi-agent-panel">
+                <div class="panel-header">
+                    <i class="fas fa-magic"></i>
+                    <span class="panel-title">智能功能</span>
+                </div>
+                <div class="feature-grid">
+                    <div class="feature-card" onclick="buildProfile()">
+                        <i class="fas fa-id-card"></i>
+                        <h5>构建画像</h5>
+                        <p>智能分析学习特征</p>
+                    </div>
+                    <div class="feature-card" onclick="generateResources()">
+                        <i class="fas fa-file-alt"></i>
+                        <h5>生成资源</h5>
+                        <p>多模态学习资料</p>
+                    </div>
+                    <div class="feature-card" onclick="planLearning()">
+                        <i class="fas fa-route"></i>
+                        <h5>学习规划</h5>
+                        <p>个性化学习路径</p>
+                    </div>
+                    <div class="feature-card" onclick="startAssessment()">
+                        <i class="fas fa-chart-bar"></i>
+                        <h5>效果评估</h5>
+                        <p>学习效果追踪</p>
+                    </div>
+                </div>
+
+                <!-- 生成进度 -->
+                <div class="generation-progress" id="generationProgress">
+                    <div class="progress-item pending" id="prog-profile">
+                        <i class="fas fa-circle"></i>
+                        <span>分析学习特征</span>
+                    </div>
+                    <div class="progress-item pending" id="prog-resource">
+                        <i class="fas fa-circle"></i>
+                        <span>生成学习资源</span>
+                    </div>
+                    <div class="progress-item pending" id="prog-plan">
+                        <i class="fas fa-circle"></i>
+                        <span>规划学习路径</span>
+                    </div>
+                    <div class="progress-item pending" id="prog-assessment">
+                        <i class="fas fa-circle"></i>
+                        <span>评估学习效果</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习路径 -->
+            <div class="multi-agent-panel" id="learningPathPanel" style="display:none;">
+                <div class="panel-header">
+                    <i class="fas fa-map-signs"></i>
+                    <span class="panel-title">学习路径</span>
+                </div>
+                <div class="learning-path" id="learningPathContent">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+
+            <!-- 成就徽章 -->
+            <div class="multi-agent-panel">
+                <div class="panel-header">
+                    <i class="fas fa-trophy"></i>
+                    <span class="panel-title">学习成就</span>
+                </div>
+                <div class="achievements-bar">
+                    <div class="achievement-badge" data-title="首次对话" id="badge-first_chat">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <div class="achievement-badge" data-title="画像构建者" id="badge-profile_builder">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                    <div class="achievement-badge" data-title="资源收藏家" id="badge-resource_collector">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                    <div class="achievement-badge" data-title="学习达人" id="badge-learning_streak">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习目标 -->
+            <div class="multi-agent-panel">
+                <div class="panel-header">
+                    <i class="fas fa-bullseye"></i>
+                    <span class="panel-title">今日目标</span>
+                </div>
+                <div class="goal-items" id="goalItems">
+                    <label class="goal-item">
+                        <input type="checkbox" disabled>
+                        <span>完成Python基础课程</span>
+                    </label>
+                    <label class="goal-item">
+                        <input type="checkbox" disabled>
+                        <span>生成学习资源3份</span>
+                    </label>
+                    <label class="goal-item">
+                        <input type="checkbox" disabled>
+                        <span>与AI对话10次</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <button class="new-chat-btn" onclick="askMultiAgent('帮我制定一个机器学习的学习计划')"
+                style="background: linear-gradient(135deg, #9C27B0, #673AB7);">
+                <i class="fas fa-wand-magic-sparkles"></i>
+                <span>AI智能规划</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 主聊天区域 -->
+    <div class="chat-main">
+        <!-- 头部 -->
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="chat-avatar">
+                    <i class="fas fa-brain" id="headerIcon"></i>
+                </div>
+                <div class="chat-info">
+                    <h4>
+                        <i class="fas fa-sparkles"></i>
+                        <span id="headerTitle">AI学习助手</span>
+                        <span class="model-badge" id="headerBadge">v2.0</span>
+                    </h4>
+                    <p>
+                        <span
+                            style="display: inline-block; width: 8px; height: 8px; background: #10B981; border-radius: 50%;"
+                            id="statusDot"></span>
+                        <span id="headerStatus">在线 · 基于知识库的智能问答</span>
+                    </p>
+                </div>
+            </div>
+            <div class="chat-actions">
+                <button class="chat-action-btn" onclick="exportChat()">
+                    <i class="fas fa-download"></i>
+                    导出
+                </button>
+                <button class="chat-action-btn" onclick="clearChat()">
+                    <i class="fas fa-trash-alt"></i>
+                    清空
+                </button>
+            </div>
+        </div>
+
+        <!-- 消息区 -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- 欢迎消息 -->
+            <div class="welcome-section" id="welcomeBox">
+                <div class="welcome-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3 class="welcome-title" id="welcomeTitle">您好，我是您的学习多智能体助手</h3>
+                <p class="welcome-desc" id="welcomeDesc">
+                    我可以基于课程知识库完成学习问答、画像分析、资源生成与学习规划，<br>
+                    让答疑、测评、资源推送和路径优化进入同一个智能学习闭环
+                </p>
+
+                <div class="quick-prompts" id="quickPrompts">
+                    <div class="prompt-card" onclick="askQuestion('如何制定高效的期末复习计划？')">
+                        <div class="prompt-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div class="prompt-content">
+                            <h5>期末复习计划</h5>
+                            <p>科学安排复习时间</p>
+                        </div>
+                    </div>
+                    <div class="prompt-card" onclick="askQuestion('如何提高编程题的解题能力？')">
+                        <div class="prompt-icon"><i class="fas fa-code"></i></div>
+                        <div class="prompt-content">
+                            <h5>编程能力提升</h5>
+                            <p>高效刷题技巧</p>
+                        </div>
+                    </div>
+                    <div class="prompt-card" onclick="askQuestion('知识点总是记不住怎么办？')">
+                        <div class="prompt-icon"><i class="fas fa-brain"></i></div>
+                        <div class="prompt-content">
+                            <h5>高效记忆方法</h5>
+                            <p>科学记忆技巧</p>
+                        </div>
+                    </div>
+                    <div class="prompt-card" onclick="askQuestion('考试紧张如何缓解？')">
+                        <div class="prompt-icon"><i class="fas fa-heart-pulse"></i></div>
+                        <div class="prompt-content">
+                            <h5>考试心理调适</h5>
+                            <p>缓解考试焦虑</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 多智能体欢迎面板 -->
+                <div id="multiWelcome" style="display:none; margin-top: 1rem;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 1rem;">多智能体学习系统</h4>
+                    <div class="quick-prompts" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="prompt-card" onclick="buildProfile()">
+                            <div class="prompt-icon" style="background: rgba(156, 39, 176, 0.2);"><i
+                                    class="fas fa-id-card" style="color: #9C27B0;"></i></div>
+                            <div class="prompt-content">
+                                <h5>构建学习画像</h5>
+                                <p>10维度智能分析</p>
+                            </div>
+                        </div>
+                        <div class="prompt-card" onclick="generateResources()">
+                            <div class="prompt-icon" style="background: rgba(67, 100, 247, 0.2);"><i
+                                    class="fas fa-file-alt" style="color: var(--info-color);"></i></div>
+                            <div class="prompt-content">
+                                <h5>生成学习资源</h5>
+                                <p>6种多模态资源</p>
+                            </div>
+                        </div>
+                        <div class="prompt-card" onclick="planLearning()">
+                            <div class="prompt-icon" style="background: rgba(46, 125, 50, 0.2);"><i class="fas fa-route"
+                                    style="color: var(--success-color);"></i></div>
+                            <div class="prompt-content">
+                                <h5>智能学习规划</h5>
+                                <p>个性化学习路径</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 1rem;">
+                        切换到"多智能体"模式，体验更贴合比赛要求的完整学习闭环
+                    </p>
+                </div>
+            </div>
+
+            <!-- 资源卡片展示区 -->
+            <div id="resourceCardsArea" style="display:none; padding: 1rem;"></div>
+        </div>
+
+        <!-- 输入区 -->
+        <div class="chat-input-area">
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea class="chat-input" id="userInput" placeholder="输入您的问题，AI助手将为您解答...（Enter发送，Shift+Enter换行）"
+                        rows="1" onkeydown="handleKeyDown(event)" oninput="autoResize(this)"></textarea>
+                    <!-- 生成资源按钮区域 -->
+                    <div class="resource-action-buttons">
+                        <button class="resource-action-btn" onclick="openPptDialog()" title="PPT 生成">
+                            <i class="fas fa-file-powerpoint"></i>
+                            <span>PPT 生成</span>
+                        </button>
+                        <button class="resource-action-btn" onclick="openMindmapDialog()" title="思维导图生成">
+                            <i class="fas fa-sitemap"></i>
+                            <span>思维导图生成</span>
+                        </button>
+                        <button class="resource-action-btn" onclick="openCourseDocDialog()" title="课程讲解文档">
+                            <i class="fas fa-book"></i>
+                            <span>课程讲解文档</span>
+                        </button>
+                        <button class="resource-action-btn" onclick="openQuizDialog()" title="题库生成">
+                            <i class="fas fa-list-check"></i>
+                            <span>题库生成</span>
+                        </button>
+                        <button class="resource-action-btn" onclick="openResumeDialog()" title="简历生成">
+                            <i class="fas fa-file-alt"></i>
+                            <span>简历生成</span>
+                        </button>
+                        <button class="resource-action-btn" onclick="openTeachingVideoDialog()" title="教学视频生成">
+                            <i class="fas fa-video"></i>
+                            <span>教学视频生成</span>
+                        </button>
+                        <button class="resource-action-btn" onclick="openResearchDialog()" title="科研大模型">
+                            <i class="fas fa-microscope"></i>
+                            <span>科研大模型</span>
+                        </button>
+                        <button class="resource-action-btn" onclick="openKnowledgeDialog()" title="知识问答">
+                            <i class="fas fa-question-circle"></i>
+                            <span>知识问答</span>
+                        </button>
+                    </div>
+                </div>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="发送消息">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="suggested-questions" id="suggestedArea">
+                <div class="suggested-title">
+                    <i class="fas fa-lightbulb"></i>
+                    您可能想了解：
+                </div>
+                <div class="suggested-list">
+                    <span class="suggested-item" onclick="askQuestion('有哪些科学的学习方法？')">科学学习方法</span>
+                    <span class="suggested-item" onclick="askQuestion('如何克服学习拖延症？')">克服拖延</span>
+                    <span class="suggested-item" onclick="askQuestion('考试时如何合理分配时间？')">时间分配</span>
+                    <span class="suggested-item" onclick="askQuestion('学习压力大怎么缓解？')">缓解压力</span>
+                </div>
+            </div>
+            <div class="shortcuts-hint">
+                <span class="shortcut-key"><kbd>Enter</kbd> 发送</span>
+                <span class="shortcut-key"><kbd>Shift</kbd>+<kbd>Enter</kbd> 换行</span>
+                <span class="shortcut-key"><kbd>Ctrl</kbd>+<kbd>K</kbd> 快捷问题</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 主题切换按钮 -->
+<button class="theme-toggle" onclick="toggleTheme()" title="切换深色/浅色模式" id="themeToggle">
+    <i class="fas fa-moon"></i>
+</button>
+
+<!-- 资源详情弹窗 -->
+<div class="resource-modal" id="resourceModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <div class="resource-icon document" id="modalIcon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <span id="modalTitle">资源详情</span>
+            </div>
+            <button class="modal-close" onclick="closeResourceModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- 动态内容 -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeResourceModal()">
+                关闭
+            </button>
+            <button class="btn btn-primary" onclick="startLearning()">
+                <i class="fas fa-play"></i> 开始学习
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ==================== 全局状态 ====================
+    const KNOWLEDGE_BASE = {{ KNOWLEDGE_BASE | tojson | safe }};
+    let isTyping = false;
+    let currentCategory = '全部';
+    let currentMode = 'basic';  // basic 或 multi
+    let profileBuilt = false;
+    let sessionId = null;
+    let soundEnabled = false;
+    let currentResourceId = null;
+    let achievements = {
+        first_chat: false,      // 首次对话
+        profile_builder: false,  // 构建画像
+        resource_collector: false, // 收集5个资源
+        learning_streak: false   // 连续学习3天
+    };
+    let learningGoals = [
+        { id: 1, text: '完成Python基础课程', completed: false },
+        { id: 2, text: '生成学习资源3份', completed: false },
+        { id: 3, text: '与AI对话10次', completed: false }
+    ];
+    let messageCount = 0;
+    let collectedResources = 0;
+
+    // PPT 生成状态
+    let currentPptSid = null;
+    let pptPollTimer = null;
+    let pptPollInFlight = false;
+
+    // 用户当前意图（用于判断调用哪个API）
+    let userIntent = null; // 可选值: 'ppt', 'mindmap', 'course_doc', 'quiz', 'resume', 'video', 'research', 'knowledge', null
+
+    let currentVideoTaskId = null;
+    let currentVideoRecordId = null;
+    let videoPollTimer = null;
+    let videoPollInFlight = false;
+
+    // ==================== 模式切换 ====================
+    function switchMode(mode) {
+        currentMode = mode;
+        const container = document.getElementById('mainContainer');
+        const basicBtn = document.getElementById('basicModeBtn');
+        const multiBtn = document.getElementById('multiModeBtn');
+        const welcomeBox = document.getElementById('welcomeBox');
+        const multiWelcome = document.getElementById('multiWelcome');
+        const quickPrompts = document.getElementById('quickPrompts');
+
+        if (mode === 'multi') {
+            container.classList.add('multi-mode');
+            basicBtn.classList.remove('active');
+            multiBtn.classList.add('active');
+
+            // 更新头部
+            document.getElementById('headerIcon').className = 'fas fa-robot';
+            document.getElementById('headerTitle').textContent = '多智能体学习系统';
+            document.getElementById('headerBadge').textContent = 'Pro';
+            document.getElementById('headerStatus').textContent = '在线 · 多智能体协同';
+
+            // 更新欢迎区域
+            if (quickPrompts) quickPrompts.style.display = 'none';
+            if (multiWelcome) multiWelcome.style.display = 'block';
+
+            // 更新输入框提示
+            document.getElementById('userInput').placeholder = '输入您的学习需求，AI多智能体系统将为您服务...';
+
+            // 初始化多智能体会话
+            initMultiAgentSession();
+        } else {
+            container.classList.remove('multi-mode');
+            basicBtn.classList.add('active');
+            multiBtn.classList.remove('active');
+
+            // 恢复头部
+            document.getElementById('headerIcon').className = 'fas fa-brain';
+            document.getElementById('headerTitle').textContent = 'AI学习助手';
+            document.getElementById('headerBadge').textContent = 'v2.0';
+            document.getElementById('headerStatus').textContent = '在线 · 基于知识库的智能问答';
+
+            // 恢复欢迎区域
+            if (quickPrompts) quickPrompts.style.display = 'grid';
+            if (multiWelcome) multiWelcome.style.display = 'none';
+
+            // 恢复输入框提示
+            document.getElementById('userInput').placeholder = '输入您的问题，AI助手将为您解答...（Enter发送，Shift+Enter换行）';
+        }
+    }
+
+    // ==================== 多智能体功能 ====================
+
+    // 初始化多智能体会话
+    async function initMultiAgentSession() {
+        try {
+            const response = await fetch('/agent/init', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const data = await response.json();
+            sessionId = data.session_id;
+            if (data.profile) {
+                updateProfileCard(data.profile);
+                profileBuilt = true;
+            }
+        } catch (e) {
+            console.log('多智能体会话初始化失败，将使用对话模式');
+        }
+    }
+
+    // 更新画像卡片
+    function updateProfileCard(profile) {
+        if (!profile) return;
+
+        document.getElementById('profileStatus').textContent = '画像已构建';
+
+        // 显示维度标签
+        const dims = profile.dimensions || {};
+        const dimNames = Object.keys(dims);
+        const dimsContainer = document.getElementById('profileDimensions');
+        dimsContainer.innerHTML = dimNames.slice(0, 4).map(d =>
+            `<span class="dimension-tag">${d}: ${dims[d]}</span>`
+        ).join('') || '<span class="dimension-tag">已构建</span>';
+
+        // 显示进度条
+        const progress = profile.completion_rate || 0;
+        document.getElementById('profileProgress').style.display = 'block';
+        document.getElementById('profileProgressBar').style.width = progress + '%';
+        document.getElementById('profileProgressText').textContent = Math.round(progress) + '%';
+    }
+
+    // 构建学习画像
+    async function buildProfile() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        // 显示欢迎消息
+        const msg = '我想要构建学习画像';
+        addMessage(msg, 'user', '画像构建');
+        showTyping('正在分析您的学习特征...');
+
+        try {
+            const response = await fetch('/agent/profile/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg, build_profile: true })
+            });
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullResponse = '';
+
+            removeTyping();
+
+            // 创建助手消息
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message-wrapper ai';
+            msgDiv.innerHTML = `
+            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content">
+                <div class="message-header">
+                    <span class="message-sender">画像构建助手</span>
+                </div>
+                <div class="message-text" id="streamingResponse"></div>
+                <div class="message-time">${new Date().toLocaleTimeString()}</div>
+            </div>
+        `;
+            document.getElementById('chatMessages').appendChild(msgDiv);
+            const responseArea = document.getElementById('streamingResponse');
+
+            // 流式读取响应
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                fullResponse += chunk;
+                responseArea.innerHTML = formatMarkdown(fullResponse);
+                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+            }
+
+            profileBuilt = true;
+            updateProfileProgress('done');
+
+        } catch (e) {
+            removeTyping();
+            addMessage('画像构建功能暂时不可用，请稍后重试。', 'ai', '系统');
+            console.error(e);
+        }
+    }
+
+    // 生成学习资源
+    async function generateResources() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        const msg = '请帮我生成一些学习资源';
+        addMessage(msg, 'user', '资源生成');
+        showTyping('正在协调多个智能体生成学习资源...');
+
+        // 显示进度
+        const progressEl = document.getElementById('generationProgress');
+        progressEl.classList.add('active');
+        updateProgressItem('prog-profile', 'running');
+
+        try {
+            const response = await fetch('/agent/resources/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    topics: ['Python机器学习'],
+                    types: []
+                })
+            });
+
+            const data = await response.json();
+            removeTyping();
+
+            if (!response.ok || data.error) {
+                updateProgressItem('prog-profile', 'done');
+                updateProgressItem('prog-resource', 'pending');
+                displayResourceCards([]);
+                addMessage('资源生成失败：' + (data.error || response.statusText || '未知错误') + '（PPT 生成仍可使用）', 'ai', '资源生成');
+                return;
+            }
+
+            updateProgressItem('prog-profile', 'done');
+            updateProgressItem('prog-resource', 'done');
+
+            // 显示资源卡片（并包含 PPT 生成面板）
+            displayResourceCards(data.resources || []);
+            addMessage(`已为您生成 ${data.count || (data.resources?.length || 0)} 份学习资源。也可以在资源区顶部使用“PPT生成”。`, 'ai', '资源生成');
+
+        } catch (e) {
+            removeTyping();
+            displayResourceCards([]);
+            addMessage('资源生成功能暂时不可用（PPT 生成仍可使用）。', 'ai', '系统');
+            console.error(e);
+        }
+    }
+
+    // 显示资源卡片
+    function displayResourceCards(resources) {
+        const area = document.getElementById('resourceCardsArea');
+        area.style.display = 'block';
+
+        // 保存资源数据供详情页使用
+        window.generatedResources = resources || [];
+
+        const iconMap = {
+            // 新版多智能体 to_card()
+            'course_document': 'fa-file-alt',
+            'mind_map': 'fa-sitemap',
+            'exercises': 'fa-question-circle',
+            'video_script': 'fa-video',
+            'code_practice': 'fa-code',
+            'extended_reading': 'fa-book-open',
+
+            // 兼容旧键
+            'document': 'fa-file-alt',
+            'mindmap': 'fa-sitemap',
+            'quiz': 'fa-question-circle',
+            'video': 'fa-video',
+            'code': 'fa-code',
+            'extended': 'fa-book-open'
+        };
+
+        const colorMap = {
+            'course_document': 'document',
+            'mind_map': 'mindmap',
+            'exercises': 'quiz',
+            'video_script': 'video',
+            'code_practice': 'code',
+            'extended_reading': 'extended',
+
+            'document': 'document',
+            'mindmap': 'mindmap',
+            'quiz': 'quiz',
+            'video': 'video',
+            'code': 'code',
+            'extended': 'extended'
+        };
+
+        const pptPanel = `
+        <div class="resource-card" style="grid-column: 1 / -1;">
+            <div class="resource-header">
+                <div class="resource-icon document">
+                    <i class="fas fa-file-powerpoint"></i>
+                </div>
+                <div class="resource-title">PPT生成（讯飞智文）</div>
+            </div>
+            <div class="resource-body">
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <textarea id="pptQuery" class="chat-input" rows="3" style="min-height: 90px;" placeholder="输入 PPT 生成要求（最多 12000 字），例如：请生成一份《线性回归》教学PPT，包含定义、推导、例题与小结。"></textarea>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+                        <input id="pptTemplateId" class="chat-input" style="padding:0.6rem 0.8rem;" placeholder="模板ID（可选，例如 202407171E27C9D）" />
+                        <input id="pptAuthor" class="chat-input" style="padding:0.6rem 0.8rem;" placeholder="作者（可选）" />
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center; color: var(--text-secondary); font-size: 0.85rem;">
+                        <label style="display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" id="pptIsFigure" checked /> 自动配图</label>
+                        <label style="display:flex; align-items:center; gap:0.4rem;">配图强度
+                            <select id="pptAiImage" class="chat-input" style="padding:0.35rem 0.6rem; min-height:unset; height:34px;">
+                                <option value="normal" selected>normal</option>
+                                <option value="advanced">advanced</option>
+                            </select>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" id="pptIsCardNote" /> 演讲备注</label>
+                        <label style="display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" id="pptSearch" /> 联网搜索</label>
+                    </div>
+                    <div class="resource-actions" style="align-items:center;">
+                        <button class="resource-btn primary" id="pptCreateBtn" onclick="createPptTask()">
+                            <i class="fas fa-magic"></i> 生成PPT
+                        </button>
+                        <span id="pptStatusMsg" style="font-size:0.85rem; color: var(--text-muted);"></span>
+                    </div>
+                    <div id="pptResultArea" style="display:none; background: var(--bg-input); border-radius: var(--radius-md); padding: 0.75rem;"></div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        const mindmapPanel = `
+        <div class="resource-card" style="grid-column: 1 / -1;">
+            <div class="resource-header">
+                <div class="resource-icon mindmap">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <div class="resource-title">思维导图生成（Coze 工作流）</div>
+            </div>
+            <div class="resource-body">
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <textarea id="mindmapContent" class="chat-input" rows="2" style="min-height: 70px;" placeholder="输入要生成思维导图的科目名称，例如：机器学习"></textarea>
+                    <div class="resource-actions" style="align-items:center;">
+                        <button class="resource-btn primary" id="mindmapGenBtn" onclick="generateMindmap()">
+                            <i class="fas fa-magic"></i> 生成思维导图
+                        </button>
+                        <span id="mindmapStatusMsg" style="font-size:0.85rem; color: var(--text-muted);"></span>
+                    </div>
+                    <div id="mindmapResultArea" style="display:none; background: var(--bg-input); border-radius: var(--radius-md); padding: 0.75rem;"></div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        const resourceCardsHtml = (resources || []).map(r => {
+            const resId = r.id || r.resource_id || '';
+            const resType = r.type || r.resource_type || 'document';
+            const title = r.title || '学习资源';
+            const preview = r.preview || (r.content ? (r.content.substring(0, 200) + '...') : '内容加载中...');
+            const duration = r.duration || r.estimated_time || '30';
+            const difficulty = r.difficulty || '中等';
+
+            return `
+            <div class="resource-card">
+                <div class="resource-header">
+                    <div class="resource-icon ${colorMap[resType] || 'document'}">
+                        <i class="fas ${iconMap[resType] || 'fa-file-alt'}"></i>
+                    </div>
+                    <div class="resource-title">${title}</div>
+                </div>
+                <div class="resource-body">
+                    <div class="resource-preview">${preview}</div>
+                    <div class="resource-meta">
+                        <span><i class="fas fa-clock"></i> ${duration}分钟</span>
+                        <span><i class="fas fa-signal"></i> ${difficulty}</span>
+                    </div>
+                    <div class="resource-actions">
+                        <button class="resource-btn" onclick="viewResource('${resId}')">
+                            <i class="fas fa-eye"></i> 查看
+                        </button>
+                        <button class="resource-btn primary" onclick="useResource('${resId}')">
+                            <i class="fas fa-play"></i> 学习
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        }).join('');
+
+        area.innerHTML = '<h4 style="margin-bottom: 1rem;">📚 生成的学习资源</h4><div class="resource-cards">' + pptPanel + mindmapPanel + resourceCardsHtml + '</div>';
+    }
+
+    // ==================== PPT 生成（讯飞智文） ====================
+    function setPptStatus(text) {
+        const el = document.getElementById('pptStatusMsg');
+        if (el) el.textContent = text || '';
+    }
+
+    function escapeHtml(str) {
+        return (str ?? '').toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // ==================== 思维导图生成（Coze 工作流） ====================
+    function setMindmapStatus(text) {
+        const el = document.getElementById('mindmapStatusMsg');
+        if (el) el.textContent = text || '';
+    }
+
+    function setMindmapResultHtml(html) {
+        const el = document.getElementById('mindmapResultArea');
+        if (!el) return;
+        el.style.display = html ? 'block' : 'none';
+        el.innerHTML = html || '';
+    }
+
+    async function readJsonResponse(resp) {
+        const text = await resp.text();
+        try {
+            return { json: JSON.parse(text), text, isJson: true };
+        } catch (e) {
+            return { json: null, text, isJson: false };
+        }
+    }
+
+    function base64ToBlob(base64Data, contentType = 'image/png') {
+        const byteCharacters = atob(base64Data);
+        const byteArrays = [];
+        const sliceSize = 1024;
+        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+            byteArrays.push(new Uint8Array(byteNumbers));
+        }
+        return new Blob(byteArrays, { type: contentType });
+    }
+
+    function downloadBase64Png(base64Data, filename = 'mindmap.png') {
+        const blob = base64ToBlob(base64Data, 'image/png');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    async function generateMindmap() {
+        const btn = document.getElementById('mindmapGenBtn');
+        const contentEl = document.getElementById('mindmapContent');
+        const input = (contentEl?.value || '').trim();
+        if (!input) {
+            setMindmapStatus('请先输入要生成思维导图的科目名称');
+            return;
+        }
+
+        setMindmapResultHtml('');
+        setMindmapStatus('正在生成思维导图...');
+        if (btn) btn.disabled = true;
+
+        try {
+            const resp = await fetch('/agent/mindmap/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ input })
+            });
+            const parsed = await readJsonResponse(resp);
+            const data = parsed.json;
+
+            if (!parsed.isJson) {
+                setMindmapStatus('生成失败：服务返回非 JSON 内容');
+                const preview = (parsed.text || '').toString().slice(0, 1200);
+                setMindmapResultHtml(formatMarkdown('```\n' + preview + '\n```'));
+                return;
+            }
+
+            if (!resp.ok || data.error || data.ok === false) {
+                const baseMsg = (data.error || data.message || resp.statusText || '未知错误');
+                setMindmapStatus('生成失败：' + baseMsg);
+
+                const diag = [
+                    data.http_status ? `HTTP：${data.http_status}` : '',
+                    data.content_type ? `Content-Type：${data.content_type}` : ''
+                ].filter(Boolean).join('  ');
+                const extraLines = [
+                    data.used_app_id ? `used_app_id：${data.used_app_id}` : '',
+                    data.api_key_length ? `api_key_length：${data.api_key_length}` : '',
+                    data.api_secret_length ? `api_secret_length：${data.api_secret_length}` : '',
+                    data.request_method ? `request_method：${data.request_method}` : '',
+                    data.request_url ? `request_url：${data.request_url}` : ''
+                ].filter(Boolean).join('\n');
+
+                const preview = (data.body_preview || '').toString();
+                const previewBlock = preview ? formatMarkdown('```\n' + preview + '\n```') : '';
+                const respJson = data.response ? formatMarkdown('```json\n' + JSON.stringify(data.response, null, 2) + '\n```') : '';
+
+                if (diag || extraLines || previewBlock || respJson) {
+                    setMindmapResultHtml(`
+                    <div style="color: var(--text-secondary); font-size:0.85rem;">
+                        <div style="font-weight:600; color: var(--text-primary); margin-bottom:0.35rem;">生成失败诊断信息</div>
+                        ${diag ? `<div style="margin-bottom:0.35rem;">${diag}</div>` : ''}
+                        ${extraLines ? `<div style="margin-bottom:0.35rem;">${formatMarkdown('```\n' + extraLines + '\n```')}</div>` : ''}
+                        ${previewBlock ? `<div>${previewBlock}</div>` : ''}
+                        ${respJson ? `<div>${respJson}</div>` : ''}
+                    </div>
+                `);
+                }
+                return;
+            }
+
+            const imageUrl = data.image_url;
+            if (!imageUrl) {
+                setMindmapStatus('生成失败：未返回图片链接');
+                return;
+            }
+
+            const execId = data.execute_id ? escapeHtml(data.execute_id) : '';
+            const dbgUrl = data.debug_url ? escapeHtml(data.debug_url) : '';
+            const safeUrl = escapeHtml(imageUrl);
+            setMindmapStatus('已生成：可预览');
+            setMindmapResultHtml(`
+            <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                ${execId ? `<div style="color: var(--text-muted); font-size:0.85rem;">execute_id：<code>${execId}</code></div>` : ''}
+                <div style="display:flex; gap:0.75rem; align-items:flex-start; flex-wrap:wrap;">
+                    <img src="${safeUrl}" alt="mindmap" style="max-width: 520px; width:100%; height:auto; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: white;" />
+                    <div style="flex:1; min-width: 220px; display:flex; flex-direction:column; gap:0.5rem;">
+                        <a class="resource-btn primary" href="${safeUrl}" target="_blank" rel="noopener">
+                            <i class="fas fa-external-link-alt"></i> 打开图片链接
+                        </a>
+                        ${dbgUrl ? `<a class="resource-btn" href="${dbgUrl}" target="_blank" rel="noopener"><i class="fas fa-bug"></i> 打开调试链接</a>` : ''}
+                        <div style="color: var(--text-muted); font-size:0.85rem; word-break:break-all;">URL：<a href="${safeUrl}" target="_blank" rel="noopener">${safeUrl}</a></div>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        } catch (e) {
+            console.error(e);
+            setMindmapStatus('生成失败：网络或服务异常');
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    function setPptResultHtml(html) {
+        const el = document.getElementById('pptResultArea');
+        if (!el) return;
+        el.style.display = html ? 'block' : 'none';
+        el.innerHTML = html || '';
+    }
+
+    function stopPptPolling() {
+        if (pptPollTimer) {
+            clearInterval(pptPollTimer);
+            pptPollTimer = null;
+        }
+        pptPollInFlight = false;
+    }
+
+    async function createPptTask() {
+        const btn = document.getElementById('pptCreateBtn');
+        const queryEl = document.getElementById('pptQuery');
+        const templateEl = document.getElementById('pptTemplateId');
+        const authorEl = document.getElementById('pptAuthor');
+        const isFigureEl = document.getElementById('pptIsFigure');
+        const aiImageEl = document.getElementById('pptAiImage');
+        const isCardNoteEl = document.getElementById('pptIsCardNote');
+        const searchEl = document.getElementById('pptSearch');
+
+        const query = (queryEl?.value || '').trim();
+        if (!query) {
+            setPptStatus('请先输入 PPT 生成要求');
+            return;
+        }
+
+        stopPptPolling();
+        currentPptSid = null;
+        setPptResultHtml('');
+        setPptStatus('正在创建 PPT 任务...');
+
+        if (btn) btn.disabled = true;
+        try {
+            const payload = {
+                query,
+                templateId: (templateEl?.value || '').trim(),
+                author: (authorEl?.value || '').trim(),
+                language: 'CN',
+                isFigure: !!isFigureEl?.checked,
+                aiImage: (aiImageEl?.value || 'normal'),
+                isCardNote: !!isCardNoteEl?.checked,
+                search: !!searchEl?.checked,
+            };
+
+            const resp = await fetch('/agent/ppt/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                const baseMsg = (data.error || data.desc || resp.statusText || '未知错误');
+                setPptStatus('创建失败：' + baseMsg);
+                if (data.http_status || data.content_type || data.body_preview || data.response) {
+                    const diag = [
+                        data.http_status ? `HTTP：${data.http_status}` : '',
+                        data.content_type ? `Content-Type：${data.content_type}` : ''
+                    ].filter(Boolean).join('  ');
+                    const extraLines = [
+                        data.used_app_id ? `used_app_id：${data.used_app_id}` : '',
+                        data.api_secret_length ? `api_secret_length：${data.api_secret_length}` : '',
+                        data.request_method ? `request_method：${data.request_method}` : '',
+                        data.request_url ? `request_url：${data.request_url}` : '',
+                        data.allow_header ? `allow_header：${data.allow_header}` : ''
+                    ].filter(Boolean).join('\n');
+                    const preview = (data.body_preview || '').toString();
+                    const previewBlock = preview ? formatMarkdown('```\n' + preview + '\n```') : '';
+                    const respJson = data.response ? formatMarkdown('```json\n' + JSON.stringify(data.response, null, 2) + '\n```') : '';
+                    const redirectJson = data.redirect_chain ? formatMarkdown('```json\n' + JSON.stringify(data.redirect_chain, null, 2) + '\n```') : '';
+                    const hintBlock = data.hint ? `<div style="margin-top:0.5rem; color: var(--text-secondary);">提示：${escapeHtml(data.hint)}</div>` : '';
+                    setPptResultHtml(`
+                    <div style="color: var(--text-secondary); font-size:0.85rem;">
+                        <div style="font-weight:600; color: var(--text-primary); margin-bottom:0.35rem;">创建失败诊断信息</div>
+                        ${diag ? `<div style="margin-bottom:0.35rem;">${diag}</div>` : ''}
+                        ${extraLines ? `<div style="margin-bottom:0.35rem;">${formatMarkdown('```\n' + extraLines + '\n```')}</div>` : ''}
+                        ${previewBlock ? `<div>${previewBlock}</div>` : ''}
+                        ${respJson ? `<div>${respJson}</div>` : ''}
+                        ${redirectJson ? `<div>${redirectJson}</div>` : ''}
+                        ${hintBlock}
+                    </div>
+                `);
+                }
+                return;
+            }
+
+            if (data.code !== 0) {
+                setPptStatus('创建失败：' + (data.desc || ('错误码 ' + data.code)));
+                return;
+            }
+
+            const sid = data?.data?.sid;
+            if (!sid) {
+                setPptStatus('创建失败：未返回 sid');
+                return;
+            }
+
+            currentPptSid = sid;
+            const cover = data?.data?.coverImgSrc;
+            const title = data?.data?.title;
+            const subTitle = data?.data?.subTitle;
+
+            let headerHtml = `<div style="display:flex; gap:0.75rem; align-items:flex-start;">`;
+            if (cover) {
+                headerHtml += `<img src="${cover}" alt="cover" style="width:120px; height:auto; border-radius: var(--radius-md); border: 1px solid var(--border-color);" />`;
+            }
+            headerHtml += `<div style="flex:1;">`;
+            headerHtml += `<div style="font-weight:600; color: var(--text-primary);">${title || 'PPT任务已创建'}</div>`;
+            if (subTitle) headerHtml += `<div style="margin-top:0.25rem; color: var(--text-muted); font-size:0.85rem;">${subTitle}</div>`;
+            headerHtml += `<div style="margin-top:0.5rem; color: var(--text-secondary); font-size:0.85rem;">SID：<code>${sid}</code></div>`;
+            headerHtml += `</div></div>`;
+            setPptResultHtml(headerHtml);
+
+            setPptStatus('任务已创建，正在查询进度...');
+            startPptPolling(sid);
+        } catch (e) {
+            console.error(e);
+            setPptStatus('创建失败：网络或服务异常');
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    function startPptPolling(sid) {
+        stopPptPolling();
+        pptPollTimer = setInterval(async () => {
+            if (pptPollInFlight) return;
+            pptPollInFlight = true;
+            try {
+                const resp = await fetch('/agent/ppt/progress?sid=' + encodeURIComponent(sid));
+                const data = await resp.json();
+
+                if (!resp.ok || data.error) {
+                    const baseMsg = (data.error || resp.statusText || '未知错误');
+                    setPptStatus('进度查询失败：' + baseMsg);
+                    if (data.http_status || data.content_type || data.body_preview) {
+                        const diag = [
+                            data.http_status ? `HTTP：${data.http_status}` : '',
+                            data.content_type ? `Content-Type：${data.content_type}` : ''
+                        ].filter(Boolean).join('  ');
+                        const extraLines = [
+                            data.used_app_id ? `used_app_id：${data.used_app_id}` : '',
+                            data.api_secret_length ? `api_secret_length：${data.api_secret_length}` : '',
+                            data.request_method ? `request_method：${data.request_method}` : '',
+                            data.request_url ? `request_url：${data.request_url}` : '',
+                            data.allow_header ? `allow_header：${data.allow_header}` : ''
+                        ].filter(Boolean).join('\n');
+                        const preview = (data.body_preview || '').toString();
+                        const previewBlock = preview ? formatMarkdown('```\n' + preview + '\n```') : '';
+                        const redirectJson = data.redirect_chain ? formatMarkdown('```json\n' + JSON.stringify(data.redirect_chain, null, 2) + '\n```') : '';
+                        const el = document.getElementById('pptResultArea');
+                        if (el && previewBlock) {
+                            el.style.display = 'block';
+                            el.innerHTML = el.innerHTML + `
+                            <div style="margin-top:0.75rem; color: var(--text-secondary); font-size:0.85rem;">
+                                <div style="font-weight:600; color: var(--text-primary); margin-bottom:0.35rem;">进度接口诊断信息</div>
+                                ${diag ? `<div style=\"margin-bottom:0.35rem;\">${diag}</div>` : ''}
+                                ${extraLines ? `<div style=\"margin-bottom:0.35rem;\">${formatMarkdown('```\n' + extraLines + '\n```')}</div>` : ''}
+                                <div>${previewBlock}</div>
+                                ${redirectJson ? `<div>${redirectJson}</div>` : ''}
+                            </div>
+                        `;
+                        }
+                    }
+                    stopPptPolling();
+                    return;
+                }
+
+                if (data.code !== 0) {
+                    setPptStatus('进度查询失败：' + (data.desc || ('错误码 ' + data.code)));
+                    stopPptPolling();
+                    return;
+                }
+
+                const d = data.data || {};
+                const pptStatus = d.pptStatus;
+                const aiImageStatus = d.aiImageStatus;
+                const cardNoteStatus = d.cardNoteStatus;
+                const totalPages = d.totalPages;
+                const donePages = d.donePages;
+
+                const pageText = (totalPages != null && donePages != null) ? `（${donePages}/${totalPages}页）` : '';
+                setPptStatus(`生成中：PPT=${pptStatus || '-'}，配图=${aiImageStatus || '-'}，备注=${cardNoteStatus || '-'} ${pageText}`);
+
+                if (pptStatus === 'build_failed') {
+                    setPptStatus('生成失败：' + (d.errMsg || 'build_failed'));
+                    stopPptPolling();
+                    return;
+                }
+
+                const ok = (pptStatus === 'done' && (!d.aiImageStatus || aiImageStatus === 'done') && (!d.cardNoteStatus || cardNoteStatus === 'done'));
+                if (ok) {
+                    stopPptPolling();
+                    const url = d.pptUrl;
+                    if (url) {
+                        const extra = `
+                        <div style="margin-top:0.75rem; display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                            <a class="resource-btn primary" href="${url}" target="_blank" rel="noopener">
+                                <i class="fas fa-download"></i> 下载PPT
+                            </a>
+                            <span style="color: var(--text-muted); font-size:0.85rem;">链接有效期约 30 天</span>
+                        </div>
+                    `;
+                        const el = document.getElementById('pptResultArea');
+                        if (el) el.innerHTML = el.innerHTML + extra;
+                        setPptStatus('已完成：可下载 PPT');
+                    } else {
+                        setPptStatus('已完成，但未返回 pptUrl');
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                setPptStatus('进度查询异常');
+                stopPptPolling();
+            } finally {
+                pptPollInFlight = false;
+            }
+        }, 3000);
+    }
+
+    // 学习规划
+    async function planLearning() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        const msg = '请帮我规划学习路径';
+        addMessage(msg, 'user', '学习规划');
+        showTyping('正在分析您的学习需求...');
+
+        try {
+            const response = await fetch('/agent/plan/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    topic: 'Python机器学习',
+                    duration_weeks: 4,
+                    daily_hours: 2
+                })
+            });
+
+            const data = await response.json();
+            removeTyping();
+
+            if (data.plan) {
+                displayLearningPath(data.plan);
+                addMessage('已为您生成个性化的4周学习计划！', 'ai', '学习规划');
+            } else {
+                addMessage('学习规划功能暂时不可用，请稍后重试。', 'ai', '系统');
+            }
+
+        } catch (e) {
+            removeTyping();
+            addMessage('学习规划功能暂时不可用，请稍后重试。', 'ai', '系统');
+            console.error(e);
+        }
+    }
+
+    // 显示学习路径
+    function displayLearningPath(plan) {
+        const panel = document.getElementById('learningPathPanel');
+        const content = document.getElementById('learningPathContent');
+        panel.style.display = 'block';
+
+        const steps = plan.steps || plan.milestones || [];
+        content.innerHTML = steps.map((s, i) => `
+        <div class="path-item">
+            <div class="path-number">${i + 1}</div>
+            <div class="path-content">
+                <h5>${s.title || s.name || '学习步骤 ' + (i + 1)}</h5>
+                <p>${s.description || s.content || s.task || ''}</p>
+                ${s.duration ? `<span class="path-tag"><i class="fas fa-clock"></i> ${s.duration}</span>` : ''}
+            </div>
+        </div>
+    `).join('');
+    }
+
+    // 效果评估
+    async function startAssessment() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        addMessage('请对我的学习效果进行评估', 'user', '效果评估');
+        showTyping('正在分析学习数据...');
+
+        try {
+            const response = await fetch('/agent/assessment/report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    quiz_results: [85, 90, 78],
+                    total_study_time: 120,
+                    topic_progress: { 'Python基础': 80, '机器学习': 60 }
+                })
+            });
+
+            const data = await response.json();
+            removeTyping();
+
+            if (data.report) {
+                displayAssessmentReport(data.report, data.report_text);
+            } else {
+                addMessage('暂无足够的学习数据进行评估，请先完成一些学习活动。', 'ai', '效果评估');
+            }
+
+        } catch (e) {
+            removeTyping();
+            addMessage('效果评估功能暂时不可用，请稍后重试。', 'ai', '系统');
+            console.error(e);
+        }
+    }
+
+    // 显示评估报告
+    function displayAssessmentReport(report, reportText) {
+        const msg = `
+        <div class="assessment-card">
+            <div class="assessment-header">
+                <span class="assessment-score">${report.overall_score || 85}</span>
+                <span class="assessment-level">${report.level || '优秀'}</span>
+            </div>
+            <div class="assessment-dimensions">
+                ${(report.dimensions || []).map(d => `
+                    <div class="dimension-item">
+                        <div class="dimension-value">${d.score || 0}</div>
+                        <div class="dimension-name">${d.name || '维度'}</div>
+                        <div class="dimension-bar">
+                            <div class="dimension-fill" style="width: ${d.score || 0}%"></div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        ${reportText || ''}
+    `;
+        addMessage(msg, 'ai', '效果评估');
+    }
+
+    // 多智能体问答
+    async function askMultiAgent(msg) {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        addMessage(msg, 'user', '多智能体');
+        showTyping('多智能体系统正在处理...');
+
+        try {
+            const response = await fetch('/agent/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: msg })
+            });
+
+            const data = await response.json();
+            removeTyping();
+            addMessage(data.answer || data.response || '处理完成', 'ai', '智能辅导');
+
+        } catch (e) {
+            removeTyping();
+            addMessage('智能辅导功能暂时不可用，请稍后重试。', 'ai', '系统');
+            console.error(e);
+        }
+    }
+
+    // 更新进度项
+    function updateProgressItem(id, status) {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.className = 'progress-item ' + status;
+        const icon = el.querySelector('i');
+        if (icon) {
+            if (status === 'done') icon.className = 'fas fa-check-circle';
+            else if (status === 'running') icon.className = 'fas fa-spinner fa-spin';
+            else icon.className = 'fas fa-circle';
+        }
+    }
+
+    function updateProfileProgress(status) {
+        updateProgressItem('prog-profile', status);
+    }
+
+    // ==================== 原有功能 ====================
+
+    function handleKeyDown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
+
+    function autoResize(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+    }
+
+    function selectCategory(category, element) {
+        currentCategory = category;
+        document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    function newChat() {
+        clearChat();
+        showWelcome();
+    }
+
+    function showWelcome() {
+        const box = document.getElementById('chatMessages');
+        let multiWelcomeHtml = '';
+
+        if (currentMode === 'multi') {
+            multiWelcomeHtml = `
+            <div id="multiWelcome" style="margin-top: 1rem;">
+                <h4 style="color: var(--text-primary); margin-bottom: 1rem;">🚀 多智能体学习系统</h4>
+                <div class="quick-prompts" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="prompt-card" onclick="buildProfile()">
+                        <div class="prompt-icon" style="background: rgba(156, 39, 176, 0.2);"><i class="fas fa-id-card" style="color: #9C27B0;"></i></div>
+                        <div class="prompt-content">
+                            <h5>构建学习画像</h5>
+                            <p>10维度智能分析</p>
+                        </div>
+                    </div>
+                    <div class="prompt-card" onclick="generateResources()">
+                        <div class="prompt-icon" style="background: rgba(67, 100, 247, 0.2);"><i class="fas fa-file-alt" style="color: var(--info-color);"></i></div>
+                        <div class="prompt-content">
+                            <h5>生成学习资源</h5>
+                            <p>6种多模态资源</p>
+                        </div>
+                    </div>
+                    <div class="prompt-card" onclick="planLearning()">
+                        <div class="prompt-icon" style="background: rgba(46, 125, 50, 0.2);"><i class="fas fa-route" style="color: var(--success-color);"></i></div>
+                        <div class="prompt-content">
+                            <h5>智能学习规划</h5>
+                            <p>个性化学习路径</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        }
+
+        box.innerHTML = `
+        <div class="welcome-section" id="welcomeBox">
+            <div class="welcome-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h3 class="welcome-title" id="welcomeTitle">您好，我是您的AI学习助手</h3>
+            <p class="welcome-desc" id="welcomeDesc">
+                基于海量教育知识库训练，我可以帮助您解答学习相关问题、<br>
+                提供个性化学习建议和考试技巧指导
+            </p>
+            
+            <div class="quick-prompts" id="quickPrompts">
+                <div class="prompt-card" onclick="askQuestion('如何制定高效的期末复习计划？')">
+                    <div class="prompt-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="prompt-content">
+                        <h5>期末复习计划</h5>
+                        <p>科学安排复习时间</p>
+                    </div>
+                </div>
+                <div class="prompt-card" onclick="askQuestion('如何提高编程题的解题能力？')">
+                    <div class="prompt-icon"><i class="fas fa-code"></i></div>
+                    <div class="prompt-content">
+                        <h5>编程能力提升</h5>
+                        <p>高效刷题技巧</p>
+                    </div>
+                </div>
+                <div class="prompt-card" onclick="askQuestion('知识点总是记不住怎么办？')">
+                    <div class="prompt-icon"><i class="fas fa-brain"></i></div>
+                    <div class="prompt-content">
+                        <h5>高效记忆方法</h5>
+                        <p>科学记忆技巧</p>
+                    </div>
+                </div>
+                <div class="prompt-card" onclick="askQuestion('考试紧张如何缓解？')">
+                    <div class="prompt-icon"><i class="fas fa-heart-pulse"></i></div>
+                    <div class="prompt-content">
+                        <h5>考试心理调适</h5>
+                        <p>缓解考试焦虑</p>
+                    </div>
+                </div>
+            </div>
+            ${multiWelcomeHtml}
+        </div>
+    `;
+    }
+
+    function askQuestion(q) {
+        document.getElementById('userInput').value = q;
+        sendMessage();
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('userInput');
+        const msg = input.value.trim();
+        if (!msg || isTyping) return;
+
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        // 根据用户意图选择处理方式
+        if (userIntent === 'ppt') {
+            // PPT生成
+            generatePptFromDialog(msg);
+            userIntent = null; // 重置意图
+        } else if (userIntent === 'mindmap') {
+            // 思维导图生成
+            generateMindmapFromDialog(msg);
+            userIntent = null; // 重置意图
+        } else if (userIntent === 'course_doc') {
+            generateCourseDocFromDialog(msg);
+            userIntent = null;
+        } else if (userIntent === 'quiz') {
+            generateQuizFromDialog(msg);
+            userIntent = null;
+        } else if (userIntent === 'resume') {
+            // 简历生成
+            generateResumeFromDialog(msg);
+            userIntent = null; // 重置意图
+        } else if (userIntent === 'video') {
+            generateTeachingVideoFromDialog(msg);
+            userIntent = null;
+        } else if (userIntent === 'research') {
+            askResearchModel(msg);
+            userIntent = null;
+        } else if (userIntent === 'knowledge') {
+            // 知识问答
+            askKnowledgeQuestion(msg);
+            userIntent = null; // 重置意图
+        } else if (currentMode === 'multi') {
+            // 多智能体模式
+            askMultiAgent(msg);
+        } else {
+            // 普通知识问答
+            sendToKnowledgeBase(msg);
+        }
+
+        input.value = '';
+        input.style.height = 'auto';
+        
+        // 恢复默认占位符
+        input.placeholder = '输入您的问题，AI助手将为您解答...（Enter发送，Shift+Enter换行）';
+    }
+
+    function sendToKnowledgeBase(msg) {
+        addMessage(msg, 'user');
+        showTyping();
+
+        fetch('/intelligent-assistant/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: msg })
+        })
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error('服务器返回错误: ' + r.status + ' ' + r.statusText);
+                }
+                return r.json();
+            })
+            .then(data => {
+                removeTyping();
+                if (data.error) {
+                    addMessage('抱歉，出现了错误：' + data.error, 'ai');
+                } else {
+                    addMessage(data.answer, 'ai', data.category);
+                    if (data.similar_questions && data.similar_questions.length > 0) {
+                        showSuggested(data.similar_questions);
+                    }
+                }
+            })
+            .catch(err => {
+                removeTyping();
+                console.error('智能问答请求失败:', err);
+                addMessage('抱歉，网络出现了问题，请稍后重试。（' + err.message + '）', 'ai');
+            });
+    }
+
+    function addMessage(content, type, category = null) {
+        const box = document.getElementById('chatMessages');
+        const now = new Date();
+        const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+        const icon = type === 'ai' ? 'fa-robot' : 'fa-user';
+        const name = type === 'ai' ? 'AI助手' : '我';
+
+        let catBadge = '';
+        if (type === 'ai' && category) {
+            catBadge = `<span class="message-category">${category}</span>`;
+        }
+
+        const formatted = formatMarkdown(content);
+
+        const div = document.createElement('div');
+        div.className = `message-wrapper ${type}`;
+        div.innerHTML = `
+        <div class="message-avatar"><i class="fas ${icon}"></i></div>
+        <div class="message-content">
+            <div class="message-header">
+                <span class="message-sender">${name}</span>
+                ${catBadge}
+            </div>
+            <div class="message-text">${formatted}</div>
+            <div class="message-time">${time}</div>
+        </div>
+    `;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // Markdown格式化
+    function formatMarkdown(content) {
+        if (!content) return '';
+
+        // 处理HTML标签（防止XSS但允许基本格式）
+        let formatted = content
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        // 标题
+        formatted = formatted.replace(/^### (.+)$/gm, '<h4>$1</h4>');
+        formatted = formatted.replace(/^## (.+)$/gm, '<h3>$1</h3>');
+        formatted = formatted.replace(/^# (.+)$/gm, '<h2>$1</h2>');
+
+        // 粗体斜体
+        formatted = formatted.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+        formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+        // 代码块
+        formatted = formatted.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
+        formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+        // 列表
+        formatted = formatted.replace(/^\- (.+)$/gm, '<li>$1</li>');
+        formatted = formatted.replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>');
+        formatted = formatted.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+        // 链接
+        formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+        // 换行和段落
+        formatted = formatted.replace(/\n\n/g, '</p><p>');
+        formatted = formatted.replace(/\n/g, '<br>');
+        if (!formatted.startsWith('<p>') && !formatted.startsWith('<h') && !formatted.startsWith('<ul')) {
+            formatted = '<p>' + formatted + '</p>';
+        }
+
+        return formatted;
+    }
+
+    function showTyping(text = 'AI正在思考中...') {
+        isTyping = true;
+        const box = document.getElementById('chatMessages');
+        const typing = document.createElement('div');
+        typing.className = 'ai-thinking';
+        typing.id = 'typing';
+        typing.innerHTML = `
+        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+        <div class="thinking-indicator">
+            <div class="thinking-dots">
+                <span></span><span></span><span></span>
+            </div>
+            <span class="thinking-text">${text}</span>
+        </div>
+    `;
+        box.appendChild(typing);
+        box.scrollTop = box.scrollHeight;
+        document.getElementById('sendBtn').disabled = true;
+    }
+
+    function removeTyping() {
+        isTyping = false;
+        const typing = document.getElementById('typing');
+        if (typing) typing.remove();
+        document.getElementById('sendBtn').disabled = false;
+    }
+
+    function showSuggested(questions) {
+        const area = document.getElementById('suggestedArea');
+        area.innerHTML = `
+        <div class="suggested-title"><i class="fas fa-lightbulb"></i> 您可能还想了解：</div>
+        <div class="suggested-list">
+            ${questions.map(q => `<span class="suggested-item" onclick="askQuestion('${q.replace(/'/g, "\\'")}')">${q.length > 15 ? q.substring(0, 15) + '...' : q}</span>`).join('')}
+        </div>
+    `;
+    }
+
+    function clearChat() {
+        const box = document.getElementById('chatMessages');
+        box.innerHTML = '';
+
+        // 隐藏资源卡片区
+        const resourceArea = document.getElementById('resourceCardsArea');
+        if (resourceArea) resourceArea.style.display = 'none';
+
+        // 隐藏学习路径
+        const pathPanel = document.getElementById('learningPathPanel');
+        if (pathPanel) pathPanel.style.display = 'none';
+
+        // 重置进度
+        const progressEl = document.getElementById('generationProgress');
+        if (progressEl) progressEl.classList.remove('active');
+    }
+
+    function exportChat() {
+        const messages = document.querySelectorAll('.message-wrapper');
+        if (messages.length === 0) {
+            alert('暂无对话内容可导出');
+            return;
+        }
+
+        let content = '# 对话记录\n\n';
+        messages.forEach(m => {
+            const sender = m.querySelector('.message-sender')?.textContent || '';
+            const text = m.querySelector('.message-text')?.textContent || '';
+            const time = m.querySelector('.message-time')?.textContent || '';
+            content += `## ${sender} [${time}]\n\n${text}\n\n---\n\n`;
+        });
+
+        const blob = new Blob([content], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '对话记录_' + new Date().toLocaleDateString() + '.md';
+        a.click();
+    }
+
+    // ==================== 资源操作 ====================
+    function viewResource(id) {
+        currentResourceId = id;
+        // 模拟获取资源详情
+        const resources = window.generatedResources || [];
+        const resource = resources.find(r => (r.id === id) || (r.resource_id === id)) || {
+            id,
+            type: 'course_document',
+            title: '学习资源',
+            full_content: '这是一份详细的学习资源内容...',
+            duration: 30,
+            difficulty: 'medium'
+        };
+
+        const resType = resource.type || resource.resource_type || 'course_document';
+        const iconMap = {
+            'course_document': 'fa-file-alt',
+            'mind_map': 'fa-sitemap',
+            'exercises': 'fa-question-circle',
+            'video_script': 'fa-video',
+            'code_practice': 'fa-code',
+            'extended_reading': 'fa-book-open',
+            // 兼容旧键
+            'document': 'fa-file-alt',
+            'mindmap': 'fa-sitemap',
+            'quiz': 'fa-question-circle',
+            'video': 'fa-video',
+            'code': 'fa-code',
+            'extended': 'fa-book-open'
+        };
+
+        const duration = resource.duration || resource.estimated_time || 30;
+        const difficulty = resource.difficulty || 'medium';
+        const difficultyText = (difficulty === 'easy') ? '简单' : (difficulty === 'hard') ? '困难' : (difficulty === 'medium') ? '中等' : difficulty;
+        const content = resource.full_content || resource.content || '';
+        const contentHtml = formatMarkdown(content);
+
+        document.getElementById('modalTitle').textContent = resource.title || '学习资源';
+        document.getElementById('modalIcon').innerHTML = `<i class="fas ${iconMap[resType] || 'fa-file-alt'}"></i>`;
+        document.getElementById('modalBody').innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <span style="padding: 0.3rem 0.8rem; background: rgba(67, 100, 247, 0.1); border-radius: 20px; font-size: 0.8rem;">
+                    <i class="fas fa-clock"></i> ${duration}分钟
+                </span>
+                <span style="padding: 0.3rem 0.8rem; background: rgba(46, 125, 50, 0.1); border-radius: 20px; font-size: 0.8rem;">
+                    <i class="fas fa-signal"></i> ${difficultyText}
+                </span>
+            </div>
+            <div style="line-height: 1.8; color: var(--text-secondary);">
+                ${content ? contentHtml : '资源内容正在加载中...'}
+            </div>
+        </div>
+        <div style="background: var(--bg-input); border-radius: var(--radius-md); padding: 1rem;">
+            <h5 style="margin: 0 0 0.5rem; color: var(--text-primary);">
+                <i class="fas fa-star" style="color: var(--warning-color);"></i> 学习要点
+            </h5>
+            <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-secondary);">
+                <li>掌握核心概念和基本原理</li>
+                <li>通过实践加深理解</li>
+                <li>完成配套练习题</li>
+                <li>总结归纳知识点</li>
+            </ul>
+        </div>
+    `;
+
+        document.getElementById('resourceModal').classList.add('active');
+    }
+
+    function useResource(id) {
+        currentResourceId = id;
+        collectedResources++;
+        checkAchievements();
+        updateLearningGoals();
+
+        addMessage('资源已添加到学习队列，开始学习吧！', 'ai', '系统');
+
+        // 更新目标进度
+        const resourceGoals = document.querySelectorAll('.goal-item');
+        if (resourceGoals[1]) {
+            if (collectedResources >= 1) {
+                resourceGoals[1].querySelector('input').checked = true;
+                resourceGoals[1].classList.add('completed');
+            }
+        }
+    }
+
+    function closeResourceModal() {
+        document.getElementById('resourceModal').classList.remove('active');
+    }
+
+    function startLearning() {
+        closeResourceModal();
+        addMessage(`开始学习资源：${document.getElementById('modalTitle').textContent}。建议按以下步骤进行：\n\n1. 先通读全文，了解整体框架\n2. 标记重点内容\n3. 完成练习题\n4. 整理笔记和思维导图`, 'ai', '学习指导');
+    }
+
+    // ==================== 主题切换 ====================
+    function toggleTheme() {
+        const html = document.documentElement;
+        const toggle = document.getElementById('themeToggle');
+        const icon = toggle.querySelector('i');
+
+        if (html.getAttribute('data-theme') === 'dark') {
+            html.removeAttribute('data-theme');
+            icon.className = 'fas fa-moon';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    // 初始化主题
+    function initTheme() {
+        const saved = localStorage.getItem('theme');
+        const toggle = document.getElementById('themeToggle');
+        const icon = toggle.querySelector('i');
+
+        if (saved === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+        }
+    }
+
+    // ==================== 声音提示 ====================
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+            // 播放提示音
+            playNotificationSound();
+        }
+    }
+
+    function playNotificationSound() {
+        if (!soundEnabled) return;
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        gainNode.gain.value = 0.1;
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.1);
+    }
+
+    // ==================== 成就系统 ====================
+    function checkAchievements() {
+        // 检查首次对话成就
+        if (messageCount >= 1 && !achievements.first_chat) {
+            achievements.first_chat = true;
+            showAchievement('🎉', '首次对话', '恭喜完成第一次对话！');
+            unlockBadge('first_chat');
+        }
+
+        // 检查画像构建成就
+        if (profileBuilt && !achievements.profile_builder) {
+            achievements.profile_builder = true;
+            showAchievement('👤', '画像构建者', '成功构建学习画像！');
+            unlockBadge('profile_builder');
+        }
+
+        // 检查资源收集成就
+        if (collectedResources >= 5 && !achievements.resource_collector) {
+            achievements.resource_collector = true;
+            showAchievement('📚', '资源收藏家', '已收集5份学习资源！');
+            unlockBadge('resource_collector');
+        }
+
+        updateAchievementsUI();
+    }
+
+    function unlockBadge(key) {
+        const badge = document.getElementById(`badge-${key}`);
+        if (badge) {
+            badge.classList.add('unlocked');
+        }
+    }
+
+    function showAchievement(emoji, title, desc) {
+        const toast = document.createElement('div');
+        toast.className = 'achievement-toast';
+        toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.95), rgba(156, 39, 176, 0.95));
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        z-index: 2000;
+        animation: slideInRight 0.5s ease;
+    `;
+        toast.innerHTML = `
+        <span style="font-size: 2rem;">${emoji}</span>
+        <div>
+            <div style="font-weight: 600;">${title}</div>
+            <div style="font-size: 0.85rem; opacity: 0.9;">${desc}</div>
+        </div>
+    `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.5s ease forwards';
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+
+    function updateAchievementsUI() {
+        const badges = document.querySelectorAll('.achievement-badge');
+        const achievementList = [
+            { key: 'first_chat', icon: 'fa-comment' },
+            { key: 'profile_builder', icon: 'fa-id-card' },
+            { key: 'resource_collector', icon: 'fa-bookmark' },
+            { key: 'learning_streak', icon: 'fa-fire' }
+        ];
+
+        badges.forEach((badge, i) => {
+            if (achievementList[i] && achievements[achievementList[i].key]) {
+                badge.classList.add('unlocked');
+            }
+        });
+    }
+
+    // ==================== 学习目标 ====================
+    function updateLearningGoals() {
+        // 更新目标1（对话次数）
+        const dialogGoals = document.querySelectorAll('.goal-item');
+        if (dialogGoals[2]) {
+            if (messageCount >= 10) {
+                dialogGoals[2].querySelector('input').checked = true;
+                dialogGoals[2].classList.add('completed');
+            }
+        }
+    }
+
+    // ==================== 消息操作 ====================
+    function copyMessage(content, btn) {
+        navigator.clipboard.writeText(content).then(() => {
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+                btn.innerHTML = originalIcon;
+            }, 1500);
+        });
+    }
+
+    function giveFeedback(msgId, type) {
+        const feedbackBtns = document.querySelectorAll(`[data-msg="${msgId}"] .feedback-btn`);
+        feedbackBtns.forEach(btn => btn.classList.remove('active'));
+
+        const targetBtn = document.querySelector(`[data-msg="${msgId}"] .feedback-${type}`);
+        if (targetBtn) {
+            targetBtn.classList.add('active');
+        }
+
+        addMessage(`感谢您的反馈！您的意见将帮助我不断改进。`, 'ai', '系统');
+    }
+
+    // ==================== 增强的消息添加 ====================
+    function addMessage(content, type, category = null) {
+        messageCount++;
+        checkAchievements();
+        updateLearningGoals();
+
+        if (soundEnabled) {
+            playNotificationSound();
+        }
+
+        const box = document.getElementById('chatMessages');
+        const now = new Date();
+        const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+        const icon = type === 'ai' ? 'fa-robot' : 'fa-user';
+        const name = type === 'ai' ? 'AI助手' : '我';
+
+        let catBadge = '';
+        if (type === 'ai' && category) {
+            catBadge = `<span class="message-category">${category}</span>`;
+        }
+
+        const formatted = formatMarkdown(content);
+        const msgId = 'msg_' + Date.now();
+
+        const div = document.createElement('div');
+        div.className = `message-wrapper ${type}`;
+        div.setAttribute('data-msg', msgId);
+        div.innerHTML = `
+        <div class="message-avatar"><i class="fas ${icon}"></i></div>
+        <div class="message-content">
+            <div class="message-header">
+                <span class="message-sender">${name}</span>
+                ${catBadge}
+            </div>
+            <div class="message-text">${formatted}</div>
+            ${type === 'ai' ? `
+            <div class="message-feedback">
+                <button class="feedback-btn feedback-good" onclick="giveFeedback('${msgId}', 'good')">
+                    <i class="fas fa-thumbs-up"></i> 有用
+                </button>
+                <button class="feedback-btn feedback-bad" onclick="giveFeedback('${msgId}', 'bad')">
+                    <i class="fas fa-thumbs-down"></i> 待改进
+                </button>
+            </div>
+            ` : ''}
+            <div class="message-actions">
+                <button class="msg-action-btn" onclick="copyMessage(\`${content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`, this)" title="复制">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            <div class="message-time">${time}</div>
+        </div>
+    `;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // 添加HTML消息（不进行转义，直接渲染HTML）
+    function addHtmlMessage(htmlContent, type, category = null) {
+        messageCount++;
+        checkAchievements();
+        updateLearningGoals();
+
+        if (soundEnabled) {
+            playNotificationSound();
+        }
+
+        const box = document.getElementById('chatMessages');
+        const now = new Date();
+        const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+        const icon = type === 'ai' ? 'fa-robot' : 'fa-user';
+        const name = type === 'ai' ? 'AI助手' : '我';
+
+        let catBadge = '';
+        if (type === 'ai' && category) {
+            catBadge = `<span class="message-category">${category}</span>`;
+        }
+
+        const msgId = 'msg_' + Date.now();
+
+        const div = document.createElement('div');
+        div.className = `message-wrapper ${type}`;
+        div.setAttribute('data-msg', msgId);
+        div.innerHTML = `
+        <div class="message-avatar"><i class="fas ${icon}"></i></div>
+        <div class="message-content">
+            <div class="message-header">
+                <span class="message-sender">${name}</span>
+                ${catBadge}
+            </div>
+            <div class="message-text">${htmlContent}</div>
+            ${type === 'ai' ? `
+            <div class="message-feedback">
+                <button class="feedback-btn feedback-good" onclick="giveFeedback('${msgId}', 'good')">
+                    <i class="fas fa-thumbs-up"></i> 有用
+                </button>
+                <button class="feedback-btn feedback-bad" onclick="giveFeedback('${msgId}', 'bad')">
+                    <i class="fas fa-thumbs-down"></i> 待改进
+                </button>
+            </div>
+            ` : ''}
+            <div class="message-time">${time}</div>
+        </div>
+    `;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // ==================== 键盘快捷键 ====================
+    document.addEventListener('keydown', (e) => {
+        // Ctrl+K 打开快捷问题
+        if (e.ctrlKey && e.key === 'k') {
+            e.preventDefault();
+            const suggested = document.getElementById('suggestedArea');
+            if (suggested) {
+                suggested.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Escape 关闭弹窗
+        if (e.key === 'Escape') {
+            closeResourceModal();
+        }
+    });
+
+    // 添加CSS动画
+    const style = document.createElement('style');
+    style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+    document.head.appendChild(style);
+
+    // ==================== PPT 生成对话模式 ====================
+    function openPptDialog() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        // 设置用户意图为PPT生成
+        userIntent = 'ppt';
+
+        // 添加系统提示消息
+        addMessage('请输入您想要生成的PPT主题和要求，例如：\n\n"请生成一份《机器学习》教学PPT，包含定义、推导、例题与小结。"\n\n或者直接输入科目名称，我会为您智能生成完整的PPT内容。', 'ai', 'PPT生成');
+        
+        // 聚焦输入框
+        const inputEl = document.getElementById('userInput');
+        if (inputEl) {
+            inputEl.placeholder = '输入PPT生成要求，例如：机器学习';
+            inputEl.focus();
+        }
+    }
+
+    // PPT生成处理函数（从对话调用）
+    async function generatePptFromDialog(topic) {
+        addMessage(topic, 'user', 'PPT生成');
+        showTyping('正在为您生成PPT，请稍候...');
+
+        try {
+            const payload = {
+                query: topic,
+                templateId: '',
+                author: '',
+                language: 'CN',
+                isFigure: true,
+                aiImage: 'normal',
+                isCardNote: false,
+                search: false,
+            };
+
+            const resp = await fetch('/agent/ppt/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                removeTyping();
+                const baseMsg = (data.error || data.desc || resp.statusText || '未知错误');
+                addMessage('PPT创建失败：' + baseMsg + '\n\n如需重试，请重新点击PPT生成按钮。', 'ai', 'PPT生成');
+                return;
+            }
+
+            if (data.code !== 0) {
+                removeTyping();
+                addMessage('PPT创建失败：' + (data.desc || ('错误码 ' + data.code)) + '\n\n如需重试，请重新点击PPT生成按钮。', 'ai', 'PPT生成');
+                return;
+            }
+
+            const sid = data?.data?.sid;
+            if (!sid) {
+                removeTyping();
+                addMessage('PPT创建失败：未返回任务ID\n\n如需重试，请重新点击PPT生成按钮。', 'ai', 'PPT生成');
+                return;
+            }
+
+            currentPptSid = sid;
+            const cover = data?.data?.coverImgSrc;
+            const title = data?.data?.title;
+            const subTitle = data?.data?.subTitle;
+
+            removeTyping();
+            
+            let resultMsg = `✅ PPT任务已创建！\n\n`;
+            resultMsg += `📝 标题：${title || '正在生成...'}\n`;
+            if (subTitle) resultMsg += `📌 副标题：${subTitle}\n`;
+            resultMsg += `🆔 任务ID：${sid}\n\n`;
+            resultMsg += `⏳ 正在生成中，请稍候...`;
+            
+            addMessage(resultMsg, 'ai', 'PPT生成');
+            
+            // 开始轮询进度
+            pollPptProgress(sid, topic);
+            
+        } catch (e) {
+            removeTyping();
+            console.error(e);
+            addMessage('PPT生成失败：网络或服务异常\n\n如需重试，请重新点击PPT生成按钮。', 'ai', 'PPT生成');
+        }
+    }
+
+    // PPT进度轮询
+    function pollPptProgress(sid, topic) {
+        const maxAttempts = 60; // 最多轮询60次（3分钟）
+        let attempts = 0;
+        
+        const pollTimer = setInterval(async () => {
+            attempts++;
+            
+            if (attempts > maxAttempts) {
+                clearInterval(pollTimer);
+                addMessage('⏱️ PPT生成超时，请稍后在"生成资源"中查看，或重新生成。', 'ai', 'PPT生成');
+                return;
+            }
+            
+            try {
+                const resp = await fetch('/agent/ppt/progress?sid=' + encodeURIComponent(sid));
+                const data = await resp.json();
+
+                if (!resp.ok || data.error || data.code !== 0) {
+                    clearInterval(pollTimer);
+                    addMessage('❌ PPT进度查询失败，但任务可能仍在进行中。\n\n如需重试，请重新点击PPT生成按钮。', 'ai', 'PPT生成');
+                    return;
+                }
+
+                const d = data.data || {};
+                const pptStatus = d.pptStatus;
+                const aiImageStatus = d.aiImageStatus;
+                const totalPages = d.totalPages;
+                const donePages = d.donePages;
+
+                if (pptStatus === 'build_failed') {
+                    clearInterval(pollTimer);
+                    addMessage('❌ PPT生成失败：' + (d.errMsg || 'build_failed') + '\n\n如需重试，请重新点击PPT生成按钮。', 'ai', 'PPT生成');
+                    return;
+                }
+
+                const isComplete = (pptStatus === 'done' && (!d.aiImageStatus || aiImageStatus === 'done'));
+                
+                if (isComplete) {
+                    clearInterval(pollTimer);
+                    const url = d.pptUrl;
+                    if (url) {
+                        let successMsg = `🎉 PPT生成完成！\n\n`;
+                        successMsg += `📊 《${topic}》PPT已生成\n`;
+                        if (totalPages) successMsg += `📄 共${totalPages}页\n`;
+                        successMsg += `\n🔗 下载链接：\n${url}\n\n`;
+                        successMsg += `💡 提示：链接有效期约30天，请及时下载保存。`;
+                        addMessage(successMsg, 'ai', 'PPT生成');
+                    } else {
+                        addMessage('✅ PPT已生成完成，但未返回下载链接。请稍后重试。', 'ai', 'PPT生成');
+                    }
+                }
+            } catch (e) {
+                console.error('PPT进度查询异常:', e);
+            }
+        }, 3000); // 每3秒查询一次
+    }
+
+    // ==================== 思维导图生成对话模式 ====================
+    function openMindmapDialog() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        // 设置用户意图为思维导图生成
+        userIntent = 'mindmap';
+
+        // 添加系统提示消息
+        addMessage('请输入您想要生成思维导图的科目名称，例如：\n\n"机器学习"\n"数据结构"\n"操作系统"\n\n我会为您智能生成该科目的知识体系思维导图。', 'ai', '思维导图生成');
+        
+        // 聚焦输入框
+        const inputEl = document.getElementById('userInput');
+        if (inputEl) {
+            inputEl.placeholder = '输入科目名称，例如：机器学习';
+            inputEl.focus();
+        }
+    }
+
+    // 思维导图生成处理函数（从对话调用）
+    async function generateMindmapFromDialog(subject) {
+        addMessage(subject, 'user', '思维导图生成');
+        showTyping('正在为您生成思维导图，请稍候...');
+
+        try {
+            const resp = await fetch('/agent/mindmap/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ input: subject })
+            });
+            
+            const parsed = await readJsonResponse(resp);
+            const data = parsed.json;
+
+            if (!parsed.isJson) {
+                removeTyping();
+                addMessage('❌ 思维导图生成失败：服务返回异常\n\n如需重试，请重新点击思维导图生成按钮。', 'ai', '思维导图生成');
+                return;
+            }
+
+            if (!resp.ok || data.error || data.ok === false) {
+                removeTyping();
+                const baseMsg = (data.error || data.message || resp.statusText || '未知错误');
+                addMessage('❌ 思维导图生成失败：' + baseMsg + '\n\n如需重试，请重新点击思维导图生成按钮。', 'ai', '思维导图生成');
+                return;
+            }
+
+            const imageUrl = data.image_url;
+            if (!imageUrl) {
+                removeTyping();
+                addMessage('❌ 思维导图生成失败：未返回图片链接\n\n如需重试，请重新点击思维导图生成按钮。', 'ai', '思维导图生成');
+                return;
+            }
+
+            removeTyping();
+            
+            const execId = data.execute_id || '';
+            let successMsg = `🎉 思维导图生成完成！\n\n🗺️ 《${subject}》知识体系思维导图`;
+            if (execId) successMsg += `\n🆔 执行ID：${execId}`;
+            
+            addMessage(successMsg, 'ai', '思维导图生成');
+            
+            // 使用addHtmlMessage直接显示图片（不进行HTML转义）
+            const imgHtml = `
+                <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-input); border-radius: var(--radius-md);">
+                    <img src="${escapeHtml(imageUrl)}" alt="思维导图" style="max-width: 100%; height: auto; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: white; display: block;" />
+                    <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener" style="padding: 0.5rem 1rem; background: var(--gradient-primary); border: none; border-radius: var(--radius-sm); color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; cursor: pointer;">
+                            <i class="fas fa-external-link-alt"></i> 打开原图
+                        </a>
+                        <a href="${escapeHtml(imageUrl)}" download="mindmap_${subject}.png" style="padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; cursor: pointer;">
+                            <i class="fas fa-download"></i> 下载图片
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            addHtmlMessage(imgHtml, 'ai', '思维导图生成');
+            
+        } catch (e) {
+            removeTyping();
+            console.error(e);
+            addMessage('❌ 思维导图生成失败：网络或服务异常\n\n如需重试，请重新点击思维导图生成按钮。', 'ai', '思维导图生成');
+        }
+    }
+
+    function openTeachingVideoDialog() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        userIntent = 'video';
+
+        addMessage(
+            '🎬 **教学视频生成（数字人）**\n\n' +
+            '请输入你想讲解的知识点，或直接输入一段讲解提示词（Prompt）。\n\n' +
+            '📌 **推荐输入格式：**\n' +
+            '• 直接输入知识点名称：例如“梯度下降”\n' +
+            '• 或输入更具体要求：例如“用3分钟讲清楚反向传播，包含一个小例子和常见误区”\n\n' +
+            '⏱️ **提示：** 输入越清晰，生成的视频讲解越贴合你的需求。',
+            'ai',
+            '教学视频生成'
+        );
+
+        const inputEl = document.getElementById('userInput');
+        if (inputEl) {
+            inputEl.placeholder = '输入知识点或讲解要求（建议2000字以内）';
+            inputEl.focus();
+        }
+    }
+
+    async function generateTeachingVideoFromDialog(text) {
+        if (videoPollTimer) {
+            clearTimeout(videoPollTimer);
+            videoPollTimer = null;
+        }
+        currentVideoTaskId = null;
+        currentVideoRecordId = null;
+        videoPollInFlight = false;
+
+        const msg = (text || '').trim();
+        if (!msg) return;
+
+        addMessage(msg, 'user', '教学视频生成');
+        showTyping('正在创建教学视频任务，请稍候...');
+
+        try {
+            const body = msg.length <= 40 ? { topic: msg, word_count: 120 } : { prompt: msg, word_count: 120 };
+            const resp = await fetch('/agent/video/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                removeTyping();
+                const errMsg = data.error || data.message || resp.statusText || '未知错误';
+                addMessage('❌ 教学视频生成失败：' + errMsg, 'ai', '教学视频生成');
+                return;
+            }
+
+            currentVideoTaskId = data.task_id;
+            currentVideoRecordId = data.id;
+
+            addMessage(
+                `✅ 已创建视频任务\n\n🆔 任务ID：${data.task_id}\n⏳ 正在生成中，生成完成后将自动展示播放。`,
+                'ai',
+                '教学视频生成'
+            );
+
+            _pollTeachingVideoTask(1500);
+        } catch (e) {
+            removeTyping();
+            console.error(e);
+            addMessage('❌ 教学视频生成失败：网络或服务异常\n\n如需重试，请重新点击教学视频生成按钮。', 'ai', '教学视频生成');
+        }
+    }
+
+    async function _pollTeachingVideoTask(delayMs) {
+        if (!currentVideoTaskId || !currentVideoRecordId) {
+            removeTyping();
+            return;
+        }
+        if (videoPollInFlight) return;
+
+        videoPollInFlight = true;
+        try {
+            const resp = await fetch('/agent/video/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: currentVideoRecordId, task_id: currentVideoTaskId })
+            });
+            const data = await resp.json();
+            videoPollInFlight = false;
+
+            if (!resp.ok || data.error) {
+                const nextDelay = Math.min(8000, Math.floor(delayMs * 1.3));
+                videoPollTimer = setTimeout(() => _pollTeachingVideoTask(nextDelay), nextDelay);
+                return;
+            }
+
+            const status = String(data.task_status || '');
+            const payload = data.payload || {};
+            const videoUrl = payload.video || '';
+
+            if ((status === '3' || status === '4') && videoUrl) {
+                removeTyping();
+
+                const audioUrl = payload.audio || '';
+                const imageUrl = payload.image || '';
+                const expandedText = payload.text || '';
+
+                const html = `
+                    <div style="margin-top: 0.5rem; padding: 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-primary);">
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">
+                            🎬 教学视频已生成
+                        </div>
+                        <video controls style="width: 100%; border-radius: var(--radius-md); background: #000;" src="${escapeHtml(videoUrl)}"></video>
+                        <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <a href="${escapeHtml(videoUrl)}" target="_blank" rel="noopener" style="padding: 0.5rem 1rem; background: var(--gradient-primary); border: none; border-radius: var(--radius-sm); color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; cursor: pointer;">
+                                <i class="fas fa-external-link-alt"></i> 打开视频链接
+                            </a>
+                            ${audioUrl ? `
+                                <a href="${escapeHtml(audioUrl)}" target="_blank" rel="noopener" style="padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; cursor: pointer;">
+                                    <i class="fas fa-volume-up"></i> 音频
+                                </a>
+                            ` : ''}
+                            ${imageUrl ? `
+                                <a href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener" style="padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; cursor: pointer;">
+                                    <i class="fas fa-image"></i> 封面图
+                                </a>
+                            ` : ''}
+                        </div>
+                        ${expandedText ? `
+                            <div style="margin-top: 0.75rem; color: var(--text-secondary); font-size: 0.85rem; white-space: pre-wrap;">${escapeHtml(expandedText)}</div>
+                        ` : ''}
+                    </div>
+                `;
+
+                addHtmlMessage(html, 'ai', '教学视频生成');
+                return;
+            }
+
+            const nextDelay = Math.min(8000, Math.floor(delayMs * 1.3));
+            videoPollTimer = setTimeout(() => _pollTeachingVideoTask(nextDelay), nextDelay);
+        } catch (e) {
+            videoPollInFlight = false;
+            const nextDelay = Math.min(8000, Math.floor(delayMs * 1.3));
+            videoPollTimer = setTimeout(() => _pollTeachingVideoTask(nextDelay), nextDelay);
+        }
+    }
+
+    // ==================== 课程讲解文档对话模式 ====================
+    function openCourseDocDialog() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        userIntent = 'course_doc';
+
+        addMessage(
+            '📘 **课程讲解文档生成（PDF）**\n\n' +
+            '请输入你要生成讲解文档的课程名称，例如：\n' +
+            '• 数据结构\n' +
+            '• 机器学习\n' +
+            '• 计算机网络\n\n' +
+            '生成完成后会返回 PDF 下载链接。',
+            'ai',
+            '课程讲解文档'
+        );
+
+        const inputEl = document.getElementById('userInput');
+        if (inputEl) {
+            inputEl.placeholder = '请输入课程名称，例如：机器学习';
+            inputEl.focus();
+        }
+    }
+
+    async function generateCourseDocFromDialog(courseName) {
+        const name = (courseName || '').trim();
+        if (!name) return;
+
+        addMessage(name, 'user', '课程讲解文档');
+        showTyping('正在生成课程讲解文档，请稍候...');
+
+        try {
+            const resp = await fetch('/agent/course-document/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ course_name: name })
+            });
+
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                removeTyping();
+                let baseMsg = (data.error || data.message || resp.statusText || '未知错误');
+                if (data.code) baseMsg += `（错误码：${data.code}）`;
+                if (data.response) console.error('课程讲解文档API响应详情:', data.response);
+                addMessage('❌ 课程讲解文档生成失败：' + baseMsg + '\n\n如需重试，请重新输入课程名称。', 'ai', '课程讲解文档');
+                return;
+            }
+
+            removeTyping();
+
+            const url = data.document_url || '';
+            if (!url) {
+                addMessage('❌ 未返回有效的文档链接，请重试。', 'ai', '课程讲解文档');
+                return;
+            }
+
+            addMessage(`✅ 课程讲解文档生成完成：${data.course_name || name}`, 'ai', '课程讲解文档');
+
+            const docHtml = `
+                <div style="margin-top: 0.75rem; padding: 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-primary);">
+                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">📄 PDF 文档</div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="padding: 0.5rem 1rem; background: var(--gradient-primary); border: none; border-radius: var(--radius-sm); color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; cursor: pointer;">
+                            <i class="fas fa-download"></i> 下载/打开 PDF
+                        </a>
+                    </div>
+                </div>
+            `;
+            addHtmlMessage(docHtml, 'ai', '课程讲解文档');
+        } catch (e) {
+            removeTyping();
+            console.error(e);
+            addMessage('❌ 课程讲解文档生成失败：网络或服务异常\n\n请检查网络连接后重试。', 'ai', '课程讲解文档');
+        }
+    }
+
+    // ==================== 题库生成对话模式 ====================
+    function openQuizDialog() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        userIntent = 'quiz';
+
+        addMessage(
+            '📝 **题库生成（Coze）**\n\n' +
+            '请输入题库主题（topic），例如：\n' +
+            '• Python基础\n' +
+            '• 数据结构-栈与队列\n' +
+            '• 机器学习-线性回归\n\n' +
+            '默认会生成：选择题/填空题/简答题，各 2 题，难度：中级。\n\n' +
+            '如果你想自定义参数，也可以直接输入 JSON，例如：\n' +
+            '```json\n' +
+            '{\n' +
+            '  \"topic\": \"Python基础\",\n' +
+            '  \"question_types\": [\"选择题\", \"填空题\", \"简答题\"],\n' +
+            '  \"difficulty\": \"中级\",\n' +
+            '  \"count_per_type\": 2\n' +
+            '}\n' +
+            '```',
+            'ai',
+            '题库生成'
+        );
+
+        const inputEl = document.getElementById('userInput');
+        if (inputEl) {
+            inputEl.placeholder = '输入题库主题（或输入JSON参数）';
+            inputEl.focus();
+        }
+    }
+
+    async function generateQuizFromDialog(inputText) {
+        const text = (inputText || '').trim();
+        if (!text) return;
+
+        addMessage(text, 'user', '题库生成');
+        showTyping('正在生成题库，请稍候...');
+
+        let req = null;
+        if (text.startsWith('{') && text.endsWith('}')) {
+            try {
+                req = JSON.parse(text);
+            } catch (e) {
+                req = null;
+            }
+        }
+        if (!req) {
+            req = {
+                topic: text,
+                question_types: ['选择题', '填空题', '简答题'],
+                difficulty: '中级',
+                count_per_type: 2
+            };
+        }
+
+        try {
+            const resp = await fetch('/agent/quiz/coze/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(req)
+            });
+
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                removeTyping();
+                let baseMsg = (data.error || data.message || resp.statusText || '未知错误');
+                if (data.code) baseMsg += `（错误码：${data.code}）`;
+                if (data.response) console.error('题库生成API响应详情:', data.response);
+                addMessage('❌ 题库生成失败：' + baseMsg + '\n\n如需重试，请重新输入主题或JSON参数。', 'ai', '题库生成');
+                return;
+            }
+
+            removeTyping();
+
+            const result = data.formatted_result || {};
+            const title = result.quiz_title || `${result.topic || data.topic || ''}${result.difficulty || data.difficulty || ''}测验`;
+            const questions = Array.isArray(result.questions) ? result.questions : [];
+
+            addMessage(`✅ 题库生成完成：${title}`, 'ai', '题库生成');
+
+            const cards = questions.map(q => {
+                const qType = q.type || '';
+                const qText = q.question || '';
+                const answer = q.answer || '';
+                const explanation = q.explanation || '';
+                const options = q.options || null;
+
+                let optionsHtml = '';
+                if (options && typeof options === 'object') {
+                    const keys = Object.keys(options);
+                    if (keys.length > 0) {
+                        optionsHtml = `
+                            <div style="margin-top: 0.5rem; display: grid; gap: 0.25rem;">
+                                ${keys.map(k => `
+                                    <div style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: rgba(255,255,255,0.02);">
+                                        <strong>${escapeHtml(k)}.</strong> ${escapeHtml(String(options[k] ?? ''))}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                }
+
+                return `
+                    <div style="margin-top: 0.75rem; padding: 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-primary);">
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.35rem;">
+                            ${escapeHtml(String(q.id || ''))} · ${escapeHtml(qType)}
+                        </div>
+                        <div style="white-space: pre-wrap; color: var(--text-primary);">${formatMarkdown(escapeHtml(qText))}</div>
+                        ${optionsHtml}
+                        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color);">
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">参考答案</div>
+                            <div style="white-space: pre-wrap;">${escapeHtml(String(answer))}</div>
+                            ${explanation ? `
+                                <div style="margin-top: 0.5rem; color: var(--text-secondary); white-space: pre-wrap;">${escapeHtml(String(explanation))}</div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const stats = result.statistics || {};
+            const total = stats.total_questions || questions.length || 0;
+            const quizHtml = `
+                <div style="margin-top: 0.75rem; padding: 1rem; background: var(--bg-input); border-radius: var(--radius-md);">
+                    <div style="font-weight: 700; margin-bottom: 0.25rem;">${escapeHtml(title)}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.85rem;">题目数：${escapeHtml(String(total))}</div>
+                </div>
+                ${cards || '<div style="margin-top: 0.75rem; color: var(--text-secondary);">未返回题目列表</div>'}
+            `;
+
+            addHtmlMessage(quizHtml, 'ai', '题库生成');
+        } catch (e) {
+            removeTyping();
+            console.error(e);
+            addMessage('❌ 题库生成失败：网络或服务异常\n\n请检查网络连接后重试。', 'ai', '题库生成');
+        }
+    }
+
+    // ==================== 简历生成对话模式 ====================
+    function openResumeDialog() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        // 设置用户意图为简历生成
+        userIntent = 'resume';
+
+        // 添加系统提示消息
+        addMessage(
+            '🎯 **智能简历生成**\n\n' +
+            '请输入您的个人信息和求职需求，我将为您量身定制专业简历模板。\n\n' +
+            '📋 **必填信息：**\n' +
+            '• **基本信息：** 姓名、联系方式（手机/邮箱）、求职意向\n' +
+            '• **教育背景：** 学校名称、专业、学历层次\n' +
+            '• **工作经验：** 公司名称、职位、主要职责或成就\n' +
+            '• **核心技能：** 专业技能、技术栈、工具软件\n\n' +
+            '⚡ **成功要点：**\n' +
+            '• 🎯 **控制长度：** 建议500字以内（约1分钟阅读）\n' +
+            '• 📝 **简洁明了：** 使用关键词，避免冗长描述\n' +
+            '• 🔥 **突出重点：** 核心技能和主要成就\n' +
+            '• 📞 **联系方式：** 确保准确可用\n\n' +
+            '📖 **输入示例：**\n' +
+            '```\n' +
+            '张小明，北京大学计算机科学本科毕业\n' +
+            '联系方式：138-0000-1234，zhangming@email.com\n' +
+            '工作经验：腾讯Java后端开发工程师2年\n' +
+            '技术技能：Java、Spring Boot、MySQL、Redis\n' +
+            '求职意向：高级Java开发工程师\n' +
+            '```\n\n' +
+            '💡 **专业提示：** 系统会根据您的信息智能生成1-3份不同风格的简历模板！',
+            'ai', 
+            '简历生成'
+        );
+        
+        // 聚焦输入框并添加字符计数器
+        const inputEl = document.getElementById('userInput');
+        if (inputEl) {
+            inputEl.placeholder = '输入个人信息（建议500字以内，当前: 0字）';
+            inputEl.focus();
+            
+            // 添加实时字符计数
+            inputEl.addEventListener('input', function() {
+                const length = this.value.length;
+                let status = '';
+                if (length <= 300) {
+                    status = '✅ 长度适中';
+                } else if (length <= 500) {
+                    status = '⚠️ 接近上限';
+                } else {
+                    status = '❌ 超出建议';
+                }
+                this.placeholder = `输入个人信息（建议500字以内，当前: ${length}字 ${status}）`;
+            });
+        }
+    }
+
+    // 简历生成处理函数（从对话调用）
+    async function generateResumeFromDialog(resumeInfo) {
+        // 检查内容长度并提供预警
+        if (resumeInfo.length > 500) {
+            const proceed = confirm(
+                `⚠️ 内容长度预警\n\n` +
+                `当前输入：${resumeInfo.length}字\n` +
+                `建议长度：500字以内\n\n` +
+                `长内容可能导致生成超时失败。\n` +
+                `是否继续生成？\n\n` +
+                `建议：点击"取消"优化内容后重试`
+            );
+            
+            if (!proceed) {
+                // 提供优化建议
+                addMessage(
+                    `📝 **内容优化建议**\n\n` +
+                    `当前内容：${resumeInfo.length}字（超出建议长度）\n\n` +
+                    `**快速优化技巧：**\n` +
+                    `• 保留核心信息：姓名、联系方式、求职意向\n` +
+                    `• 简化教育背景：学校名称 + 专业 + 学历\n` +
+                    `• 精简工作经验：公司 + 职位 + 主要成就\n` +
+                    `• 技能关键词：列举核心技术栈即可\n\n` +
+                    `**优化示例：**\n` +
+                    `"李四，北京大学计算机本科，3年Python开发经验，熟悉Django/Flask，求职后端开发工程师。电话：139xxxx5678"`,
+                    'ai', 
+                    '简历生成'
+                );
+                return;
+            }
+        }
+        
+        addMessage(resumeInfo, 'user', '简历生成');
+        showTyping('正在为您智能生成简历，请稍候...');
+
+        try {
+            const resp = await fetch('/agent/resume/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resume_info: resumeInfo })
+            });
+            
+            const data = await resp.json();
+
+            if (!resp.ok || data.error || data.ok === false) {
+                removeTyping();
+                let baseMsg = (data.error || data.message || resp.statusText || '未知错误');
+                
+                // 显示更详细的错误信息用于调试
+                if (data.code) {
+                    baseMsg += `（错误码：${data.code}）`;
+                }
+                if (data.message && data.message !== baseMsg) {
+                    baseMsg += `，详情：${data.message}`;
+                }
+                if (data.response) {
+                    console.error('简历生成API响应详情:', data.response);
+                }
+                
+                // 针对特定错误码提供优化建议
+                let errorMessage = '❌ 简历生成失败：' + baseMsg;
+                
+                if (data.code === 10909) {
+                    const contentLength = data.content_length || resumeInfo.length;
+                    errorMessage += '\n\n💡 **超时解决方案：**\n';
+                    errorMessage += `• 当前内容长度：${contentLength}字，建议控制在500字以内\n`;
+                    errorMessage += '• **立即优化建议：**\n';
+                    errorMessage += '  - 保留核心信息：姓名、学历、工作经验、技能\n';
+                    errorMessage += '  - 删除详细描述和冗余词汇\n';
+                    errorMessage += '  - 使用关键词而非完整句子\n';
+                    errorMessage += '• **分批生成策略：**\n';
+                    errorMessage += '  - 第1次：基本信息 + 教育背景（100字以内）\n';
+                    errorMessage += '  - 第2次：工作经验 + 核心技能（200字以内）\n';
+                    errorMessage += '• **最佳实践：**\n';
+                    errorMessage += '  - 避开高峰期（工作日9-18点）\n';
+                    errorMessage += '  - 确保网络连接稳定\n';
+                    errorMessage += '  - 参考简历生成指南优化内容格式\n\n';
+                    errorMessage += '🔄 **重试建议：** 请按照上述建议优化内容后重新生成。';
+                } else if (data.code === 11200 || data.code === 11201) {
+                    errorMessage += '\n\n⚠️ **调用限制：** API调用次数已达每日上限\n';
+                    errorMessage += '• 每日调用限制已满，请明天再试\n';
+                    errorMessage += '• 或联系管理员申请额度提升';
+                } else if (data.code === 10163) {
+                    errorMessage += '\n\n📝 **格式问题：** 输入格式需要优化\n';
+                    errorMessage += '• 移除特殊字符和符号\n';
+                    errorMessage += '• 使用纯文本格式\n';
+                    errorMessage += '• 避免复杂的格式标记';
+                } else if (data.code === 10200) {
+                    errorMessage += '\n\n⏱️ **数据读取超时：** 内容处理时间过长\n';
+                    errorMessage += '• 请大幅简化简历内容\n';
+                    errorMessage += '• 检查网络连接稳定性\n';
+                    errorMessage += '• 稍等5-10分钟后重试';
+                } else {
+                    errorMessage += '\n\n🔧 **通用解决方案：**\n';
+                    errorMessage += '• 检查网络连接是否正常\n';
+                    errorMessage += '• 简化输入内容后重试\n';
+                    errorMessage += '• 如问题持续，请联系技术支持';
+                    errorMessage += '\n\n如需重试，请重新点击简历生成按钮。';
+                }
+                
+                addMessage(errorMessage, 'ai', '简历生成');
+                return;
+            }
+
+            const links = data.links;
+            const count = data.count || 0;
+            
+            if (!links || !Array.isArray(links) || links.length === 0) {
+                removeTyping();
+                addMessage('❌ 简历生成失败：未返回简历链接\n\n如需重试，请重新点击简历生成按钮。', 'ai', '简历生成');
+                return;
+            }
+
+            removeTyping();
+            
+            const sid = data.sid || '';
+            let successMsg = `🎉 简历生成完成！\n\n📄 已为您生成 ${count} 份专业简历模板`;
+            if (sid) successMsg += `\n🆔 任务ID：${sid}`;
+            successMsg += `\n\n📋 简历列表：`;
+            
+            addMessage(successMsg, 'ai', '简历生成');
+            
+            // 显示简历链接
+            const resumeHtml = links.map((link, index) => {
+                const imgUrl = link.img_url || '';
+                const wordUrl = link.word_url || '';
+                
+                return `
+                    <div style="margin: 0.5rem 0; padding: 1rem; background: var(--bg-input); border-radius: var(--radius-md); border-left: 4px solid var(--color-primary);">
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">
+                            📄 简历模板 ${index + 1}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem;">
+                            ${imgUrl ? `
+                                <a href="${escapeHtml(imgUrl)}" target="_blank" rel="noopener" style="padding: 0.5rem 1rem; background: var(--gradient-primary); border: none; border-radius: var(--radius-sm); color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; cursor: pointer;">
+                                    <i class="fas fa-image"></i> 预览图片
+                                </a>
+                            ` : ''}
+                            ${wordUrl ? `
+                                <a href="${escapeHtml(wordUrl)}" target="_blank" rel="noopener" style="padding: 0.5rem 1rem; background: var(--color-success); border: none; border-radius: var(--radius-sm); color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; cursor: pointer;">
+                                    <i class="fas fa-file-word"></i> 下载Word
+                                </a>
+                            ` : ''}
+                            ${!imgUrl && !wordUrl ? `
+                                <span style="color: var(--text-secondary); font-size: 0.8rem;">
+                                    <i class="fas fa-info-circle"></i> 简历正在生成中...
+                                </span>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            addHtmlMessage(resumeHtml, 'ai', '简历生成');
+            
+            // 添加使用提示
+            const tipMsg = `💡 使用提示：\n• 简历模板已根据您的信息量身定制\n• 建议下载Word版本进行个性化修改\n• 链接有效期约30天，请及时保存`;
+            addMessage(tipMsg, 'ai', '简历生成');
+            
+        } catch (e) {
+            removeTyping();
+            console.error(e);
+            addMessage('❌ 简历生成失败：网络或服务异常\n\n如需重试，请重新点击简历生成按钮。', 'ai', '简历生成');
+        }
+    }
+
+    function openResearchDialog() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        userIntent = 'research';
+
+        addMessage(
+            '🔬 **科研大模型（科技文献 kjwx）**\n\n' +
+            '你可以把科研相关的问题直接发给我，例如：\n' +
+            '• 帮我概括这段论文内容的贡献点\n' +
+            '• 给出实验设计/消融实验建议\n' +
+            '• 帮我润色摘要或改写段落\n' +
+            '• 针对某个方法给出可复现的实现步骤\n\n' +
+            '提示：如需结合上下文，我会自动保留最近几轮对话。',
+            'ai',
+            '科研大模型'
+        );
+
+        const inputEl = document.getElementById('userInput');
+        if (inputEl) {
+            inputEl.placeholder = '请输入科研问题（可粘贴论文段落/实验描述/写作草稿）';
+            inputEl.focus();
+        }
+    }
+
+    let researchHistory = [];
+
+    async function askResearchModel(question) {
+        const q = (question || '').trim();
+        if (!q) return;
+
+        addMessage(q, 'user', '科研大模型');
+        showTyping('正在调用科研大模型，请稍候...');
+
+        try {
+            const resp = await fetch('/agent/research/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: q,
+                    domain: 'kjwx',
+                    temperature: 0.5,
+                    max_tokens: 4096,
+                    history: researchHistory
+                })
+            });
+
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                removeTyping();
+                let baseMsg = (data.error || data.message || resp.statusText || '未知错误');
+                if (data.code) baseMsg += `（错误码：${data.code}）`;
+                if (data.response) console.error('科研大模型API响应详情:', data.response);
+                addMessage('❌ 科研大模型调用失败：' + baseMsg + '\n\n如需重试，请重新提问。', 'ai', '科研大模型');
+                return;
+            }
+
+            removeTyping();
+
+            const content = data.content || '';
+            if (!content) {
+                addMessage('❌ 未收到有效回答，请重新提问。', 'ai', '科研大模型');
+                return;
+            }
+
+            let answerMsg = '💡 **回答：**\n\n' + content;
+            const usage = data.usage || {};
+            if (usage && usage.text && usage.text.total_tokens) {
+                answerMsg += `\n\n📊 **统计信息：**\n`;
+                answerMsg += `• 总Token数：${usage.text.total_tokens}\n`;
+                if (usage.text.completion_tokens) answerMsg += `• 回答Token数：${usage.text.completion_tokens}\n`;
+                if (usage.text.prompt_tokens) answerMsg += `• 提示Token数：${usage.text.prompt_tokens}\n`;
+            }
+
+            addMessage(answerMsg, 'ai', '科研大模型');
+
+            const references = data.references || [];
+            if (Array.isArray(references) && references.length > 0) {
+                const refHtml = `
+                    <div style="margin-top: 0.75rem; padding: 1rem; background: var(--bg-input); border-radius: var(--radius-md);">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">🔗 参考信源</div>
+                        <div style="display: grid; gap: 0.4rem;">
+                            ${references.slice(0, 8).map(r => {
+                                const title = (r.title || r.url || '').toString();
+                                const url = (r.url || '').toString();
+                                return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color: var(--color-primary); text-decoration: none;">${escapeHtml(title)}</a>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                addHtmlMessage(refHtml, 'ai', '科研大模型');
+            }
+
+            researchHistory.push({ role: 'user', content: q });
+            researchHistory.push({ role: 'assistant', content: content });
+            if (researchHistory.length > 12) {
+                researchHistory = researchHistory.slice(-12);
+            }
+        } catch (e) {
+            removeTyping();
+            console.error(e);
+            addMessage('❌ 科研大模型调用失败：网络或服务异常\n\n请检查网络连接后重试。', 'ai', '科研大模型');
+        }
+    }
+
+    // ==================== 知识问答对话模式 ====================
+    function openKnowledgeDialog() {
+        const welcome = document.getElementById('welcomeBox');
+        if (welcome) welcome.remove();
+
+        // 设置用户意图为知识问答
+        userIntent = 'knowledge';
+
+        // 添加系统提示消息
+        addMessage('您好！我是基于星火大模型的智能问答助手。\n\n我可以帮您解答各种问题，包括：\n• 学科知识和概念解释\n• 技术问题和编程疑问\n• 生活常识和实用建议\n• 学习方法和职业规划\n\n请直接输入您的问题，我会为您提供详细准确的答案。', 'ai', '知识问答');
+        
+        // 聚焦输入框
+        const inputEl = document.getElementById('userInput');
+        if (inputEl) {
+            inputEl.placeholder = '请输入您的问题，例如：什么是机器学习？';
+            inputEl.focus();
+        }
+    }
+
+    // 知识问答处理函数（从对话调用）
+    async function askKnowledgeQuestion(question) {
+        addMessage(question, 'user', '知识问答');
+        showTyping('正在思考中，请稍候...');
+
+        try {
+            const resp = await fetch('/agent/knowledge/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    question: question,
+                    enable_search: true,  // 开启网络搜索
+                    temperature: 0.7,     // 适中的创造性
+                    max_tokens: 4096      // 最大回复长度
+                })
+            });
+            
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                removeTyping();
+                let baseMsg = (data.error || data.message || resp.statusText || '未知错误');
+                
+                // 显示更详细的错误信息用于调试
+                if (data.code) {
+                    baseMsg += `（错误码：${data.code}）`;
+                }
+                if (data.response) {
+                    console.error('知识问答API响应详情:', data.response);
+                }
+                
+                addMessage('❌ 知识问答失败：' + baseMsg + '\n\n如需重试，请重新提问。', 'ai', '知识问答');
+                return;
+            }
+
+            removeTyping();
+
+            // 检查是否有推理过程
+            const reasoning = data.reasoning_content;
+            const content = data.content;
+            const usage = data.usage;
+
+            if (!content) {
+                addMessage('❌ 未收到有效回答，请重新提问。', 'ai', '知识问答');
+                return;
+            }
+
+            // 如果有推理过程，先显示推理过程
+            if (reasoning && reasoning.trim()) {
+                addMessage('🤔 **思考过程：**\n\n' + reasoning, 'ai', '知识问答-推理');
+            }
+
+            // 显示最终答案
+            let answerMsg = '💡 **回答：**\n\n' + content;
+            
+            // 添加token使用信息
+            if (usage && usage.total_tokens) {
+                answerMsg += `\n\n📊 **统计信息：**\n`;
+                answerMsg += `• 总Token数：${usage.total_tokens}\n`;
+                if (usage.completion_tokens) answerMsg += `• 回答Token数：${usage.completion_tokens}\n`;
+                if (usage.search_prompt_tokens) answerMsg += `• 搜索Token数：${usage.search_prompt_tokens}\n`;
+            }
+
+            addMessage(answerMsg, 'ai', '知识问答');
+            
+        } catch (e) {
+            removeTyping();
+            console.error(e);
+            addMessage('❌ 知识问答失败：网络或服务异常\n\n请检查网络连接后重试。', 'ai', '知识问答');
+        }
+    }
+
+    // 存储生成的资源供详情页使用
+    window.generatedResources = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('userInput').focus();
+
+        // 如果是刷新页面，保持基础模式
+        if (!currentMode) {
+            currentMode = 'basic';
+        }
+
+        // 初始化主题
+        initTheme();
+
+        // 初始化成就UI
+        updateAchievementsUI();
+    });
+</script>
+{% endblock %}

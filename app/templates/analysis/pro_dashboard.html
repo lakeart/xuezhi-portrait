@@ -1,0 +1,745 @@
+{% extends "base.html" %}
+
+{% block title %}教师仪表盘 - 学智画像：教育大数据赋能高校学情可视分析系统{% endblock %}
+
+{% block styles %}
+<style>
+    /* 深色科技风背景 */
+    .analysis-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #1C2128 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* 动态网格背景 */
+    .analysis-grid-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(67, 100, 247, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(67, 100, 247, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        pointer-events: none;
+    }
+
+    /* 渐变光晕 */
+    .analysis-glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.2;
+        animation: glowPulse 8s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    .glow-1 {
+        width: 400px;
+        height: 400px;
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        top: -100px;
+        right: -100px;
+    }
+
+    .glow-2 {
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(135deg, #A371F7, #6FB1FC);
+        bottom: 20%;
+        left: -50px;
+        animation-delay: -4s;
+    }
+
+    @keyframes glowPulse {
+        0%, 100% { transform: scale(1); opacity: 0.2; }
+        50% { transform: scale(1.1); opacity: 0.3; }
+    }
+
+    /* 主内容区 */
+    .analysis-content {
+        position: relative;
+        z-index: 10;
+        padding: 2rem;
+    }
+
+    /* 页面标题卡片 */
+    .page-header-card {
+        background: rgba(28, 33, 40, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #0052D4, #4364F7, #6FB1FC, #A371F7);
+        background-size: 300% 100%;
+        animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        box-shadow: 0 0 30px rgba(67, 100, 247, 0.4);
+    }
+
+    .header-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #F0F6FC;
+        margin-bottom: 0.3rem;
+    }
+
+    .header-subtitle {
+        color: #8B949E;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* 统计卡片 */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(28, 33, 40, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease backwards;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(67, 100, 247, 0.4);
+        box-shadow: 0 10px 40px rgba(67, 100, 247, 0.2);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-icon-wrapper.blue {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.2), rgba(111, 177, 252, 0.2));
+        color: #6FB1FC;
+    }
+
+    .stat-icon-wrapper.green {
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.2), rgba(72, 187, 120, 0.2));
+        color: #2EA043;
+    }
+
+    .stat-icon-wrapper.purple {
+        background: linear-gradient(135deg, rgba(163, 113, 247, 0.2), rgba(199, 125, 239, 0.2));
+        color: #A371F7;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #F0F6FC;
+        margin-bottom: 0.3rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #8B949E;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 内容卡片 */
+    .content-card {
+        background: rgba(28, 33, 40, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(67, 100, 247, 0.15);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 0.6s ease backwards;
+    }
+
+    .content-card:nth-of-type(1) { animation-delay: 0.15s; }
+    .content-card:nth-of-type(2) { animation-delay: 0.25s; }
+
+    .card-section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(67, 100, 247, 0.1);
+    }
+
+    .section-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .section-icon.blue {
+        background: linear-gradient(135deg, rgba(67, 100, 247, 0.2), rgba(111, 177, 252, 0.2));
+        color: #6FB1FC;
+    }
+
+    .section-icon.green {
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.2), rgba(72, 187, 120, 0.2));
+        color: #2EA043;
+    }
+
+    .section-icon.purple {
+        background: linear-gradient(135deg, rgba(163, 113, 247, 0.2), rgba(199, 125, 239, 0.2));
+        color: #A371F7;
+    }
+
+    .section-icon.orange {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 171, 0, 0.2));
+        color: #FFC107;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #F0F6FC;
+        margin: 0;
+    }
+
+    .section-subtitle {
+        font-size: 0.85rem;
+        color: #8B949E;
+        margin: 0;
+    }
+
+    /* 快捷入口网格 */
+    .quick-entry-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .quick-entry-card {
+        background: rgba(13, 17, 23, 0.5);
+        border: 1px solid rgba(67, 100, 247, 0.1);
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+    }
+
+    .quick-entry-card:hover {
+        border-color: rgba(67, 100, 247, 0.4);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(67, 100, 247, 0.15);
+    }
+
+    .quick-entry-card i {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+
+    .quick-entry-card .entry-title {
+        font-weight: 600;
+        color: #F0F6FC;
+        margin-bottom: 0.25rem;
+    }
+
+    .quick-entry-card .entry-desc {
+        font-size: 0.8rem;
+        color: #8B949E;
+    }
+
+    .quick-entry-card.blue i { color: #6FB1FC; }
+    .quick-entry-card.purple i { color: #A371F7; }
+    .quick-entry-card.green i { color: #2EA043; }
+    .quick-entry-card.orange i { color: #FFC107; }
+
+    /* 功能链接卡片 */
+    .function-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .function-item {
+        background: rgba(13, 17, 23, 0.5);
+        border: 1px solid rgba(67, 100, 247, 0.1);
+        border-radius: 12px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .function-item:hover {
+        background: rgba(67, 100, 247, 0.1);
+        border-color: rgba(67, 100, 247, 0.3);
+        transform: translateX(5px);
+    }
+
+    .function-item-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .function-item-icon.blue {
+        background: rgba(67, 100, 247, 0.15);
+        color: #6FB1FC;
+    }
+
+    .function-item-icon.green {
+        background: rgba(46, 160, 67, 0.15);
+        color: #2EA043;
+    }
+
+    .function-item-icon.orange {
+        background: rgba(255, 193, 7, 0.15);
+        color: #FFC107;
+    }
+
+    .function-item-content {
+        flex: 1;
+    }
+
+    .function-item-title {
+        font-weight: 600;
+        color: #F0F6FC;
+        margin-bottom: 0.2rem;
+    }
+
+    .function-item-desc {
+        font-size: 0.8rem;
+        color: #8B949E;
+    }
+
+    .function-item-arrow {
+        color: #6E7681;
+        transition: transform 0.3s ease;
+    }
+
+    .function-item:hover .function-item-arrow {
+        transform: translateX(5px);
+        color: #6FB1FC;
+    }
+
+    /* 教学关注点列表 */
+    .teaching-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .teaching-list li {
+        background: rgba(13, 17, 23, 0.5);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-left: 3px solid;
+        transition: all 0.3s ease;
+    }
+
+    .teaching-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .teaching-list li:hover {
+        background: rgba(67, 100, 247, 0.05);
+    }
+
+    .teaching-list li.info { border-color: #6FB1FC; }
+    .teaching-list li.success { border-color: #2EA043; }
+    .teaching-list li.warning { border-color: #FFC107; }
+
+    .teaching-list li i {
+        font-size: 1rem;
+    }
+
+    .teaching-list li.info i { color: #6FB1FC; }
+    .teaching-list li.success i { color: #2EA043; }
+    .teaching-list li.warning i { color: #FFC107; }
+
+    .teaching-list li span {
+        color: #8B949E;
+    }
+
+    /* 提示框 */
+    .info-alert {
+        background: rgba(67, 100, 247, 0.1);
+        border: 1px solid rgba(67, 100, 247, 0.2);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-alert i {
+        color: #6FB1FC;
+        font-size: 1.1rem;
+    }
+
+    .info-alert span {
+        color: #8B949E;
+        font-size: 0.9rem;
+    }
+
+    .info-alert a {
+        color: #6FB1FC;
+        text-decoration: none;
+    }
+
+    .info-alert a:hover {
+        text-decoration: underline;
+    }
+
+    /* 按钮样式 */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-action.primary {
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        border: none;
+        color: white;
+    }
+
+    .btn-action.primary:hover {
+        background: linear-gradient(135deg, #4364F7, #6FB1FC);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(67, 100, 247, 0.3);
+        color: white;
+    }
+
+    .btn-action.outline {
+        background: transparent;
+        border: 1px solid rgba(67, 100, 247, 0.3);
+        color: #6FB1FC;
+    }
+
+    .btn-action.outline:hover {
+        background: rgba(67, 100, 247, 0.1);
+        border-color: rgba(67, 100, 247, 0.5);
+        color: #6FB1FC;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+        .analysis-content {
+            padding: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-entry-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analysis-page">
+    <!-- 背景效果 -->
+    <div class="analysis-grid-bg"></div>
+    <div class="analysis-glow glow-1"></div>
+    <div class="analysis-glow glow-2"></div>
+    
+    <!-- 主内容 -->
+    <div class="analysis-content">
+        <!-- 页面标题 -->
+        <div class="page-header-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h1 class="header-title mb-1">教师仪表盘</h1>
+                        <p class="header-subtitle mb-0">欢迎回来，{{ current_user.username }}</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('analysis.index') }}" class="btn-action outline">
+                        <i class="fas fa-arrow-left"></i> 返回数据分析
+                    </a>
+                    <a href="{{ url_for('analysis.advanced_analysis') }}" class="btn-action primary">
+                        <i class="fas fa-chart-bar"></i> 高级分析
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon-wrapper blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ total_students }}</div>
+                <div class="stat-label">学生人数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrapper green">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="stat-value">{{ total_submissions }}</div>
+                <div class="stat-label">答题总次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrapper purple">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-value">{{ avg_accuracy }}<span style="font-size: 1rem;">%</span></div>
+                <div class="stat-label">平均正确率</div>
+            </div>
+        </div>
+
+        {% if current_user.is_admin() %}
+        <div class="content-card" style="border-color: rgba(255, 193, 7, 0.35); background: rgba(255, 193, 7, 0.06);">
+            <div class="card-section-header">
+                <div class="section-icon orange">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div>
+                    <h3 class="section-title mb-0">管理员权限已启用</h3>
+                    <p class="section-subtitle mb-0">管理员端沿用教师分析工作台，并开放全局数据、题库与学生管理入口。</p>
+                </div>
+            </div>
+            <div class="quick-entry-grid">
+                <a href="{{ url_for('student.student_list') }}" class="quick-entry-card orange">
+                    <i class="fas fa-users-gear"></i>
+                    <div class="entry-title">学生管理</div>
+                    <div class="entry-desc">查看与维护全体学生</div>
+                </a>
+                <a href="{{ url_for('quiz.index') }}" class="quick-entry-card purple">
+                    <i class="fas fa-database"></i>
+                    <div class="entry-title">题库管理</div>
+                    <div class="entry-desc">维护测验与知识点数据</div>
+                </a>
+
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 快捷入口 -->
+        <div class="content-card">
+            <div class="card-section-header">
+                <div class="section-icon blue">
+                    <i class="fas fa-th-large"></i>
+                </div>
+                <div>
+                    <h3 class="section-title mb-0">快捷入口</h3>
+                    <p class="section-subtitle mb-0">快速访问各分析模块</p>
+                </div>
+            </div>
+            <div class="quick-entry-grid">
+                <a href="{{ url_for('analysis.index') }}" class="quick-entry-card blue">
+                    <i class="fas fa-chart-pie"></i>
+                    <div class="entry-title">数据分析</div>
+                    <div class="entry-desc">查看总体分析</div>
+                </a>
+                <a href="{{ url_for('analysis.advanced_analysis') }}" class="quick-entry-card purple">
+                    <i class="fas fa-chart-bar"></i>
+                    <div class="entry-title">高级分析</div>
+                    <div class="entry-desc">深度数据挖掘</div>
+                </a>
+                <a href="{{ url_for('analysis.student_ranking') }}" class="quick-entry-card green">
+                    <i class="fas fa-trophy"></i>
+                    <div class="entry-title">学生排名</div>
+                    <div class="entry-desc">查看成绩排名</div>
+                </a>
+                <a href="{{ url_for('analysis.knowledge_point_analysis', topic='全部') }}" class="quick-entry-card orange">
+                    <i class="fas fa-brain"></i>
+                    <div class="entry-title">知识点分析</div>
+                    <div class="entry-desc">掌握情况分析</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 教学概览 -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="content-card h-100">
+                    <div class="card-section-header">
+                        <div class="section-icon green">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div>
+                            <h3 class="section-title mb-0">教学关注点</h3>
+                            <p class="section-subtitle mb-0">需要重点关注的教学事项</p>
+                        </div>
+                    </div>
+                    <div class="info-alert">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>请前往 <a href="{{ url_for('analysis.index') }}">数据分析</a> 页面，点击"生成建议"获取基于答题数据的教学建议。</span>
+                    </div>
+                    <ul class="teaching-list">
+                        <li class="info">
+                            <i class="fas fa-check-circle"></i>
+                            <span>查看各知识点正确率分布</span>
+                        </li>
+                        <li class="success">
+                            <i class="fas fa-check-circle"></i>
+                            <span>识别学生薄弱知识点</span>
+                        </li>
+                        <li class="warning">
+                            <i class="fas fa-check-circle"></i>
+                            <span>根据数据调整教学策略</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="content-card h-100">
+                    <div class="card-section-header">
+                        <div class="section-icon purple">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <div>
+                            <h3 class="section-title mb-0">系统功能</h3>
+                            <p class="section-subtitle mb-0">访问更多分析工具</p>
+                        </div>
+                    </div>
+                    <div class="function-list">
+                        <a href="{{ url_for('analysis.learning_report') }}" class="function-item">
+                            <div class="function-item-icon blue">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="function-item-content">
+                                <div class="function-item-title">学习报告</div>
+                                <div class="function-item-desc">查看学生学习报告</div>
+                            </div>
+                            <i class="fas fa-chevron-right function-item-arrow"></i>
+                        </a>
+                        <a href="{{ url_for('analysis.student_portrait') }}" class="function-item">
+                            <div class="function-item-icon green">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="function-item-content">
+                                <div class="function-item-title">学生画像</div>
+                                <div class="function-item-desc">查看学生个人画像</div>
+                            </div>
+                            <i class="fas fa-chevron-right function-item-arrow"></i>
+                        </a>
+                        <a href="{{ url_for('main.dashboard') }}" class="function-item">
+                            <div class="function-item-icon orange">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="function-item-content">
+                                <div class="function-item-title">返回首页</div>
+                                <div class="function-item-desc">回到系统首页</div>
+                            </div>
+                            <i class="fas fa-chevron-right function-item-arrow"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

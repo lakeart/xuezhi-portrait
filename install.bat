@@ -1,0 +1,16 @@
+@echo off
+echo 正在安装学智画像：教育大数据赋能高校学情可视分析系统...
+echo 1. 创建虚拟环境...
+python -m venv venv
+echo 2. 激活虚拟环境...
+venv\Scripts\activate
+echo 3. 安装依赖包...
+pip install -r requirements.txt
+echo 4. 初始化数据库...
+python set_db.py
+echo 5. 安装完成！
+echo 请运行 start.bat 启动系统
+echo 系统默认访问地址: http://127.0.0.1:5000
+echo 管理员账户: admin
+echo 管理员密码: admin123
+pause
